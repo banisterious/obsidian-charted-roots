@@ -20,6 +20,8 @@ import { computeSortOrder } from '../../events/services/sort-order-service';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
 import { isEventNote } from '../../utils/note-type-detection';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
+import { toSafeFilename } from '../../core/canvas-utils';
+import { timelineExportTitle } from '../services/timeline-export-naming';
 import { TemplateSnippetsModal } from '../../ui/template-snippets-modal';
 import { calculateDateStatistics } from '../services/date-statistics';
 import { openManageMediaModal } from '../../plugin/context-menu-helpers';
@@ -1354,7 +1356,8 @@ async function handleCanvasExport(
 	exportBtn: HTMLButtonElement
 ): Promise<void> {
 	const folder = plugin.settings.canvasesFolder || 'Charted Roots';
-	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const exportTitle = timelineExportTitle(title, personValue);
+	const safeTitle = toSafeFilename(exportTitle);
 	const expectedPath = `${folder}/${safeTitle}.canvas`;
 	const existingFile = plugin.app.vault.getAbstractFileByPath(expectedPath);
 
@@ -1369,7 +1372,7 @@ async function handleCanvasExport(
 	try {
 		const exporter = new TimelineCanvasExporter(plugin.app, plugin.settings);
 		const result = await exporter.exportToCanvas(allEvents, {
-			title,
+			title: exportTitle,
 			layoutStyle: layoutValue,
 			colorScheme: colorValue,
 			filterPerson: personValue || undefined,
@@ -1429,7 +1432,8 @@ async function handleExcalidrawExport(
 	}
 ): Promise<void> {
 	const folder = plugin.settings.canvasesFolder || 'Charted Roots';
-	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const exportTitle = timelineExportTitle(title, personValue);
+	const safeTitle = toSafeFilename(exportTitle);
 	const expectedExcalidrawPath = `${folder}/${safeTitle}.excalidraw.md`;
 	const existingExcalidraw = plugin.app.vault.getAbstractFileByPath(expectedExcalidrawPath);
 
@@ -1446,7 +1450,7 @@ async function handleExcalidrawExport(
 
 		// Export to canvas first (as intermediate format)
 		const result = await exporter.exportToCanvas(allEvents, {
-			title,
+			title: exportTitle,
 			layoutStyle: layoutValue,
 			colorScheme: colorValue,
 			filterPerson: personValue || undefined,
@@ -1529,7 +1533,8 @@ async function handleMarkdownExport(
 	exportBtn: HTMLButtonElement
 ): Promise<void> {
 	const folder = plugin.settings.timelinesFolder || plugin.settings.eventsFolder || 'Charted Roots/Timelines';
-	const safeTitle = title.replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+	const exportTitle = timelineExportTitle(title, personValue);
+	const safeTitle = toSafeFilename(exportTitle);
 	const expectedPath = `${folder}/${safeTitle}.md`;
 	const existingFile = plugin.app.vault.getAbstractFileByPath(expectedPath);
 
@@ -1544,7 +1549,7 @@ async function handleMarkdownExport(
 	try {
 		const exporter = new TimelineMarkdownExporter(plugin.app, plugin.settings, plugin.getDateService());
 		const result = await exporter.export(allEvents, {
-			title,
+			title: exportTitle,
 			format: formatValue,
 			filterPerson: personValue || undefined,
 			filterEventType: typeValue || undefined,
