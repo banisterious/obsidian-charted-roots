@@ -1380,6 +1380,17 @@
  * non-matching cards are dimmed when any group is active.
  * ------------------------------------------------------------ */
 
+/* Keep the whole cards layer above the links layer (#670). The dim/match
+ * effects below give each card_cont its own stacking context (opacity < 1,
+ * drop-shadow filter); f3 paints `.view > [links_view, cards_view]` with cards
+ * after links, but because cards_view itself isn't isolated, a dimmed card's
+ * stacking context can paint beneath the links layer on some engines (seen on
+ * macOS). Isolating cards_view forces every card — dimmed or matched — to stay
+ * above the connector lines. */
+.cr-fcv-chart-container .cards_view {
+  isolation: isolate;
+}
+
 /* Family-chart's library writes inline `opacity: 1` on card_cont during
  * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
  * `.on("end", ...)` cleanup to family-chart's SVG and HTML cardUpdate
