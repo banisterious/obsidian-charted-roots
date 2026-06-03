@@ -170,6 +170,13 @@ export class FamilyChartView extends ItemView {
 	private asOfDate: string | null = null;
 	// Card style: rectangle (default SVG), circle (HTML circular), compact (text-only), mini (smaller)
 	private cardStyle: CardStyle = 'rectangle';
+	// Content-driven card width (#669 follow-up). After a render, the widest
+	// rendered line is measured and, if it exceeds the style's fixed base
+	// width, this override widens the (uniform) card so long names and the
+	// descriptive toggle fields are no longer clipped. null = use base width.
+	private contentCardWidth: number | null = null;
+	// Width last pushed to the f3 card dimension, to skip no-op re-renders.
+	private appliedCardWidth: number | null = null;
 	// Name display mode: full (single line) or split (given/surname on separate lines) (#90)
 	private nameDisplayMode: NameDisplayMode = 'full';
 	// Built-in descriptive field toggles on the in-tree card (#374)
@@ -1168,6 +1175,11 @@ export class FamilyChartView extends ItemView {
 		// Close info panel when switching to a new chart
 		this.closeInfoPanel();
 
+		// Start each rebuild at the style's base width; refitCardWidth widens
+		// from the freshly measured content after the initial render (#669).
+		this.contentCardWidth = null;
+		this.appliedCardWidth = null;
+
 		// Clear container
 		this.chartContainerEl.empty();
 
@@ -1400,6 +1412,10 @@ export class FamilyChartView extends ItemView {
 
 			// Initial render without fit (just get the tree in the DOM)
 			this.f3Chart.updateTree({ initial: true });
+
+			// Widen cards to fit their longest line before the deferred fit runs,
+			// while the container is still hidden — no visible reflow (#669).
+			this.refitCardWidth();
 
 			// Defer positioning operation until container dimensions are stable
 			window.setTimeout(() => {
@@ -4386,9 +4402,33 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
-	 * Get card dimensions based on card style and content lines (#90)
+	 * Get card dimensions for a style, widened to fit content when needed.
+	 *
+	 * Returns the style's fixed base geometry (see `getBaseCardDimensions`),
+	 * then — for the Circle style only — widens the card to `contentCardWidth`
+	 * when the measured widest line exceeds the base width (#669 follow-up).
+	 * Circle centers a short label under the avatar on an otherwise empty card,
+	 * so widening it to fit long names costs no layout density. The rectangular
+	 * styles fill their width and sit a fixed node-separation apart, so widening
+	 * them would eat the gap between spouse/sibling cards — they keep their base
+	 * width instead. Short content keeps the base width unchanged either way.
 	 */
 	private getCardDimensions(style: CardStyle): { w: number; h: number; text_x: number; text_y: number; img_w: number; img_h: number; img_x: number; img_y: number } {
+		const dims = this.getBaseCardDimensions(style);
+
+		if (style !== 'circle' || style !== this.cardStyle || this.contentCardWidth === null || this.contentCardWidth <= dims.w) {
+			return dims;
+		}
+
+		// Circle centers the label + avatar, so re-anchor both to the new width.
+		const w = this.contentCardWidth;
+		return { ...dims, w, text_x: w / 2, img_x: (w - dims.img_w) / 2 };
+	}
+
+	/**
+	 * Get the style's fixed base card dimensions and content lines (#90).
+	 */
+	private getBaseCardDimensions(style: CardStyle): { w: number; h: number; text_x: number; text_y: number; img_w: number; img_h: number; img_x: number; img_y: number } {
 		const lines = this.calculateContentLines();
 
 		switch (style) {
@@ -4550,13 +4590,11 @@ export class FamilyChartView extends ItemView {
 
 		const displayFields = this.buildDisplayFields();
 
-		// Update card display and dimensions based on card style
+		// Update card display and dimensions. Every SVG style sizes from its
+		// content lines (height) and the fit width (#669), so refresh the
+		// dimension for all of them rather than a subset.
 		this.f3Card.setCardDisplay(displayFields);
-
-		// Update card dimensions for styles that support dynamic sizing
-		if (this.cardStyle === 'rectangle' || this.cardStyle === 'compact' || this.cardStyle === 'mini') {
-			this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
-		}
+		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
 
 		// Toggling content fields (#374) can grow the card vertically past
 		// the current level spacing, or horizontally past the current node
@@ -4573,6 +4611,66 @@ export class FamilyChartView extends ItemView {
 		}
 
 		// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
+		this.f3Chart.updateTree({});
+
+		// The new field set changes the longest line; re-measure and widen.
+		// Runs synchronously after updateTree, so the browser paints once.
+		this.refitCardWidth();
+	}
+
+	/**
+	 * Measure the widest rendered Circle-card label and widen the (uniform)
+	 * cards so long names and descriptive toggle fields are no longer clipped
+	 * by the card's text clip path (#669 follow-up).
+	 *
+	 * Circle only: those cards center a short label on an otherwise empty card,
+	 * so widening them costs no layout density. The rectangular styles fill
+	 * their width and sit a fixed node-separation apart, so widening them would
+	 * pull spouse/sibling cards together — they keep their fixed base width.
+	 *
+	 * `getBBox()` reports a label's full geometry regardless of the clip, so
+	 * the true longest line is measurable even when visually truncated. Width
+	 * is uniform per style, so the override is the max needed across all cards;
+	 * node spacing is re-clamped via the existing minimum-spacing floor (which
+	 * keys off card width). A re-render happens only when the width changes.
+	 */
+	private refitCardWidth(): void {
+		if (!this.f3Chart || !this.f3Card || this.cardStyle !== 'circle') return;
+		const svg = this.f3Chart.svg as SVGSVGElement | undefined;
+		if (!svg) return;
+
+		let maxLineWidth = 0;
+		svg.querySelectorAll('g.card-text text').forEach((node) => {
+			try {
+				const width = (node as SVGGraphicsElement).getBBox().width;
+				if (Number.isFinite(width) && width > maxLineWidth) {
+					maxLineWidth = width;
+				}
+			} catch {
+				// getBBox throws on a node that isn't laid out yet; skip it.
+			}
+		});
+		if (maxLineWidth === 0) return; // nothing measurable — keep base width
+
+		const base = this.getBaseCardDimensions(this.cardStyle);
+		// Width needed to keep the widest line inside the text clip region
+		// (card width − 10). Circle centers the label about text_x = w/2, so it
+		// needs a ~10px margin on both sides.
+		const PAD = 6;
+		const required = Math.ceil(maxLineWidth + 20 + PAD);
+		this.contentCardWidth = required;
+
+		const newWidth = this.getCardDimensions(this.cardStyle).w;
+		const currentWidth = this.appliedCardWidth ?? base.w;
+		if (newWidth === currentWidth) return; // already the right width
+		this.appliedCardWidth = newWidth;
+
+		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
+		const minNodeSpacing = this.getMinimumNodeSpacing(this.cardStyle);
+		if (this.nodeSpacing < minNodeSpacing) {
+			this.nodeSpacing = minNodeSpacing;
+			this.f3Chart.setCardXSpacing(this.nodeSpacing);
+		}
 		this.f3Chart.updateTree({});
 	}
 
