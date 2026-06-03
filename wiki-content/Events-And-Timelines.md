@@ -255,6 +255,7 @@ Events belonging to relatives can also surface on a person's timeline, toggled i
 | **Show stepparent deaths** | `died` on each stepparent note (rendered only when the focal person was alive at the time) |
 | **Show sibling births** | `born` on each sibling note — where "sibling" is anyone sharing a parent *or* anyone declared via the built-in `sibling` relationship type |
 | **Show sibling deaths** | `died` on each sibling note (same step-sibling-aware walk as sibling births; rendered only when the focal person was alive at the time) |
+| **Show sibling's marriages** | each sibling's marriage, read from the sibling's own `spouseN` marriage data (same step-sibling-aware walk as sibling births), so you can see the focal person's age at a sibling's wedding |
 | **Show grandchildren's births** | `born` on each biological or adopted child of each biological or adopted child (rendered only when the focal person was alive at the time) |
 | **Show divorces** | `spouseN_divorce_date` on the person's own note (governs divorces only; marriages always render) |
 

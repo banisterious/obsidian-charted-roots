@@ -482,6 +482,7 @@ Show significant life events of family members on person timelines. Most default
 | **Show spouse deaths** | Off | Display "Death of [[Spouse Name]]" entries |
 | **Show parent deaths** | Off | Display "Death of [[Parent Name]]" entries |
 | **Show sibling births** | Off | Display "Birth of [[Sibling Name]]" entries. Siblings are derived from shared parents **or** anyone declared via the built-in `sibling` relationship type. |
+| **Show sibling's marriages** | Off | Display "Marriage of [[Sibling Name]]" entries (read from the sibling's own marriage data), so you can see the focal person's age at a sibling's wedding. Covers biological and adopted siblings. |
 | **Show divorces** | On | Display "Divorce from [[Spouse Name]]" entries. Marriages always render when present; this toggle governs divorces only. |
 
 Each entry links to the family member's note and shows age annotations. Use `familyEvents: none` in an individual timeline code block to suppress family events on that specific timeline.

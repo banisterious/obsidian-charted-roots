@@ -147,6 +147,11 @@ Uses geocoding API to fill in `contained_by` relationships (city → county → 
 
 If your GEDCOM import created nested frontmatter (e.g., `coordinates: { lat: ..., long: ... }`), this converts them to flat properties (`coordinates_lat`, `coordinates_long`). Flat properties work better with Obsidian's property editor.
 
+#### Optional: Repair Misaligned Children
+**Location:** Control Center → Data Quality tab → "Repair misaligned children"
+
+A parent note stores its children as two parallel lists — `children` (the wikilinks) and `children_id` (the stable IDs) — that must line up one-for-one. If they fall out of step (for example, after an ID goes missing from the list), the Quality Report flags the note, and a later edit could re-pair a child's name with the wrong note. This tool rebuilds a flagged parent's children list from the authoritative side — the child notes that list it as a parent — recovering any dropped child, removing links that resolve to no note, and re-pairing each child with the correct ID. It shows a preview of every change before writing, so review and apply it when the Quality Report reports a misaligned children list.
+
 ---
 
 ## Control Center Data Quality Tab
