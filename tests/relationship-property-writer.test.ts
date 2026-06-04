@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
 	addFlatRelationship,
-	normalizeToArray
+	normalizeToArray,
+	removeFlatRelationship,
+	computeCustomReciprocalRemovals
 } from '../src/relationships/relationship-property-writer';
 
 /**
@@ -281,5 +283,97 @@ describe('addFlatRelationship — notes (#530)', () => {
 
 		expect(result).toBe('duplicate');
 		expect(fm.godparent_notes).toBe('original');
+	});
+});
+
+/**
+ * #675 — deleting a symmetric custom relationship from one note's YAML left the
+ * reciprocal orphaned on the target note (it was written on add but never
+ * cleaned up on delete), and the source's profile inferred it straight back.
+ * `removeFlatRelationship` strips the orphaned reciprocal; `computeCustom
+ * ReciprocalRemovals` decides which reciprocals a deletion should trigger.
+ */
+describe('removeFlatRelationship (#675)', () => {
+	it('removes the only entry and deletes the now-empty keys', () => {
+		const fm: Record<string, unknown> = { friend: '[[Alice]]', friend_id: 'cr_alice' };
+		expect(removeFlatRelationship(fm, 'friend', 'cr_alice')).toBe('removed');
+		expect(fm.friend).toBeUndefined();
+		expect(fm.friend_id).toBeUndefined();
+	});
+
+	it('splices one entry from arrays and re-encodes the remainder as a scalar', () => {
+		const fm: Record<string, unknown> = {
+			friend: ['[[Alice]]', '[[Bob]]'],
+			friend_id: ['cr_alice', 'cr_bob']
+		};
+		expect(removeFlatRelationship(fm, 'friend', 'cr_alice')).toBe('removed');
+		expect(fm.friend).toBe('[[Bob]]');
+		expect(fm.friend_id).toBe('cr_bob');
+	});
+
+	it('keeps every parallel companion array index-aligned on removal', () => {
+		const fm: Record<string, unknown> = {
+			friend: ['[[Alice]]', '[[Bob]]', '[[Cara]]'],
+			friend_id: ['cr_alice', 'cr_bob', 'cr_cara'],
+			friend_from: ['1990', '1991', '1992'],
+			friend_to: ['', '', ''],
+			friend_notes: ['met at school', 'cousin', 'neighbor']
+		};
+		expect(removeFlatRelationship(fm, 'friend', 'cr_bob')).toBe('removed');
+		expect(fm.friend).toEqual(['[[Alice]]', '[[Cara]]']);
+		expect(fm.friend_id).toEqual(['cr_alice', 'cr_cara']);
+		expect(fm.friend_from).toEqual(['1990', '1992']);
+		expect(fm.friend_notes).toEqual(['met at school', 'neighbor']);
+	});
+
+	it('returns "not-found" without mutating when the cr_id is absent (idempotent cascade stop)', () => {
+		const fm: Record<string, unknown> = { friend: '[[Alice]]', friend_id: 'cr_alice' };
+		const snapshot = { ...fm };
+		expect(removeFlatRelationship(fm, 'friend', 'cr_nobody')).toBe('not-found');
+		expect(fm).toEqual(snapshot);
+	});
+
+	it('removes every occurrence of a duplicated cr_id (corruption-tolerant)', () => {
+		const fm: Record<string, unknown> = {
+			friend: ['[[Alice]]', '[[Bob]]', '[[Alice]]'],
+			friend_id: ['cr_alice', 'cr_bob', 'cr_alice']
+		};
+		expect(removeFlatRelationship(fm, 'friend', 'cr_alice')).toBe('removed');
+		expect(fm.friend).toBe('[[Bob]]');
+		expect(fm.friend_id).toBe('cr_bob');
+	});
+});
+
+describe('computeCustomReciprocalRemovals (#675)', () => {
+	const symmetric = new Set(['friend', 'sibling']);
+
+	it('flags a target whose entry was removed from the note', () => {
+		const previous = { friend: { targets: ['[[Alice]]', '[[Bob]]'], ids: ['cr_alice', 'cr_bob'] } };
+		// Alice was deleted; Bob remains.
+		const current = { friend: '[[Bob]]', friend_id: 'cr_bob' };
+		expect(computeCustomReciprocalRemovals(previous, current, symmetric)).toEqual([
+			{ typeId: 'friend', targetLink: '[[Alice]]', targetCrId: 'cr_alice' }
+		]);
+	});
+
+	it('flags all entries when the whole field is deleted', () => {
+		const previous = { friend: { targets: ['[[Alice]]', '[[Bob]]'], ids: ['cr_alice', 'cr_bob'] } };
+		const current = {}; // entire friend field gone
+		expect(computeCustomReciprocalRemovals(previous, current, symmetric)).toEqual([
+			{ typeId: 'friend', targetLink: '[[Alice]]', targetCrId: 'cr_alice' },
+			{ typeId: 'friend', targetLink: '[[Bob]]', targetCrId: 'cr_bob' }
+		]);
+	});
+
+	it('flags nothing when entries are unchanged', () => {
+		const previous = { friend: { targets: ['[[Alice]]'], ids: ['cr_alice'] } };
+		const current = { friend: '[[Alice]]', friend_id: 'cr_alice' };
+		expect(computeCustomReciprocalRemovals(previous, current, symmetric)).toEqual([]);
+	});
+
+	it('ignores types no longer considered symmetric', () => {
+		const previous = { mentor: { targets: ['[[Alice]]'], ids: ['cr_alice'] } };
+		const current = {}; // mentor deleted, but mentor is asymmetric → no reciprocal to strip
+		expect(computeCustomReciprocalRemovals(previous, current, symmetric)).toEqual([]);
 	});
 });

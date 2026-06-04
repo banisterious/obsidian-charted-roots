@@ -27,6 +27,7 @@ import { DeletePersonConfirmModal, FamilyChartStyleModal, HighlightGroupsModal }
 import { stripDateTimeSuffix } from '../../dates/utils/date-display';
 import { shouldPaintOverlayUnderLinks } from './family-chart-overlay-z';
 import { wrapNameToTwoLines } from './family-chart-name-wrap';
+import { effectiveCardSpacing } from './family-chart-spacing';
 import {
 	type HighlightGroup,
 	HIGHLIGHT_COLORS,
@@ -1260,18 +1261,18 @@ export class FamilyChartView extends ItemView {
 			// floors computed just below via calculateContentLines.
 			this.prepareNameWrapping();
 
-			// Honor the style's minimum-spacing floor for the saved spacing too,
-			// so a value persisted under an older, tighter floor still keeps the
-			// current style's edge-to-edge gap (#669 follow-up).
-			this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
-			this.levelSpacing = Math.max(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
+			// Apply the style's minimum-spacing floor as the effective spacing,
+			// keeping the user's saved preference intact so the tree re-compacts
+			// toward it when cards shrink again (#669 follow-up).
+			const effectiveNodeSpacing = effectiveCardSpacing(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
+			const effectiveLevelSpacing = effectiveCardSpacing(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
 
 			// Create the chart with normal transition time
-			logger.debug('init-chart', 'Creating chart with spacing', { nodeSpacing: this.nodeSpacing, levelSpacing: this.levelSpacing });
+			logger.debug('init-chart', 'Creating chart with spacing', { nodeSpacing: this.nodeSpacing, levelSpacing: this.levelSpacing, effectiveNodeSpacing, effectiveLevelSpacing });
 			this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData)
 				.setTransitionTime(800)
-				.setCardXSpacing(this.nodeSpacing)
-				.setCardYSpacing(this.levelSpacing)
+				.setCardXSpacing(effectiveNodeSpacing)
+				.setCardYSpacing(effectiveLevelSpacing)
 				// Clear overlays before any tree update to prevent stale rendering (#195, #386)
 				// This handles all update sources: mini-tree buttons, navigation, spacing changes, etc.
 				.setBeforeUpdate(() => {
@@ -1280,6 +1281,12 @@ export class FamilyChartView extends ItemView {
 				})
 				// Re-render overlays after tree animation completes (#195, #386, #379)
 				.setAfterUpdate(() => {
+					// Re-assert the round-avatar clip first: f3's fit-to-view (and
+					// other re-renders) can drop a per-card clip, which is what
+					// turned Circle avatars back into squares in a pop-out window
+					// (#677). The per-card onCardUpdate hook also sets it, but
+					// position-only updates like fit may not re-run that hook.
+					this.reapplyCircleAvatarClips();
 					this.scheduleKinshipLabelRerender();
 					this.scheduleRelationshipOverlayRerender();
 					this.scheduleHighlightRerender();
@@ -1925,6 +1932,21 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Re-apply the element-local circle clip to every avatar when the Circle
+	 * style is active. f3 re-renders (notably fit-to-view) can re-lay the card
+	 * images and drop a per-card clip, which is what turned Circle avatars back
+	 * into squares in a pop-out window. A `circle(50%)` basic shape carries no
+	 * document reference, so it resolves in the pop-out's separate document
+	 * where the old `url(#…)` clip reference could not (#677).
+	 */
+	private reapplyCircleAvatarClips(): void {
+		if (this.cardStyle !== 'circle' || !this.f3Chart) return;
+		const svg = this.f3Chart.svg as SVGSVGElement | undefined;
+		if (!svg) return;
+		d3.select(svg).selectAll('.card_image').style('clip-path', 'circle(50%)');
+	}
+
+	/**
 	 * Add open note button to a family-chart card element.
 	 * Called with `this` bound to the view instance via bind() in createOpenNoteButtonCallback.
 	 * The card element is found via d3.select using the person ID from the data parameter.
@@ -1958,28 +1980,18 @@ export class FamilyChartView extends ItemView {
 		// gender color the body would have shown. Inserted as the first child of
 		// .card-inner so it sits behind the avatar; guarded against duplicates.
 		if (this.cardStyle === 'circle') {
-			// Clip the avatar to a circle via an SVG <clipPath> applied as the
-			// `clip-path` *attribute* (not a CSS property, which the Community CSS
-			// scanner flags as only partially supported). objectBoundingBox units
-			// scale the circle to the avatar's box at any size. Defined once per SVG.
-			const svg = cardEl.ownerSVGElement;
-			if (svg) {
-				const svgSel = d3.select(svg);
-				if (svgSel.select('#cr-fcv-circle-clip').empty()) {
-					let defs = svgSel.select<SVGDefsElement>('defs');
-					if (defs.empty()) {
-						defs = svgSel.insert<SVGDefsElement>('defs', ':first-child');
-					}
-					defs.append('clipPath')
-						.attr('id', 'cr-fcv-circle-clip')
-						.attr('clipPathUnits', 'objectBoundingBox')
-						.append('circle')
-						.attr('cx', 0.5)
-						.attr('cy', 0.5)
-						.attr('r', 0.5);
-				}
-				d3.select(cardEl).select('.card_image').attr('clip-path', 'url(#cr-fcv-circle-clip)');
-			}
+			// Clip the avatar to a circle with an element-local `circle(50%)`
+			// basic shape set as an inline style. Unlike an SVG `<clipPath>`
+			// referenced via `clip-path: url(#id)`, a basic-shape clip carries no
+			// document reference, so it keeps working when the chart is moved to a
+			// pop-out window — whose separate document can't resolve the `url(#…)`
+			// reference — and it survives f3's fit-to-view re-render that
+			// previously dropped the round avatars back to squares (#677). The
+			// square avatar box (see getBaseCardDimensions) makes `circle(50%)`
+			// inscribe a true circle. Set inline via render code, never in
+			// styles.css, so the Community CSS scanner (which only reads
+			// styles.css) stays clean — see #669/v0.22.60.
+			d3.select(cardEl).select('.card_image').style('clip-path', 'circle(50%)');
 			const inner = d3.select(cardEl).select('.card-inner');
 			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
 				const dim = this.getCardDimensions('circle');
@@ -2223,10 +2235,15 @@ export class FamilyChartView extends ItemView {
 		// Find the transform group (the first g element that family-chart creates for the tree)
 		const transformGroup = svgSelection.select('g');
 		if (!transformGroup.empty()) {
-			transformGroup
-				.transition()
-				.duration(200)
-				.attr('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
+			// Apply synchronously rather than via a d3 `.transition()`. d3's
+			// transition scheduler runs on the requestAnimationFrame of the window
+			// d3 was loaded in (the main window), so for an element living in a
+			// pop-out window's document the transition never fires — the transform
+			// attribute is never set, the tree renders untransformed at full scale,
+			// and the viewport is parked on empty space (the #678 blank-on-refresh).
+			// A direct attribute set applies in any document/window, and since the
+			// refresh already rebuilds the chart there's nothing to animate.
+			transformGroup.attr('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
 		}
 
 		// Update zoom level display
@@ -4691,6 +4708,33 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Apply the effective horizontal card spacing: the larger of the user's
+	 * chosen `nodeSpacing` and the current style/content minimum. The user's
+	 * preference is kept intact rather than overwritten with the minimum, so the
+	 * tree re-compacts toward it when cards shrink again — e.g. after toggling
+	 * descriptive fields back off, or a long-named card collapsing on refit
+	 * (#669 follow-up). Keeping the stored value also leaves the spacing menu
+	 * checkmark and saved state on the user's actual choice. (#669)
+	 */
+	private applyEffectiveNodeSpacing(): void {
+		if (!this.f3Chart) return;
+		const effective = effectiveCardSpacing(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
+		this.f3Chart.setCardXSpacing(effective);
+	}
+
+	/**
+	 * Apply the effective vertical spacing: the larger of the user's chosen
+	 * `levelSpacing` and the current style/content minimum, without overwriting
+	 * the stored preference. Mirrors {@link applyEffectiveNodeSpacing} so
+	 * generations re-compact when cards get shorter again. (#669)
+	 */
+	private applyEffectiveLevelSpacing(): void {
+		if (!this.f3Chart) return;
+		const effective = effectiveCardSpacing(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
+		this.f3Chart.setCardYSpacing(effective);
+	}
+
+	/**
 	 * Default node spacing per card style (#373)
 	 *
 	 * Each style's default is chosen to leave a consistent edge-to-edge gap
@@ -4726,19 +4770,12 @@ export class FamilyChartView extends ItemView {
 		this.f3Card.setCardDisplay(displayFields);
 		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
 
-		// Toggling content fields (#374) can grow the card vertically past
-		// the current level spacing, or horizontally past the current node
-		// spacing. Re-clamp both so cards never overlap after a toggle.
-		const minNodeSpacing = this.getMinimumNodeSpacing(this.cardStyle);
-		if (this.nodeSpacing < minNodeSpacing) {
-			this.nodeSpacing = minNodeSpacing;
-			this.f3Chart.setCardXSpacing(this.nodeSpacing);
-		}
-		const minLevelSpacing = this.getMinimumLevelSpacing(this.cardStyle);
-		if (this.levelSpacing < minLevelSpacing) {
-			this.levelSpacing = minLevelSpacing;
-			this.f3Chart.setCardYSpacing(this.levelSpacing);
-		}
+		// Toggling content fields (#374) changes card size, so the effective
+		// spacing floor moves. Re-apply both — growing to avoid overlap when
+		// fields turn on, and shrinking back toward the user's preference when
+		// they turn off so the tree re-compacts (#669 follow-up).
+		this.applyEffectiveNodeSpacing();
+		this.applyEffectiveLevelSpacing();
 
 		// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
 		this.f3Chart.updateTree({});
@@ -4796,11 +4833,10 @@ export class FamilyChartView extends ItemView {
 		this.appliedCardWidth = newWidth;
 
 		this.f3Card.setCardDim(this.getCardDimensions(this.cardStyle));
-		const minNodeSpacing = this.getMinimumNodeSpacing(this.cardStyle);
-		if (this.nodeSpacing < minNodeSpacing) {
-			this.nodeSpacing = minNodeSpacing;
-			this.f3Chart.setCardXSpacing(this.nodeSpacing);
-		}
+		// Re-apply the effective spacing for the new width: a widened card raises
+		// the floor, a collapsed one lowers it back toward the user's preference
+		// so the tree re-compacts (#669 follow-up).
+		this.applyEffectiveNodeSpacing();
 		this.f3Chart.updateTree({});
 	}
 
@@ -4811,17 +4847,19 @@ export class FamilyChartView extends ItemView {
 	 * user-picked preset can't collapse cards into each other (#373).
 	 */
 	private setNodeSpacing(spacing: number): void {
-		const minSpacing = this.getMinimumNodeSpacing(this.cardStyle);
-		const clamped = Math.max(spacing, minSpacing);
-		this.nodeSpacing = clamped;
+		// Store the user's choice as-is; the minimum-spacing floor is applied as
+		// the effective value on top, so the preference re-asserts itself when
+		// cards get smaller again rather than staying ratcheted up (#669 follow-up).
+		this.nodeSpacing = spacing;
 		if (this.f3Chart) {
+			const effective = effectiveCardSpacing(spacing, this.getMinimumNodeSpacing(this.cardStyle));
 			// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
-			this.f3Chart.setCardXSpacing(clamped);
+			this.f3Chart.setCardXSpacing(effective);
 			this.f3Chart.updateTree({});
-			if (clamped !== spacing) {
-				new Notice(`Spacing clamped to ${clamped}px; ${this.cardStyle} cards need at least that to avoid overlap. Pick a smaller card style for a tighter tree.`);
+			if (effective !== spacing) {
+				new Notice(`Showing ${effective}px — ${this.cardStyle} cards need at least that to avoid overlap at the current size. Your ${spacing}px choice is kept and applies when cards are smaller.`);
 			} else {
-				new Notice(`Node spacing set to ${clamped}px`);
+				new Notice(`Node spacing set to ${spacing}px`);
 			}
 		}
 		// Trigger Obsidian to save view state
@@ -4836,17 +4874,19 @@ export class FamilyChartView extends ItemView {
 	 * other (#374).
 	 */
 	private setLevelSpacing(spacing: number): void {
-		const minSpacing = this.getMinimumLevelSpacing(this.cardStyle);
-		const clamped = Math.max(spacing, minSpacing);
-		this.levelSpacing = clamped;
+		// Store the user's choice as-is; apply the minimum-height floor as the
+		// effective value so the preference re-asserts itself when cards get
+		// shorter again rather than staying ratcheted up (#669 follow-up).
+		this.levelSpacing = spacing;
 		if (this.f3Chart) {
+			const effective = effectiveCardSpacing(spacing, this.getMinimumLevelSpacing(this.cardStyle));
 			// Note: Kinship label clearing/re-rendering is handled by setBeforeUpdate/setAfterUpdate callbacks (#195)
-			this.f3Chart.setCardYSpacing(clamped);
+			this.f3Chart.setCardYSpacing(effective);
 			this.f3Chart.updateTree({});
-			if (clamped !== spacing) {
-				new Notice(`Level spacing clamped to ${clamped}px to fit the current card height. Toggle off some fields or pick a smaller card style to go tighter.`);
+			if (effective !== spacing) {
+				new Notice(`Showing ${effective}px — fits the current card height. Your ${spacing}px choice is kept and applies when cards are shorter.`);
 			} else {
-				new Notice(`Level spacing set to ${clamped}px`);
+				new Notice(`Level spacing set to ${spacing}px`);
 			}
 		}
 		// Trigger Obsidian to save view state
@@ -5570,11 +5610,11 @@ export class FamilyChartView extends ItemView {
 			this.showPronouns = state.showPronouns;
 		}
 
-		// Clamp restored spacing to the minimum safe values for the restored
-		// card style and display toggles, in case a stale state would cause
-		// card overlap (#373, #374).
-		this.nodeSpacing = Math.max(this.nodeSpacing, this.getMinimumNodeSpacing(this.cardStyle));
-		this.levelSpacing = Math.max(this.levelSpacing, this.getMinimumLevelSpacing(this.cardStyle));
+		// Restored spacing is kept as the user's preference; the minimum-safe
+		// floor for the restored card style + display toggles is applied as the
+		// effective value when the chart (re)initializes, so a stale state can't
+		// cause overlap while the preference still re-asserts when cards shrink
+		// (#373, #374, #669 follow-up).
 
 		// Re-initialize chart if the view is already open (chartContainerEl exists)
 		// If called before onOpen(), the state is just stored and onOpen() will use it

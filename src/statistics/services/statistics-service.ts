@@ -15,6 +15,15 @@ import { extractSurnames } from '../../utils/name-utils';
 import { FolderFilterService } from '../../core/folder-filter';
 import { capitalize } from '../../utils/format-utils';
 import { OrganizationService } from '../../organizations';
+import { PlaceGraphService } from '../../core/place-graph';
+import type { EventService } from '../../events/services/event-service';
+import { placeNamesEqual, isSegmentAncestor } from '../../utils/place-segments';
+import {
+	orderMovementPlaces,
+	buildLocationSequence,
+	collapseNestedLocations,
+	type DatedPlace
+} from './migration-analysis';
 import type {
 	StatisticsData,
 	StatisticsCache,
@@ -203,7 +212,7 @@ export class StatisticsService {
 		const completeness = this.computeCompleteness(vaultStats, analytics, people.length);
 
 		// Quality metrics
-		const quality = this.computeQualityMetrics(vaultStats, analytics, people.length);
+		const quality = this.computeQualityMetrics(vaultStats, analytics);
 
 		// Date range
 		const dateRange = this.computeDateRange(analytics);
@@ -375,14 +384,32 @@ export class StatisticsService {
 	 */
 	private computeQualityMetrics(
 		vaultStats: ReturnType<VaultStatsService['collectStats']>,
-		analytics: ReturnType<FamilyGraphService['calculateCollectionAnalytics']>,
-		totalPeople: number
+		analytics: ReturnType<FamilyGraphService['calculateCollectionAnalytics']>
 	): QualityMetrics {
-		// Missing death date = total people - people with death date - living people
-		const missingDeathDate = totalPeople - vaultStats.people.peopleWithDeathDate - vaultStats.people.livingPeople;
-
 		// Calculate additional metrics
 		const people = this.getFamilyGraphService().getAllPeople();
+
+		// Derive the missing-date and living counts from the SAME FamilyGraph
+		// people that drive the completeness percentages. Subtracting a separate
+		// VaultStats scan from the FamilyGraph total mixes two scans, so the two
+		// dashboard sections could disagree (e.g. "with birth date = 100%" while
+		// the issues notice still reported missing births) (#676).
+		const livingThreshold = this.settings.livingPersonAgeThreshold ?? 100;
+		const currentYear = new Date().getFullYear();
+		const couldBeLiving = (person: PersonNode): boolean => {
+			// A recorded death date means they are not living.
+			if (person.deathDate) return false;
+			// Without a birth year we cannot judge plausible living status.
+			const birthYear = this.extractYear(person.birthDate, person.universe);
+			if (birthYear === null) return false;
+			return currentYear - birthYear < livingThreshold;
+		};
+
+		const missingBirthDate = people.filter(p => !p.birthDate).length;
+		const livingPeople = people.filter(couldBeLiving).length;
+		// Missing death date excludes both people who have one and those who
+		// could plausibly still be living.
+		const missingDeathDate = people.filter(p => !p.deathDate && !couldBeLiving(p)).length;
 
 		// Incomplete parents: has one parent but not both
 		const incompleteParents = people.filter(p =>
@@ -436,10 +463,10 @@ export class StatisticsService {
 		}
 
 		return {
-			missingBirthDate: totalPeople - vaultStats.people.peopleWithBirthDate,
-			missingDeathDate: Math.max(0, missingDeathDate),
+			missingBirthDate,
+			missingDeathDate,
 			orphanedPeople: analytics.relationshipMetrics.orphanedPeople,
-			livingPeople: vaultStats.people.livingPeople,
+			livingPeople,
 			unsourcedEvents: this.countUnsourcedEvents(),
 			placesWithoutCoordinates: vaultStats.places.totalPlaces - vaultStats.places.placesWithCoordinates,
 			incompleteParents,
@@ -1346,29 +1373,57 @@ export class StatisticsService {
 	 */
 	getMigrationAnalysis(limit: number = DEFAULT_TOP_LIST_LIMIT): MigrationAnalysis {
 		const people = this.getFamilyGraphService().getAllPeople();
+		const eventService = this.plugin?.getEventService?.();
+		const placeGraph = new PlaceGraphService(this.app);
+		const sameLocation = (a: string, b: string): boolean =>
+			this.migrationSameLocation(a, b, placeGraph);
+
 		const routeCount = new Map<string, number>();
 		const destinationCount = new Map<string, number>();
 		const originCount = new Map<string, number>();
 		let analyzedCount = 0;
 		let movedCount = 0;
+		let analyzedFromEvents = 0;
+		let analyzedFromBirthDeath = 0;
 
 		for (const person of people) {
-			if (!person.birthPlace || !person.deathPlace) continue;
+			// Primary signal: movement events (Residence / Immigration), ordered
+			// by date. Birth and death places bracket the sequence as the earliest
+			// and latest known locations (#643).
+			const movementEvents = this.collectPersonMovementPlaces(person, eventService);
+			const movementPlaces = orderMovementPlaces(movementEvents);
+			const birthPlace = person.birthPlace ? this.normalizePlace(person.birthPlace) : '';
+			const deathPlace = person.deathPlace ? this.normalizePlace(person.deathPlace) : '';
 
-			const origin = this.normalizePlace(person.birthPlace);
-			const destination = this.normalizePlace(person.deathPlace);
-
-			if (!origin || !destination) continue;
+			const sequence = buildLocationSequence(birthPlace, movementPlaces, deathPlace);
+			// Need at least two location data points to say anything about moving;
+			// a single known place can't distinguish "stayed" from "unrecorded".
+			if (sequence.length < 2) continue;
 
 			analyzedCount++;
+			if (movementPlaces.length > 0) {
+				analyzedFromEvents++;
+			} else {
+				analyzedFromBirthDeath++;
+			}
+
+			const origin = sequence[0];
+			const destination = sequence[sequence.length - 1];
 			originCount.set(origin, (originCount.get(origin) ?? 0) + 1);
 			destinationCount.set(destination, (destinationCount.get(destination) ?? 0) + 1);
 
-			// Check if they moved (normalize for comparison)
-			if (origin.toLowerCase() !== destination.toLowerCase()) {
+			// "Moved" means more than one distinct location once parent/child
+			// places are collapsed, so a city and a homestead on it (or a lifetime
+			// A -> B -> A round trip) are scored correctly.
+			const distinctLocations = collapseNestedLocations(sequence, sameLocation);
+			if (distinctLocations.length > 1) {
 				movedCount++;
-				const routeKey = `${origin}|||${destination}`;
-				routeCount.set(routeKey, (routeCount.get(routeKey) ?? 0) + 1);
+				// Only record a route when start and end are genuinely different
+				// places (a net relocation), not a round trip back to the origin.
+				if (!sameLocation(origin, destination)) {
+					const routeKey = `${origin}|||${destination}`;
+					routeCount.set(routeKey, (routeCount.get(routeKey) ?? 0) + 1);
+				}
 			}
 		}
 
@@ -1399,8 +1454,59 @@ export class StatisticsService {
 			migrationRate: analyzedCount > 0 ? Math.round((movedCount / analyzedCount) * 100) : 0,
 			topRoutes,
 			topDestinations,
-			topOrigins
+			topOrigins,
+			analyzedFromEvents,
+			analyzedFromBirthDeath
 		};
+	}
+
+	/** Event types that record a change of location for migration analysis (#643). */
+	private static readonly MIGRATION_EVENT_TYPES = new Set(['residence', 'immigration', 'emigration']);
+
+	/**
+	 * Collect a person's movement-event places paired with their attested year
+	 * (#643). Reads Residence / Immigration / Emigration events where the person
+	 * is principal or participant; wikilinks are stripped and undated events keep
+	 * a null year so they sort to the end rather than being dropped.
+	 */
+	private collectPersonMovementPlaces(
+		person: PersonNode,
+		eventService: EventService | null | undefined
+	): DatedPlace[] {
+		if (!eventService || !person.file) return [];
+
+		const personLink = `[[${person.file.basename}]]`;
+		const places: DatedPlace[] = [];
+		for (const event of eventService.getEventsForPerson(personLink)) {
+			if (!event.place || !event.eventType) continue;
+			if (!StatisticsService.MIGRATION_EVENT_TYPES.has(event.eventType.toLowerCase())) continue;
+			const place = this.normalizePlace(event.place);
+			if (!place) continue;
+			places.push({ place, year: this.extractYear(event.date, person.universe) });
+		}
+		return places;
+	}
+
+	/**
+	 * Whether two place names refer to the same location for migration purposes
+	 * (#643): identical, or one nested inside the other. Uses the segment-aware
+	 * string comparison first (handles full comma-separated names), then falls
+	 * back to the place graph's parent links so bare leaf names like "Tatooine"
+	 * and a child place recorded without its parent are still collapsed.
+	 */
+	private migrationSameLocation(a: string, b: string, placeGraph: PlaceGraphService): boolean {
+		if (!a || !b) return false;
+		if (placeNamesEqual(a, b)) return true;
+		if (isSegmentAncestor(a, b) || isSegmentAncestor(b, a)) return true;
+
+		const nodeA = placeGraph.getPlaceByName(a);
+		const nodeB = placeGraph.getPlaceByName(b);
+		if (nodeA && nodeB) {
+			if (nodeA.id === nodeB.id) return true;
+			if (placeGraph.getAncestors(nodeA.id).some(p => p.id === nodeB.id)) return true;
+			if (placeGraph.getAncestors(nodeB.id).some(p => p.id === nodeA.id)) return true;
+		}
+		return false;
 	}
 
 	/**

@@ -73,6 +73,45 @@ export interface HistoricalName {
 }
 
 /**
+ * Fold the names of discarded duplicate places into a canonical place's
+ * historical names, so a merge preserves the older/variant forms instead of
+ * trashing them with the duplicate note. The canonical (modern) name stays
+ * primary; each discarded place contributes its own primary name plus any
+ * historical names it already carried. Entries are deduped case-insensitively
+ * and any form equal to the canonical's current name is skipped. (#635)
+ *
+ * Returns the full merged list (existing canonical entries first, in order).
+ * Because entries are only ever added, callers can detect "nothing new" by
+ * comparing the result length to the canonical's existing entry count.
+ */
+export function computeMergedHistoricalNames(
+	canonical: PlaceNode,
+	duplicates: PlaceNode[]
+): HistoricalName[] {
+	const result: HistoricalName[] = [...(canonical.historicalNames ?? [])];
+	const canonicalKey = canonical.name.trim().toLowerCase();
+	const seen = new Set<string>(result.map(h => h.name.trim().toLowerCase()));
+
+	const add = (name: string, period?: string): void => {
+		const trimmedName = name.trim();
+		const key = trimmedName.toLowerCase();
+		if (!key || key === canonicalKey || seen.has(key)) return;
+		seen.add(key);
+		const trimmedPeriod = period?.trim();
+		result.push(trimmedPeriod ? { name: trimmedName, period: trimmedPeriod } : { name: trimmedName });
+	};
+
+	for (const duplicate of duplicates) {
+		add(duplicate.name);
+		for (const historical of duplicate.historicalNames ?? []) {
+			add(historical.name, historical.period);
+		}
+	}
+
+	return result;
+}
+
+/**
  * Place data as stored in frontmatter
  */
 export interface Place {
@@ -135,6 +174,8 @@ export interface PlaceNode {
 	coordinates?: GeoCoordinates;
 	customCoordinates?: CustomCoordinates;
 	collection?: string;
+	/** Historical names the place has had (preserved across merges) */
+	historicalNames?: HistoricalName[];
 	/** Media files linked to this place (wikilinks) */
 	media?: string[];
 	/** Map IDs this place appears on (for per-map filtering) */

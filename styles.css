@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-03 22:38:20 UTC
+ * - Generated: 2026-06-04 21:23:19 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17099,7 +17099,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1522 lines, 38.8 KB */
+/* Component Size: 1524 lines, 38.93 KB */
 
 /**
  * Family Chart View Styles
@@ -18393,10 +18393,12 @@ settings:
 /* Circle card style (#669): a round avatar with the label centered below it,
    rendered on the shared SVG renderer so the connection-indicator bubbles and
    the image placeholder work (the old HTML renderer drew neither). The avatar
-   is clipped to a circle via an SVG <clipPath> applied as the `clip-path`
-   *attribute* in addOpenNoteButton — not a CSS `clip-path` property, which the
-   Community CSS scanner flags as only partially supported on the minimum
-   Obsidian version, and whose reference-box behaviour on SVG is unreliable. */
+   is clipped to a circle by an element-local `circle(50%)` basic shape set as
+   an inline style in addOpenNoteButton — never a CSS `clip-path` property here,
+   which the Community CSS scanner flags as only partially supported on the
+   minimum Obsidian version. A basic-shape clip carries no document reference,
+   so it survives a move to a pop-out window where the earlier `url(#…)`
+   SVG-clipPath reference could not resolve (#677). */
 
 /* Hide the rectangular card body and its overflow-fade mask so only the round
    avatar and label show. The `.card-body` ancestor lifts specificity above the
@@ -31665,7 +31667,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1811 lines, 36.34 KB */
+/* Component Size: 1817 lines, 36.5 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -32735,6 +32737,12 @@ body.cr-media-linker-active .suggestion-container {
 .cr-sv-summary-text {
   font-size: var(--font-ui-medium);
   margin-bottom: var(--size-4-1);
+}
+
+/* Source-basis line under the migration rate (#643) */
+.cr-sv-migration-basis {
+  font-size: var(--font-ui-smaller);
+  margin-bottom: var(--size-4-2);
 }
 
 .cr-sv-highlight-value {
@@ -41138,11 +41146,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-03 22:38:21 UTC
+ * Build completed: 2026-06-04 21:23:21 UTC
  * Components processed: 50
- * Total lines: 40669
- * Total size: 833.11 KB
- * Build duration: 1.21 seconds
+ * Total lines: 40677
+ * Total size: 833.4 KB
+ * Build duration: 1.23 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41164,7 +41172,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1522 lines, 38.8 KB
+ * - family-chart-view.css: 1524 lines, 38.93 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
@@ -41178,7 +41186,7 @@ body.cr-media-linker-active .suggestion-container {
  * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
- * - statistics.css: 1811 lines, 36.34 KB
+ * - statistics.css: 1817 lines, 36.5 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
  * - universe-wizard.css: 617 lines, 11.13 KB

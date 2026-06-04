@@ -386,18 +386,22 @@ export interface MigrationRoute {
  * Migration analysis results
  */
 export interface MigrationAnalysis {
-	/** Number of people with both birth and death places */
+	/** Number of people with enough location data to evaluate (movement events, or both birth and death places) */
 	analyzedCount: number;
-	/** Number who moved (different birth/death locations) */
+	/** Number who moved (more than one distinct location after collapsing parent/child places) */
 	movedCount: number;
 	/** Migration rate (percentage who moved) */
 	migrationRate: number;
 	/** Top migration routes */
 	topRoutes: MigrationRoute[];
-	/** Top destinations (death places) */
+	/** Top destinations (last known place) */
 	topDestinations: TopListItem[];
-	/** Top origins (birth places) */
+	/** Top origins (first known place) */
 	topOrigins: TopListItem[];
+	/** Of the analyzed people, how many were evaluated from movement events (#643) */
+	analyzedFromEvents: number;
+	/** Of the analyzed people, how many were evaluated from birth/death places only (#643) */
+	analyzedFromBirthDeath: number;
 }
 
 /**

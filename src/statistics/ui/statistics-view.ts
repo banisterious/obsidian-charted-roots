@@ -1768,7 +1768,7 @@ export class StatisticsView extends ItemView {
 		if (analysis.analyzedCount === 0) {
 			content.createSpan({
 				cls: 'crc-text-muted',
-				text: 'No data available (requires people with both birth and death places)'
+				text: 'No data available (requires people with movement events, or both birth and death places)'
 			});
 			return content;
 		}
@@ -1777,8 +1777,23 @@ export class StatisticsView extends ItemView {
 		const rateInfo = content.createDiv({ cls: 'cr-sv-summary-text' });
 		rateInfo.createSpan({ cls: 'cr-sv-highlight-value', text: `${analysis.migrationRate.toFixed(0)}%` });
 		rateInfo.createSpan({
-			text: ` migration rate (${analysis.movedCount} of ${analysis.analyzedCount} moved from birthplace)`
+			text: ` migration rate (${analysis.movedCount} of ${analysis.analyzedCount} moved)`
 		});
+
+		// Be explicit about what the figure is derived from (#643): movement
+		// events give a fuller picture (including living migrants) than the
+		// birth/death fallback, so say which contributed.
+		const { analyzedFromEvents, analyzedFromBirthDeath } = analysis;
+		let basis: string;
+		if (analyzedFromEvents > 0 && analyzedFromBirthDeath > 0) {
+			const eventsLabel = pluralize(analyzedFromEvents, 'person', 'people');
+			basis = `Derived from movement events for ${analyzedFromEvents} ${eventsLabel} and birth and death locations for ${analyzedFromBirthDeath}.`;
+		} else if (analyzedFromEvents > 0) {
+			basis = 'Derived from movement events (Residence, Immigration).';
+		} else {
+			basis = 'Derived from birth and death locations. Add Residence or Immigration events to include living migrants.';
+		}
+		content.createDiv({ cls: 'crc-text-muted cr-sv-migration-basis', text: basis });
 
 		// Top migration routes
 		if (analysis.topRoutes.length > 0) {
@@ -1795,7 +1810,7 @@ export class StatisticsView extends ItemView {
 				setIcon(arrowCell, 'arrow-right');
 				row.createEl('td', { text: route.to, cls: 'cr-sv-route-to' });
 				row.createEl('td', {
-					text: `${route.count} people`,
+					text: `${route.count} ${pluralize(route.count, 'person', 'people')}`,
 					cls: 'cr-sv-route-count crc-text-muted'
 				});
 			}
