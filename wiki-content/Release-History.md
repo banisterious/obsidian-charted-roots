@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.60 Round-Up: Family Chart Card Legibility, Co-Parent Repair, and Export Naming](#v02260-round-up-family-chart-card-legibility-co-parent-repair-and-export-naming-v02260)
   - [v0.22.59 Round-Up: Children-List Data-Integrity Fix, a Repair Tool, and the Circle Card Rebuild](#v02259-round-up-children-list-data-integrity-fix-a-repair-tool-and-the-circle-card-rebuild-v02259)
   - [v0.22.58 Round-Up: Reporter Follow-Ups, a Sibling-Marriage Toggle, and High Contrast Lines](#v02258-round-up-reporter-follow-ups-a-sibling-marriage-toggle-and-high-contrast-lines-v02258)
   - [v0.22.57 Round-Up: Reporter Cohort — Fictional-Date Parsing, Organization Linking, and Profile Sections](#v02257-round-up-reporter-cohort--fictional-date-parsing-organization-linking-and-profile-sections-v02257)
@@ -191,6 +192,28 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.60 Round-Up: Family Chart Card Legibility, Co-Parent Repair, and Export Naming (v0.22.60)
+
+A Family Chart card-rendering pass on top of v0.22.59's data-integrity and export work. Across the card styles, names and detail fields now stay legible instead of being clipped: the rectangular styles wrap long names, the Circle style widens to fit, the default card is more compact, and both the Pastel theme and Highlight Groups read correctly in every theme and on every platform. The "Repair misaligned children" tool now reconciles both parents of a shared child in a single pass, and person-filtered timeline exports no longer overwrite each other. **1176 tests passing across 98 suites**.
+
+**Fix: Long names wrap on the Rectangle, Compact, and Mini card styles** ([#671](https://github.com/banisterious/obsidian-charted-roots/issues/671)): The SVG-based card styles drew each name on a single line and clipped anything wider than the card at the right edge. A name that overflows now wraps at a word boundary onto a second line, and the cards grow in height to fit, so multi-word names stay readable. A single word longer than the whole card can still be trimmed — there is no space to break it on — and the wider Compact style or the "Split given/surname" option both give names more room there. The Circle style already widens to fit its longest line (see below). Reported by [@tenephor](https://github.com/tenephor).
+
+**Fix: Circle cards widen to fit long names and detail fields** ([#669](https://github.com/banisterious/obsidian-charted-roots/issues/669)): The Circle card style used a fixed width, so longer compound names and the optional detail lines (nickname, title, occupation, and so on) ran past the card edge and were clipped. Circle cards now measure their longest line of text and widen to fit it — the label centers on an otherwise empty card, so this costs no layout density — and spacing adjusts so the wider cards don't overlap. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Rectangle cards are more compact with clearer spacing** ([#669](https://github.com/banisterious/obsidian-charted-roots/issues/669)): The default (rectangle) card style used a large avatar and a wide card, so a spouse couple rendered flush as one block and the tree felt crowded. Rectangle cards now use a smaller avatar and tighter dimensions, and the minimum gap between cards is wider, so spouse and sibling cards stay visually distinct. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Circle avatar clipping no longer relies on a partially-supported CSS feature** ([#669](https://github.com/banisterious/obsidian-charted-roots/issues/669)): The round-avatar clip introduced in v0.22.59 used a CSS `clip-path` property, which the Community plugin review flags as only partially supported on the minimum Obsidian version — the advisory warning from the v0.22.59 post-release scan. It moved to an equivalent SVG clip path: no visible change, it scales more reliably across avatar sizes, and it clears the advisory.
+
+**Fix: Highlight Groups keep dimmed cards above the connector lines** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): With Highlight Groups active, the dimmed (non-matching) cards could be painted beneath the parent-child and spouse connector lines on some platforms, while the highlighted cards stayed above them, so the lines appeared to run across the dimmed cards. The card layer is now isolated so every card, dimmed or highlighted, stays above the connector lines. Reported by [@tenephor](https://github.com/tenephor).
+
+**Fix: Pastel theme uses readable card text in dark mode** ([#672](https://github.com/banisterious/obsidian-charted-roots/issues/672)): Under a dark Obsidian theme, the Pastel color theme drew white labels on its light pastel cards, which were hard to read. Because the pastel card colors are light in both light and dark modes, Pastel now uses dark card text in both — matching its light-mode text and the High Contrast theme's approach. Reported by [@tenephor](https://github.com/tenephor).
+
+**Fix: "Repair misaligned children" reconciles both parents of a shared child in one pass** ([#666](https://github.com/banisterious/obsidian-charted-roots/issues/666)): The v0.22.59 repair tool could fix one parent of a shared child but leave the other — either because the second parent's two lists happened to stay the same length, so the note read as aligned, or because that parent was simply missing a child the first parent recovered. A broken child link could also mask a real child, pointing nowhere while its paired ID belonged to a different person. The detector now treats a broken child link as a repair trigger in its own right, and reconciles the co-parent of every recovered child in the same run, rebuilding a partner that is missing a shared child even when its own lists looked clean. Both parents are fixed together instead of needing a second pass. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Person-filtered timeline exports no longer overwrite each other** ([#657](https://github.com/banisterious/obsidian-charted-roots/issues/657)): A timeline export (Canvas, Excalidraw, or Markdown) took its file name from the title alone, which defaults to "Event Timeline" regardless of the "Filter by person" selection, so exporting a second person prompted to replace the first person's file. The export now folds the filtered person into the title and file name (for example, "Event Timeline - Ahsoka Tano"), so each person gets its own export instead of colliding. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Stability-window impact:** All eight changes are bug fixes and rendering improvements within the v0.22.59 stability window, so the window holds at its v0.22.59 anchor (2026-06-02). v0.22.60 also clears the v0.22.59 `clip-path` advisory by moving the Circle avatar clip to an SVG clip path, returning the Community Plugins automated review to its prior 96 / 100 baseline.
 
 ### v0.22.59 Round-Up: Children-List Data-Integrity Fix, a Repair Tool, and the Circle Card Rebuild (v0.22.59)
 
