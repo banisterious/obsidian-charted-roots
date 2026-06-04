@@ -39,6 +39,7 @@ interface SelectedPerson {
 import { createLucideIcon, type LucideIconName } from './lucide-icons';
 import { getLogger } from '../core/logging';
 import { getSpouseLabel } from '../utils/terminology';
+import { lineageExportLabel } from '../core/lineage-export-naming';
 
 const logger = getLogger('SplitWizard');
 
@@ -134,8 +135,10 @@ export class SplitWizardModal extends Modal {
 		}
 		this.splitService = new CanvasSplitService();
 
-		// Set default output folder from settings (peopleFolder as fallback)
-		this.outputFolder = settings.peopleFolder || '';
+		// Default split exports to the canvases folder, not next to person notes
+		// (#673). Fall back to the People folder, then the vault root. The user
+		// can still override this in the wizard's Output folder field.
+		this.outputFolder = settings.canvasesFolder || settings.peopleFolder || '';
 	}
 
 	onOpen(): void {
@@ -1357,7 +1360,8 @@ export class SplitWizardModal extends Modal {
 			return;
 		}
 
-		const prefix = this.filenamePrefix || 'lineage';
+		const prefix = this.filenamePrefix
+			|| lineageExportLabel(this.lineageStartPerson?.name, this.lineageEndPerson?.name);
 
 		this.previewData = {
 			canvasCount: 1,
@@ -1805,7 +1809,8 @@ export class SplitWizardModal extends Modal {
 			includeSpouses: this.lineageIncludeSpouses,
 			includeSiblings: this.lineageIncludeSiblings,
 			outputFolder: this.outputFolder,
-			label: this.filenamePrefix || 'lineage',
+			label: this.filenamePrefix
+				|| lineageExportLabel(this.lineageStartPerson.name, this.lineageEndPerson.name),
 			includeNavigationNodes: this.includeNavigationNodes
 		};
 
