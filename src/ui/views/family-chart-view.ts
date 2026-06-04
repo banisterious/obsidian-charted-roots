@@ -1281,6 +1281,12 @@ export class FamilyChartView extends ItemView {
 				})
 				// Re-render overlays after tree animation completes (#195, #386, #379)
 				.setAfterUpdate(() => {
+					// Re-assert the round-avatar clip first: f3's fit-to-view (and
+					// other re-renders) can drop a per-card clip, which is what
+					// turned Circle avatars back into squares in a pop-out window
+					// (#677). The per-card onCardUpdate hook also sets it, but
+					// position-only updates like fit may not re-run that hook.
+					this.reapplyCircleAvatarClips();
 					this.scheduleKinshipLabelRerender();
 					this.scheduleRelationshipOverlayRerender();
 					this.scheduleHighlightRerender();
@@ -1926,6 +1932,21 @@ export class FamilyChartView extends ItemView {
 	}
 
 	/**
+	 * Re-apply the element-local circle clip to every avatar when the Circle
+	 * style is active. f3 re-renders (notably fit-to-view) can re-lay the card
+	 * images and drop a per-card clip, which is what turned Circle avatars back
+	 * into squares in a pop-out window. A `circle(50%)` basic shape carries no
+	 * document reference, so it resolves in the pop-out's separate document
+	 * where the old `url(#…)` clip reference could not (#677).
+	 */
+	private reapplyCircleAvatarClips(): void {
+		if (this.cardStyle !== 'circle' || !this.f3Chart) return;
+		const svg = this.f3Chart.svg as SVGSVGElement | undefined;
+		if (!svg) return;
+		d3.select(svg).selectAll('.card_image').style('clip-path', 'circle(50%)');
+	}
+
+	/**
 	 * Add open note button to a family-chart card element.
 	 * Called with `this` bound to the view instance via bind() in createOpenNoteButtonCallback.
 	 * The card element is found via d3.select using the person ID from the data parameter.
@@ -1959,28 +1980,18 @@ export class FamilyChartView extends ItemView {
 		// gender color the body would have shown. Inserted as the first child of
 		// .card-inner so it sits behind the avatar; guarded against duplicates.
 		if (this.cardStyle === 'circle') {
-			// Clip the avatar to a circle via an SVG <clipPath> applied as the
-			// `clip-path` *attribute* (not a CSS property, which the Community CSS
-			// scanner flags as only partially supported). objectBoundingBox units
-			// scale the circle to the avatar's box at any size. Defined once per SVG.
-			const svg = cardEl.ownerSVGElement;
-			if (svg) {
-				const svgSel = d3.select(svg);
-				if (svgSel.select('#cr-fcv-circle-clip').empty()) {
-					let defs = svgSel.select<SVGDefsElement>('defs');
-					if (defs.empty()) {
-						defs = svgSel.insert<SVGDefsElement>('defs', ':first-child');
-					}
-					defs.append('clipPath')
-						.attr('id', 'cr-fcv-circle-clip')
-						.attr('clipPathUnits', 'objectBoundingBox')
-						.append('circle')
-						.attr('cx', 0.5)
-						.attr('cy', 0.5)
-						.attr('r', 0.5);
-				}
-				d3.select(cardEl).select('.card_image').attr('clip-path', 'url(#cr-fcv-circle-clip)');
-			}
+			// Clip the avatar to a circle with an element-local `circle(50%)`
+			// basic shape set as an inline style. Unlike an SVG `<clipPath>`
+			// referenced via `clip-path: url(#id)`, a basic-shape clip carries no
+			// document reference, so it keeps working when the chart is moved to a
+			// pop-out window — whose separate document can't resolve the `url(#…)`
+			// reference — and it survives f3's fit-to-view re-render that
+			// previously dropped the round avatars back to squares (#677). The
+			// square avatar box (see getBaseCardDimensions) makes `circle(50%)`
+			// inscribe a true circle. Set inline via render code, never in
+			// styles.css, so the Community CSS scanner (which only reads
+			// styles.css) stays clean — see #669/v0.22.60.
+			d3.select(cardEl).select('.card_image').style('clip-path', 'circle(50%)');
 			const inner = d3.select(cardEl).select('.card-inner');
 			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
 				const dim = this.getCardDimensions('circle');
