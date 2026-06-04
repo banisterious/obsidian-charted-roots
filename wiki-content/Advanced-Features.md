@@ -213,6 +213,7 @@ Extract a direct line between two specific people:
 - Select an end person (e.g., yourself or youngest descendant)
 - Optionally include spouses of people on the line
 - Optionally include siblings at each generation
+- The exported canvas is named after the two endpoints (for example, `lineage-Aaron-Wilkin-to-Mara-Wilkin.canvas`), so exporting several lineages doesn't collide on a generic filename
 - Useful for surname studies or lineage documentation
 
 #### By Collection
@@ -247,7 +248,7 @@ This is particularly useful for:
 
 All split methods share common output options:
 
-- **Output folder**: Where to save generated canvases
+- **Output folder**: Where to save generated canvases (defaults to your configured Canvases folder; you can change it here)
 - **Filename prefix**: Prefix for canvas file names
 - **Include navigation nodes**: Add portal nodes linking between canvases
 - **Generate overview canvas**: Create a master canvas showing relationships

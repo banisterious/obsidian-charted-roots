@@ -133,6 +133,8 @@ These types are easy to overlook if you only use Charted Roots for traditional g
 
 **Symmetric types auto-propagate.** When the chosen type is flagged symmetric (e.g., `twin`, `neighbor`, `ally`), the Add Relationship modal also writes the reciprocal entry onto the target person's note, so you only need to add the link once. Idempotent: if the target already lists you via the same type, the modal silently skips — safe to re-run from either side. Asymmetric types (`mentor` → `disciple`, `captor` → `prisoner`) are not auto-propagated; set the inverse side explicitly on the other person if you want both ends represented.
 
+**Symmetric types also clean up on deletion.** Because a symmetric link is written to both notes, removing it from one person's frontmatter also removes the matching reciprocal entry from the linked person's note, so the relationship disappears from both sides. Asymmetric types aren't stored on the other person (their inverse is shown on the fly), so there's nothing to clean up there.
+
 ### Via Command Palette
 
 1. Open a person note

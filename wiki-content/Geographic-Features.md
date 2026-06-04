@@ -561,6 +561,8 @@ Charted Roots provides D3-based visualizations for place data:
 - Filter by collection (family branch)
 - Aggregate by hierarchy level (e.g., group by country)
 
+> **Note:** The Migration Flow Diagram still derives its routes from each person's birth and death locations. The Statistics Dashboard's migration analysis uses recorded movement events (Residence / Immigration / Emigration) as its primary signal; bringing the diagram onto the same event-driven basis is planned for a later update.
+
 ## Merge Duplicate Places
 
 When importing GEDCOM files or building place notes manually, you may end up with multiple notes representing the same location. The "Merge duplicate places" feature helps identify and consolidate these duplicates.
@@ -662,6 +664,7 @@ Higher scores indicate more complete and better-connected place notes.
 6. **Click Merge**: The merge operation will:
    - Update all references in person notes to point to the canonical place
    - Re-parent any child places to point to the canonical
+   - Preserve each discarded place's name as a `historical_names` entry on the canonical place, so period-appropriate or variant names (for example a former or imported name) aren't lost — the canonical place's current name stays primary
    - Rename the canonical file (if a new filename was specified)
    - Move duplicate notes to trash
 

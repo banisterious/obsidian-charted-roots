@@ -146,7 +146,7 @@ Advanced demographic analysis for deeper research insights:
 - Remarriage rates and statistics
 
 #### Migration Flows
-- Migration rate (% who died in different location than birth)
+- Migration rate, derived from recorded movement events (Residence / Immigration / Emigration) as the primary signal, with birth and death locations as a fallback. People who are still living are included when they have movement events, and a place is not counted as a move from its own parent or sub-place (so a city and the county it sits in aren't treated as a migration).
 - Top migration routes (from → to)
 - Top destinations and origins
 
