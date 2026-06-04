@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-03 22:38:20 UTC
+ * - Generated: 2026-06-04 01:07:30 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -31665,7 +31665,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1811 lines, 36.34 KB */
+/* Component Size: 1817 lines, 36.5 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -32735,6 +32735,12 @@ body.cr-media-linker-active .suggestion-container {
 .cr-sv-summary-text {
   font-size: var(--font-ui-medium);
   margin-bottom: var(--size-4-1);
+}
+
+/* Source-basis line under the migration rate (#643) */
+.cr-sv-migration-basis {
+  font-size: var(--font-ui-smaller);
+  margin-bottom: var(--size-4-2);
 }
 
 .cr-sv-highlight-value {
@@ -41138,11 +41144,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-03 22:38:21 UTC
+ * Build completed: 2026-06-04 01:07:31 UTC
  * Components processed: 50
- * Total lines: 40669
- * Total size: 833.11 KB
- * Build duration: 1.21 seconds
+ * Total lines: 40675
+ * Total size: 833.26 KB
+ * Build duration: 0.43 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41178,7 +41184,7 @@ body.cr-media-linker-active .suggestion-container {
  * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
- * - statistics.css: 1811 lines, 36.34 KB
+ * - statistics.css: 1817 lines, 36.5 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
  * - universe-wizard.css: 617 lines, 11.13 KB
