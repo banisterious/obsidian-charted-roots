@@ -212,7 +212,7 @@ export class StatisticsService {
 		const completeness = this.computeCompleteness(vaultStats, analytics, people.length);
 
 		// Quality metrics
-		const quality = this.computeQualityMetrics(vaultStats, analytics, people.length);
+		const quality = this.computeQualityMetrics(vaultStats, analytics);
 
 		// Date range
 		const dateRange = this.computeDateRange(analytics);
@@ -384,14 +384,32 @@ export class StatisticsService {
 	 */
 	private computeQualityMetrics(
 		vaultStats: ReturnType<VaultStatsService['collectStats']>,
-		analytics: ReturnType<FamilyGraphService['calculateCollectionAnalytics']>,
-		totalPeople: number
+		analytics: ReturnType<FamilyGraphService['calculateCollectionAnalytics']>
 	): QualityMetrics {
-		// Missing death date = total people - people with death date - living people
-		const missingDeathDate = totalPeople - vaultStats.people.peopleWithDeathDate - vaultStats.people.livingPeople;
-
 		// Calculate additional metrics
 		const people = this.getFamilyGraphService().getAllPeople();
+
+		// Derive the missing-date and living counts from the SAME FamilyGraph
+		// people that drive the completeness percentages. Subtracting a separate
+		// VaultStats scan from the FamilyGraph total mixes two scans, so the two
+		// dashboard sections could disagree (e.g. "with birth date = 100%" while
+		// the issues notice still reported missing births) (#676).
+		const livingThreshold = this.settings.livingPersonAgeThreshold ?? 100;
+		const currentYear = new Date().getFullYear();
+		const couldBeLiving = (person: PersonNode): boolean => {
+			// A recorded death date means they are not living.
+			if (person.deathDate) return false;
+			// Without a birth year we cannot judge plausible living status.
+			const birthYear = this.extractYear(person.birthDate, person.universe);
+			if (birthYear === null) return false;
+			return currentYear - birthYear < livingThreshold;
+		};
+
+		const missingBirthDate = people.filter(p => !p.birthDate).length;
+		const livingPeople = people.filter(couldBeLiving).length;
+		// Missing death date excludes both people who have one and those who
+		// could plausibly still be living.
+		const missingDeathDate = people.filter(p => !p.deathDate && !couldBeLiving(p)).length;
 
 		// Incomplete parents: has one parent but not both
 		const incompleteParents = people.filter(p =>
@@ -445,10 +463,10 @@ export class StatisticsService {
 		}
 
 		return {
-			missingBirthDate: totalPeople - vaultStats.people.peopleWithBirthDate,
-			missingDeathDate: Math.max(0, missingDeathDate),
+			missingBirthDate,
+			missingDeathDate,
 			orphanedPeople: analytics.relationshipMetrics.orphanedPeople,
-			livingPeople: vaultStats.people.livingPeople,
+			livingPeople,
 			unsourcedEvents: this.countUnsourcedEvents(),
 			placesWithoutCoordinates: vaultStats.places.totalPlaces - vaultStats.places.placesWithCoordinates,
 			incompleteParents,

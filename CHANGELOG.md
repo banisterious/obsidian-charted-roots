@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Statistics Dashboard no longer reports missing births when none are missing** ([#676](https://github.com/banisterious/obsidian-charted-roots/issues/676)): The dashboard's issues notice and its "Data completeness" section counted people two different ways — completeness read the family graph, while the missing-births and missing-deaths tallies were computed from a separate vault scan. When those two scans didn't line up exactly, the issues notice could show a phantom "missing births" count even with birth-date completeness at 100%. Both counts now derive from the same family-graph people that drive the completeness percentages, so the two sections always agree (living people remain correctly excluded from missing deaths). Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.60] - 2026-06-03
 
 A Family Chart card-rendering pass plus follow-ups to the v0.22.59 data-integrity and export work. The Circle, rectangle, compact, and mini card styles now render names and detail fields more legibly: Circle and the rectangular styles size to their content (widening or wrapping) instead of clipping, the default cards are more compact, and the Pastel theme and Highlight Groups read correctly in every theme and on every platform. The "Repair misaligned children" data-quality tool reconciles both parents of a shared child in a single pass, and person-filtered timeline exports no longer overwrite each other. **1176 tests passing across 98 suites**.
