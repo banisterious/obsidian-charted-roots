@@ -7,7 +7,7 @@
  */
 
 import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon } from 'obsidian';
-import f3, { TreeDatum } from 'family-chart';
+import f3 from 'family-chart';
 import * as d3 from 'd3';
 
 import type CanvasRootsPlugin from '../../../main';
@@ -4405,11 +4405,11 @@ export class FamilyChartView extends ItemView {
 		// `.f3` container as the cards, so it inherits the identical font cascade
 		// (card tspans set no font-size of their own).
 		const svgNs = 'http://www.w3.org/2000/svg';
-		const measureSvg = document.createElementNS(svgNs, 'svg');
+		const measureSvg = activeDocument.createElementNS(svgNs, 'svg');
 		// `.cr-fcv-measure` parks it offscreen (absolute, hidden, zero-size) so it
 		// renders for getComputedTextLength without disturbing the chart layout.
 		measureSvg.setAttribute('class', 'cr-fcv-measure');
-		const measureText = document.createElementNS(svgNs, 'text');
+		const measureText = activeDocument.createElementNS(svgNs, 'text');
 		measureSvg.appendChild(measureText);
 		container.appendChild(measureSvg);
 
