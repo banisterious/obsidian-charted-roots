@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Merging duplicate places preserves the discarded names** ([#635](https://github.com/banisterious/obsidian-charted-roots/issues/635)): When you merge duplicate place notes (for example, GEDCOM-imported variants like "Hartford" and "Hartford, Connecticut"), the surviving place now keeps the older or variant name as a historical name instead of trashing it with the duplicate note. The surviving (modern) name stays primary, each discarded name is added to the survivor's `historical_names`, and duplicates are skipped — so a period-appropriate name you'd built up isn't lost on merge. Place notes also now load their existing `historical_names` so the entries survive a round-trip. Requested by [@Darcylynn](https://github.com/Darcylynn).
+
 ### Fixed
 
 - **Statistics Dashboard no longer reports missing births when none are missing** ([#676](https://github.com/banisterious/obsidian-charted-roots/issues/676)): The dashboard's issues notice and its "Data completeness" section counted people two different ways — completeness read the family graph, while the missing-births and missing-deaths tallies were computed from a separate vault scan. When those two scans didn't line up exactly, the issues notice could show a phantom "missing births" count even with birth-date completeness at 100%. Both counts now derive from the same family-graph people that drive the completeness percentages, so the two sections always agree (living people remain correctly excluded from missing deaths). Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).

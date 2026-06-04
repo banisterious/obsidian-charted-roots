@@ -7,7 +7,7 @@
 import { App, ButtonComponent, Menu, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
-import { PlaceNode } from '../models/place';
+import { PlaceNode, HistoricalName, computeMergedHistoricalNames } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { FolderFilterService } from '../core/folder-filter';
 import { US_STATE_ABBREVIATIONS, US_STATE_NAMES } from '../utils/place-name-normalizer';
@@ -933,6 +933,14 @@ export class MergeDuplicatePlacesModal extends Modal {
 			}
 		}
 
+		// Preserve the discarded names as historical names on the canonical (#635)
+		let historicalNamesKept = 0;
+		try {
+			historicalNamesKept = await this.preserveHistoricalNames(canonical, duplicates);
+		} catch (error) {
+			errors.push(`Preserve historical names failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+
 		// 4. Rename canonical file if a new filename was specified
 		const newFilename = this.newFilenames.get(group);
 		let renamed = false;
@@ -978,7 +986,10 @@ export class MergeDuplicatePlacesModal extends Modal {
 			new Notice(`Merged with ${errors.length} errors. Check console for details.`);
 		} else {
 			const renameMsg = renamed ? ` and renamed to "${newFilename}.md"` : '';
-			new Notice(`Merged ${filesDeleted} duplicate${filesDeleted !== 1 ? 's' : ''} into "${canonical.name}"${renameMsg}`);
+			const historicalMsg = historicalNamesKept > 0
+				? `; kept ${historicalNamesKept} historical name${historicalNamesKept !== 1 ? 's' : ''}`
+				: '';
+			new Notice(`Merged ${filesDeleted} duplicate${filesDeleted !== 1 ? 's' : ''} into "${canonical.name}"${renameMsg}${historicalMsg}`);
 		}
 	}
 
@@ -989,6 +1000,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		let totalDeleted = 0;
 		let totalRefsUpdated = 0;
 		let totalRenamed = 0;
+		let totalHistoricalKept = 0;
 		const errors: string[] = [];
 
 		for (const group of this.duplicateGroups) {
@@ -1019,6 +1031,13 @@ export class MergeDuplicatePlacesModal extends Modal {
 				}
 			}
 
+			// Preserve the discarded names as historical names on the canonical (#635)
+			try {
+				totalHistoricalKept += await this.preserveHistoricalNames(canonical, duplicates);
+			} catch (error) {
+				errors.push(`Preserve historical names "${canonical.name}" failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			}
+
 			// Rename canonical file if a new filename was specified
 			const newFilename = this.newFilenames.get(group);
 			if (newFilename) {
@@ -1046,7 +1065,10 @@ export class MergeDuplicatePlacesModal extends Modal {
 			new Notice(`Merged ${totalDeleted} duplicates with ${errors.length} errors`);
 		} else if (totalDeleted > 0) {
 			const renameMsg = totalRenamed > 0 ? `, renamed ${totalRenamed}` : '';
-			new Notice(`Merged ${totalDeleted} duplicate place note${totalDeleted !== 1 ? 's' : ''}${renameMsg}`);
+			const historicalMsg = totalHistoricalKept > 0
+				? `, kept ${totalHistoricalKept} historical name${totalHistoricalKept !== 1 ? 's' : ''}`
+				: '';
+			new Notice(`Merged ${totalDeleted} duplicate place note${totalDeleted !== 1 ? 's' : ''}${renameMsg}${historicalMsg}`);
 		} else {
 			new Notice('No duplicates to merge');
 		}
@@ -1199,6 +1221,31 @@ export class MergeDuplicatePlacesModal extends Modal {
 	/**
 	 * Update child places to point to canonical instead of duplicate
 	 */
+	/**
+	 * Fold the discarded duplicates' names into the canonical place's
+	 * historical names so a merge preserves the older/variant forms instead of
+	 * discarding them with the duplicate note. The canonical (modern) name stays
+	 * primary. Writes only when the merge adds at least one new entry. (#635)
+	 */
+	private async preserveHistoricalNames(canonical: PlaceNode, duplicates: PlaceNode[]): Promise<number> {
+		const existingCount = canonical.historicalNames?.length ?? 0;
+		const merged = computeMergedHistoricalNames(canonical, duplicates);
+		const added = merged.length - existingCount;
+		if (added <= 0) return 0;
+
+		const canonicalFile = this.app.vault.getAbstractFileByPath(canonical.filePath);
+		if (!(canonicalFile instanceof TFile)) return 0;
+
+		await this.app.fileManager.processFrontMatter(canonicalFile, (fm: Record<string, unknown>) => {
+			fm.historical_names = merged.map((hn: HistoricalName) =>
+				hn.period ? { name: hn.name, period: hn.period } : { name: hn.name }
+			);
+		});
+		// Keep the in-memory node consistent for any later operation this session.
+		canonical.historicalNames = merged;
+		return added;
+	}
+
 	private async reparentChildPlaces(duplicate: PlaceNode, canonical: PlaceNode): Promise<number> {
 		const children = this.placeService.getChildren(duplicate.id);
 		let updated = 0;

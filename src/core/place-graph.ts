@@ -17,6 +17,7 @@ import {
 	PlaceIssue,
 	GeoCoordinates,
 	CustomCoordinates,
+	HistoricalName,
 	DEFAULT_PLACE_CATEGORY,
 	supportsUniverse,
 	supportsRealCoordinates
@@ -1231,6 +1232,9 @@ export class PlaceGraphService {
 		// Parse maps array for per-map filtering (#153)
 		const maps = this.parseMapsProperty(fm);
 
+		// Parse historical names so they survive load (and merges) (#635)
+		const historicalNames = this.parseHistoricalNames(fm);
+
 		return {
 			node: {
 				id: fm.cr_id,
@@ -1245,6 +1249,7 @@ export class PlaceGraphService {
 				coordinates,
 				customCoordinates,
 				collection: fm.collection,
+				historicalNames: historicalNames.length > 0 ? historicalNames : undefined,
 				media: media.length > 0 ? media : undefined,
 				maps: maps.length > 0 ? maps : undefined
 			},
@@ -1259,6 +1264,33 @@ export class PlaceGraphService {
 	 */
 	private parseMediaProperty(fm: Record<string, unknown>): string[] {
 		return parseMediaRefs(fm.media);
+	}
+
+	/**
+	 * Parse the `historical_names` array from frontmatter into HistoricalName
+	 * entries. Tolerates the canonical object form (`{ name, period? }`), a bare
+	 * string (name only), and skips malformed entries. (#635)
+	 */
+	private parseHistoricalNames(fm: Record<string, unknown>): HistoricalName[] {
+		const raw = fm.historical_names;
+		if (!Array.isArray(raw)) return [];
+
+		const result: HistoricalName[] = [];
+		for (const entry of raw) {
+			if (typeof entry === 'string') {
+				const name = entry.trim();
+				if (name) result.push({ name });
+			} else if (entry && typeof entry === 'object') {
+				const obj = entry as Record<string, unknown>;
+				const name = typeof obj.name === 'string' ? obj.name.trim() : '';
+				if (!name) continue;
+				const period = typeof obj.period === 'string' && obj.period.trim()
+					? obj.period.trim()
+					: undefined;
+				result.push(period ? { name, period } : { name });
+			}
+		}
+		return result;
 	}
 
 	/**
