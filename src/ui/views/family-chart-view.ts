@@ -2235,10 +2235,15 @@ export class FamilyChartView extends ItemView {
 		// Find the transform group (the first g element that family-chart creates for the tree)
 		const transformGroup = svgSelection.select('g');
 		if (!transformGroup.empty()) {
-			transformGroup
-				.transition()
-				.duration(200)
-				.attr('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
+			// Apply synchronously rather than via a d3 `.transition()`. d3's
+			// transition scheduler runs on the requestAnimationFrame of the window
+			// d3 was loaded in (the main window), so for an element living in a
+			// pop-out window's document the transition never fires — the transform
+			// attribute is never set, the tree renders untransformed at full scale,
+			// and the viewport is parked on empty space (the #678 blank-on-refresh).
+			// A direct attribute set applies in any document/window, and since the
+			// refresh already rebuilds the chart there's nothing to animate.
+			transformGroup.attr('transform', `translate(${transform.x},${transform.y}) scale(${transform.k})`);
 		}
 
 		// Update zoom level display
