@@ -12,7 +12,13 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.61] - 2026-06-04
+
+A reporter-driven cycle centered on two genealogy upgrades plus a run of Family Chart and data-accuracy fixes. Migration analysis on the Statistics Dashboard now reads movement events (Residence / Immigration / Emigration) instead of inferring moves from birth and death locations, and merging duplicate places preserves the older or variant names as historical names instead of discarding them. Alongside those: the Statistics Dashboard's issues notice and completeness section now agree, the Family Chart re-compacts when cards shrink and keeps its Circle avatars round (and no longer blanks) in a pop-out window, deleting a symmetric custom relationship cleans up the other side, and single-lineage canvas exports get distinguishing filenames in the canvases folder. **1240 tests passing across 104 suites.**
+
 ### Added
+
+- **Migration analysis on the Statistics Dashboard now uses movement events** ([#643](https://github.com/banisterious/obsidian-charted-roots/issues/643)): The dashboard's migration section previously inferred moves only from birth location → death location, so it missed living people (no death location yet), counted a place and its own sub-place as a "move," and showed lifetime moves as no migration when someone died where they were born. It now reads Residence / Immigration / Emigration events as the primary signal — capturing living migrants and round-trip moves — and is aware of place hierarchy so a place and its parent aren't counted as a migration. Birth → death remains a labeled fallback, and the route counts show an honest denominator. (The Migration Flow Diagram modal still uses birth → death and will move to the event-driven approach in a later pass.) Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 - **Merging duplicate places preserves the discarded names** ([#635](https://github.com/banisterious/obsidian-charted-roots/issues/635)): When you merge duplicate place notes (for example, GEDCOM-imported variants like "Hartford" and "Hartford, Connecticut"), the surviving place now keeps the older or variant name as a historical name instead of trashing it with the duplicate note. The surviving (modern) name stays primary, each discarded name is added to the survivor's `historical_names`, and duplicates are skipped — so a period-appropriate name you'd built up isn't lost on merge. Place notes also now load their existing `historical_names` so the entries survive a round-trip. Requested by [@Darcylynn](https://github.com/Darcylynn).
 
