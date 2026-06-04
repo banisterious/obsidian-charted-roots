@@ -6,6 +6,7 @@ import { getErrorMessage } from './src/core/error-utils';
 import type { NumberingSystem } from './src/core/reference-numbering';
 import { FamilyGraphService } from './src/core/family-graph';
 import { BidirectionalLinker } from './src/core/bidirectional-linker';
+import { RelationshipService } from './src/relationships';
 import { MobileClassManager } from './src/core/mobile-class-manager';
 import { cleanupPersonReferencesAfterDelete, getDeletedPersonCrId } from './src/core/person-delete-cleanup';
 import { RelationshipHistoryService, RelationshipHistoryData, formatChangeDescription } from './src/core/relationship-history';
@@ -202,6 +203,18 @@ export default class CanvasRootsPlugin extends Plugin {
 			}
 			this.bidirectionalLinker.setEnableInclusiveParents(this.settings.enableInclusiveParents);
 			this.bidirectionalLinker.setEnableDnaTracking(this.settings.enableDnaTracking);
+			// Provide the symmetric custom relationship type ids so the linker can
+			// strip orphaned reciprocals when those fields are deleted (#675).
+			// Scope: symmetric types stored as flat `<typeId>` properties (those
+			// without a familyGraphMapping), excluding dna_match which the
+			// dedicated DNA path already cleans up. Re-reads settings live each
+			// call, so newly-added custom types are picked up automatically.
+			const relationshipService = new RelationshipService(this);
+			this.bidirectionalLinker.setSymmetricCustomTypeProvider(() =>
+				relationshipService.getAllRelationshipTypes()
+					.filter(type => type.symmetric && !type.familyGraphMapping && type.id !== 'dna_match')
+					.map(type => type.id)
+			);
 		}
 		return this.bidirectionalLinker;
 	}

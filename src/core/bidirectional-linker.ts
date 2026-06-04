@@ -5,6 +5,7 @@ import { getErrorMessage } from './error-utils';
 import { PersonFrontmatter } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import { detectSpouseTargetFormat, findNextOpenSpouseSlot, isSpouseInFrontmatter } from './spouse-format-detector';
+import { normalizeToArray, removeFlatRelationship, computeCustomReciprocalRemovals } from '../relationships/relationship-property-writer';
 
 const logger = getLogger('BidirectionalLinker');
 
@@ -39,6 +40,10 @@ interface RelationshipSnapshot {
 	dna_match?: string | string[];  // DNA match relationships (opt-in)
 	// Indexed spouse properties
 	[key: `spouse${number}`]: string | undefined;
+	// Symmetric custom relationships, keyed by type id, capturing the
+	// index-aligned target wikilinks + cr_ids so a deletion can locate and
+	// strip the orphaned reciprocal on the other note (#675).
+	customRelationships?: Record<string, { targets: string[]; ids: string[] }>;
 }
 
 /**
@@ -63,8 +68,22 @@ export class BidirectionalLinker {
 	private suspended = false;
 	private enableInclusiveParents = false;
 	private enableDnaTracking = false;
+	// Provider returning the ids of symmetric custom relationship types. Only
+	// symmetric types persist a reciprocal on the target note (asymmetric
+	// inverses are inferred at read time), so only they need delete-side
+	// cleanup (#675). Injected so the linker doesn't depend on the settings/
+	// relationship-service layer directly.
+	private symmetricCustomTypeProvider: (() => string[]) | null = null;
 
 	constructor(private app: App) {}
+
+	/**
+	 * Provide the ids of symmetric custom relationship types, so deletions of
+	 * those fields can strip the orphaned reciprocal on the linked note (#675).
+	 */
+	setSymmetricCustomTypeProvider(provider: () => string[]): void {
+		this.symmetricCustomTypeProvider = provider;
+	}
 
 	/**
 	 * Set whether DNA match tracking is enabled
@@ -515,6 +534,10 @@ export class BidirectionalLinker {
 				}
 			}
 		}
+
+		// Check for deleted symmetric custom relationships and strip their
+		// orphaned reciprocals from the linked notes (#675).
+		await this.syncCustomRelationshipDeletions(previousSnapshot, currentFrontmatter, personFile, personCrId);
 	}
 
 	/**
@@ -598,12 +621,143 @@ export class BidirectionalLinker {
 			}
 		}
 
+		// Capture symmetric custom relationships so their reciprocals can be
+		// cleaned up on deletion (#675).
+		const customRelationships = this.captureCustomRelationships(frontmatter as Record<string, unknown>);
+		if (customRelationships) {
+			snapshot.customRelationships = customRelationships;
+		}
+
 		this.relationshipSnapshots.set(filePath, snapshot);
 
 		logger.debug('bidirectional-linking', 'Updated relationship snapshot', {
 			filePath,
 			snapshot
 		});
+	}
+
+	/**
+	 * Ids of symmetric custom relationship types, from the injected provider.
+	 * Empty when no provider is set (built-in-only operation).
+	 */
+	private getSymmetricCustomTypeIds(): string[] {
+		return this.symmetricCustomTypeProvider ? this.symmetricCustomTypeProvider() : [];
+	}
+
+	/**
+	 * Snapshot the index-aligned target wikilinks + cr_ids for every symmetric
+	 * custom relationship present on `frontmatter`. Returns `null` when none are
+	 * present so the snapshot stays lean. (#675)
+	 */
+	private captureCustomRelationships(
+		frontmatter: Record<string, unknown>
+	): Record<string, { targets: string[]; ids: string[] }> | null {
+		const symmetricTypeIds = this.getSymmetricCustomTypeIds();
+		if (symmetricTypeIds.length === 0) return null;
+
+		let captured: Record<string, { targets: string[]; ids: string[] }> | null = null;
+		for (const typeId of symmetricTypeIds) {
+			if (frontmatter[typeId] === undefined) continue;
+			const targets = normalizeToArray(frontmatter[typeId]);
+			const ids = normalizeToArray(frontmatter[`${typeId}_id`]);
+			if (targets.length === 0) continue;
+			captured ??= {};
+			captured[typeId] = { targets, ids };
+		}
+		return captured;
+	}
+
+	/**
+	 * Detect symmetric custom relationships removed from this note since the
+	 * previous snapshot and strip the orphaned reciprocal from each former
+	 * target note (#675). A symmetric custom relationship persists a real
+	 * reciprocal on the target (unlike asymmetric inverses, which are inferred
+	 * at read time), so without this the reciprocal survives the source-side
+	 * deletion and is inferred straight back onto the source.
+	 */
+	private async syncCustomRelationshipDeletions(
+		previousSnapshot: RelationshipSnapshot,
+		currentFrontmatter: PersonFrontmatter,
+		personFile: TFile,
+		personCrId: string
+	): Promise<void> {
+		const previousCustom = previousSnapshot.customRelationships;
+		if (!previousCustom) return;
+
+		const currentFm = currentFrontmatter as unknown as Record<string, unknown>;
+		const symmetricTypeIds = new Set(this.getSymmetricCustomTypeIds());
+		const removals = computeCustomReciprocalRemovals(previousCustom, currentFm, symmetricTypeIds);
+
+		for (const removal of removals) {
+			await this.removeCustomReciprocal(
+				removal.typeId,
+				removal.targetLink,
+				removal.targetCrId,
+				personFile,
+				personCrId
+			);
+		}
+	}
+
+	/**
+	 * Remove the reciprocal entry pointing back at `personCrId` from a target
+	 * note's symmetric custom relationship `typeId`. Resolves the target by its
+	 * stored wikilink, falling back to a cr_id scan when the link is stale.
+	 * Reads the target's current frontmatter first and only writes when the
+	 * reciprocal is actually present, so the cleanup cascade stops after one hop
+	 * (the partner's own deletion pass then finds nothing to do). (#675)
+	 */
+	private async removeCustomReciprocal(
+		typeId: string,
+		targetLink: string | undefined,
+		targetCrId: string,
+		personFile: TFile,
+		personCrId: string
+	): Promise<void> {
+		const targetFile = (targetLink ? this.resolveLink(targetLink, personFile) : null)
+			?? this.resolvePersonByCrId(targetCrId);
+		if (!targetFile || targetFile.path === personFile.path) return;
+
+		const targetFm = this.app.metadataCache.getFileCache(targetFile)?.frontmatter;
+		if (!targetFm) return;
+
+		// Only the reciprocal whose id matches this person should be stripped;
+		// if the target doesn't list this person under `typeId`, there's nothing
+		// to do (and we must not write, to avoid a needless re-trigger).
+		const targetIds = normalizeToArray(targetFm[`${typeId}_id`]);
+		if (!targetIds.includes(personCrId)) return;
+
+		try {
+			await this.app.fileManager.processFrontMatter(targetFile, (fm) => {
+				removeFlatRelationship(fm as Record<string, unknown>, typeId, personCrId);
+			});
+			logger.info('bidirectional-linking', 'Removed orphaned custom-relationship reciprocal', {
+				typeId,
+				targetFile: targetFile.path,
+				personFile: personFile.path,
+				personCrId
+			});
+		} catch (error) {
+			logger.error('bidirectional-linking', 'Failed to remove custom-relationship reciprocal', {
+				typeId,
+				targetFile: targetFile.path,
+				error: getErrorMessage(error)
+			});
+		}
+	}
+
+	/**
+	 * Resolve a person note by cr_id (fallback when a stored wikilink is stale).
+	 * Honors the folder filter so notes outside the configured scope are
+	 * ignored, matching the rest of the linker.
+	 */
+	private resolvePersonByCrId(crId: string): TFile | null {
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			if (this.folderFilter && !this.folderFilter.shouldIncludeFile(file)) continue;
+			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
+			if (fm?.cr_id === crId) return file;
+		}
+		return null;
 	}
 
 	/**
