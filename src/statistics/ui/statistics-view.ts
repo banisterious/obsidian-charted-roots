@@ -1786,7 +1786,7 @@ export class StatisticsView extends ItemView {
 		const { analyzedFromEvents, analyzedFromBirthDeath } = analysis;
 		let basis: string;
 		if (analyzedFromEvents > 0 && analyzedFromBirthDeath > 0) {
-			const eventsLabel = analyzedFromEvents === 1 ? 'person' : 'people';
+			const eventsLabel = pluralize(analyzedFromEvents, 'person', 'people');
 			basis = `Derived from movement events for ${analyzedFromEvents} ${eventsLabel} and birth and death locations for ${analyzedFromBirthDeath}.`;
 		} else if (analyzedFromEvents > 0) {
 			basis = 'Derived from movement events (Residence, Immigration).';
@@ -1810,7 +1810,7 @@ export class StatisticsView extends ItemView {
 				setIcon(arrowCell, 'arrow-right');
 				row.createEl('td', { text: route.to, cls: 'cr-sv-route-to' });
 				row.createEl('td', {
-					text: `${route.count} people`,
+					text: `${route.count} ${pluralize(route.count, 'person', 'people')}`,
 					cls: 'cr-sv-route-count crc-text-muted'
 				});
 			}
