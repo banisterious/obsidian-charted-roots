@@ -10,6 +10,7 @@
 import { App, ButtonComponent, Notice, Setting, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import type { LucideIconName } from './lucide-icons';
+import { setButtonDestructive } from './button-helpers';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
@@ -269,9 +270,7 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 			.setButtonText('Preview')
 			.onClick(() => void previewBatchOperation('orphans', selectedScope, selectedFolder, options))
 		)
-		.addButton(btn => btn
-			.setButtonText('Apply')
-			.setWarning()
+		.addButton(btn => setButtonDestructive(btn.setButtonText('Apply'))
 			.onClick(() => void runBatchOperation('orphans', selectedScope, selectedFolder, options))
 		);
 
@@ -297,9 +296,7 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 			.setButtonText('Preview')
 			.onClick(() => void previewRepairMisalignedChildren(options.plugin, options.app, options.showTab))
 		)
-		.addButton(btn => btn
-			.setButtonText('Apply')
-			.setWarning()
+		.addButton(btn => setButtonDestructive(btn.setButtonText('Apply'))
 			.onClick(() => void repairMisalignedChildren(options.plugin, options.app, options.showTab))
 		);
 
