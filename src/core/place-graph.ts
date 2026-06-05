@@ -664,9 +664,6 @@ export class PlaceGraphService {
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 10);
 
-		// Calculate migration patterns
-		const migrationPatterns = this.calculateMigrationPatterns();
-
 		// Check for missing place notes (references to non-existent places)
 		const referencedPlaces = this.getReferencedPlaces();
 		for (const [key, info] of referencedPlaces.entries()) {
@@ -690,7 +687,6 @@ export class PlaceGraphService {
 			byCollection,
 			topBirthPlaces,
 			topDeathPlaces,
-			migrationPatterns,
 			issues
 		};
 	}
@@ -709,50 +705,6 @@ export class PlaceGraphService {
 		}
 		// Return as-is (it's already a name or unresolvable ID)
 		return placeKey;
-	}
-
-	/**
-	 * Calculate migration patterns (birth place -> death place)
-	 */
-	private calculateMigrationPatterns(): Array<{ from: string; to: string; count: number }> {
-		// Group references by person
-		const personPlaces = new Map<string, { birth?: string; death?: string }>();
-
-		for (const ref of this.placeReferenceCache) {
-			if (!personPlaces.has(ref.personId)) {
-				personPlaces.set(ref.personId, {});
-			}
-			const places = personPlaces.get(ref.personId)!;
-
-			if (ref.referenceType === 'birth') {
-				places.birth = ref.placeId || ref.rawValue;
-			} else if (ref.referenceType === 'death') {
-				places.death = ref.placeId || ref.rawValue;
-			}
-		}
-
-		// Count migrations
-		const migrationCounts = new Map<string, number>();
-
-		for (const places of personPlaces.values()) {
-			if (places.birth && places.death && places.birth !== places.death) {
-				const key = `${places.birth}|${places.death}`;
-				migrationCounts.set(key, (migrationCounts.get(key) || 0) + 1);
-			}
-		}
-
-		// Convert to array, resolve names, and sort
-		return Array.from(migrationCounts.entries())
-			.map(([key, count]) => {
-				const [fromKey, toKey] = key.split('|');
-				return {
-					from: this.resolvePlaceDisplayName(fromKey),
-					to: this.resolvePlaceDisplayName(toKey),
-					count
-				};
-			})
-			.sort((a, b) => b.count - a.count)
-			.slice(0, 20);
 	}
 
 	/**
