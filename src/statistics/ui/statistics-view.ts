@@ -9,6 +9,7 @@ import { ItemView, WorkspaceLeaf, setIcon, TFile, Menu } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { capitalize, pluralize } from '../../utils/format-utils';
 import { StatisticsService } from '../services/statistics-service';
+import { summarizeCoreIssues } from '../services/core-issues-summary';
 import type {
 	StatisticsData,
 	StatisticsViewState,
@@ -190,14 +191,20 @@ export class StatisticsView extends ItemView {
 			avgCompleteness >= 80 ? 'cr-sv-card-good' : avgCompleteness >= 50 ? 'cr-sv-card-moderate' : 'cr-sv-card-low'
 		);
 
-		// Issues count (core issues: missing births, orphans, unsourced events)
-		const totalIssues = quality.missingBirthDate + quality.orphanedPeople + quality.unsourcedEvents;
+		// Issues count (core issues: missing births, orphans, unsourced events).
+		// The subtitle names only the categories that actually contribute, so it
+		// never reads "Missing births" when birth dates are complete (#676).
+		const coreIssues = summarizeCoreIssues({
+			missingBirthDate: quality.missingBirthDate,
+			orphanedPeople: quality.orphanedPeople,
+			unsourcedEvents: quality.unsourcedEvents,
+		});
 		createSummaryCard(
 			'Issues',
-			formatNumber(totalIssues),
+			formatNumber(coreIssues.count),
 			'alert-triangle',
-			'Missing births + orphans + unsourced events',
-			totalIssues === 0 ? 'cr-sv-card-good' : 'cr-sv-card-warning'
+			coreIssues.subtitle,
+			coreIssues.count === 0 ? 'cr-sv-card-good' : 'cr-sv-card-warning'
 		);
 	}
 

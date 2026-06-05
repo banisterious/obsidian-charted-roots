@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Statistics Dashboard issues card lists only the categories with something to fix** ([#676](https://github.com/banisterious/obsidian-charted-roots/issues/676)): The dashboard's summary "Issues" card always spelled out "Missing births + orphans + unsourced events" in its subtitle, even when one of those categories had a zero count — so with birth dates fully complete it still read "Missing births" despite none being missing. The subtitle now names only the categories that actually contribute to the count. Follows up the v0.22.61 fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.61] - 2026-06-04
 
 A reporter-driven cycle centered on two genealogy upgrades plus a run of Family Chart and data-accuracy fixes. Migration analysis on the Statistics Dashboard now reads movement events (Residence / Immigration / Emigration) instead of inferring moves from birth and death locations, and merging duplicate places preserves the older or variant names as historical names instead of discarding them. Alongside those: the Statistics Dashboard's issues notice and completeness section now agree, the Family Chart re-compacts when cards shrink and keeps its Circle avatars round (and no longer blanks) in a pop-out window, deleting a symmetric custom relationship cleans up the other side, and single-lineage canvas exports get distinguishing filenames in the canvases folder. **1240 tests passing across 104 suites.**
