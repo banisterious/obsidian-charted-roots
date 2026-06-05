@@ -13,6 +13,7 @@ import {
 	dismissedDuplicatePairKey
 } from '../core/duplicate-detection';
 import { MergeWizardModal } from './merge-wizard-modal';
+import { setButtonDestructive } from './button-helpers';
 import type { CanvasRootsSettings } from '../settings';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
@@ -124,9 +125,7 @@ export class DuplicateDetectionModal extends Modal {
 			new Setting(optionsSection)
 				.setName('Dismissed pairs')
 				.setDesc(`${dismissedCount} pair${dismissedCount === 1 ? '' : 's'} marked "not a duplicate" and hidden from results.`)
-				.addButton(button => button
-					.setButtonText('Clear dismissed')
-					.setWarning()
+				.addButton(button => setButtonDestructive(button.setButtonText('Clear dismissed'))
 					.onClick(async () => {
 						if (!this.plugin) return;
 						this.plugin.settings.dismissedDuplicatePairs = [];

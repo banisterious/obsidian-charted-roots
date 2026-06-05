@@ -12,6 +12,7 @@ import {
 	formatChangeTimestamp
 } from '../core/relationship-history';
 import { createLucideIcon } from './lucide-icons';
+import { setButtonDestructive } from './button-helpers';
 
 /**
  * Modal to display and manage relationship history
@@ -288,9 +289,8 @@ export class ClearHistoryConfirmModal extends Modal {
 			.setButtonText('Cancel')
 			.onClick(() => this.close());
 
-		new ButtonComponent(buttonDiv)
-			.setButtonText('Clear history')
-			.setWarning()
+		setButtonDestructive(new ButtonComponent(buttonDiv)
+			.setButtonText('Clear history'))
 			.onClick(() => {
 				void (async () => {
 					await this.historyService.clearHistory();

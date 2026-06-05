@@ -1061,7 +1061,10 @@ export class SplitWizardModal extends Modal {
 	 */
 	private renderCompleteStep(): void {
 		const { contentEl } = this;
-		const stepContainer = contentEl.createDiv({ cls: 'crc-wizard-step' });
+		// Use the wizard's step-content container, matching every other step.
+		// 'crc-wizard-step' is the small circular progress-indicator pill from the
+		// import/export wizards, which crammed this step's content into a 32px disc.
+		const stepContainer = contentEl.createDiv({ cls: 'crc-split-wizard-step' });
 
 		if (!this.generationResults) {
 			stepContainer.createEl('p', { text: 'No results available.' });

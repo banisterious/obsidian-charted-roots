@@ -12,6 +12,18 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.62] - 2026-06-04
+
+A small follow-up release polishing three items reported after v0.22.61: the Statistics Dashboard's issues card now names only the data-quality categories that actually have something in them, the Split canvas wizard's completion screen lays out correctly, and Family Chart Circle avatars keep their colored ring after "fit to view". Under the hood, the settings tab and its buttons now use Obsidian 1.13.0's settings and button APIs where the running app provides them, while continuing to support older versions — no visible change on current releases. **1245 tests passing across 105 suites.**
+
+### Fixed
+
+- **Statistics Dashboard issues card lists only the categories with something to fix** ([#676](https://github.com/banisterious/obsidian-charted-roots/issues/676)): The dashboard's summary "Issues" card always spelled out "Missing births + orphans + unsourced events" in its subtitle, even when one of those categories had a zero count — so with birth dates fully complete it still read "Missing births" despite none being missing. The subtitle now names only the categories that actually contribute to the count. Follows up the v0.22.61 fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Split canvas wizard's completion screen lays out correctly** ([#673](https://github.com/banisterious/obsidian-charted-roots/issues/673)): The wizard's final "Complete" step rendered its created-files list and configuration summary crammed together and overlapping the step indicator, because that step's content used the wrong container style. It now uses the same column layout as every other step in the wizard. Follows up the v0.22.61 filename fix. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Family Chart Circle avatars keep their colored ring after "fit to view"** ([#677](https://github.com/banisterious/obsidian-charted-roots/issues/677)): With the Circle card style, clicking "fit to view" kept the avatars round but dropped the gender-colored ring behind each one. The fit re-render dropped the ring along with the circular clip, and only the clip was being restored afterward; the ring is now re-applied too. Follows up the v0.22.61 pop-out fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.61] - 2026-06-04
 
 A reporter-driven cycle centered on two genealogy upgrades plus a run of Family Chart and data-accuracy fixes. Migration analysis on the Statistics Dashboard now reads movement events (Residence / Immigration / Emigration) instead of inferring moves from birth and death locations, and merging duplicate places preserves the older or variant names as historical names instead of discarding them. Alongside those: the Statistics Dashboard's issues notice and completeness section now agree, the Family Chart re-compacts when cards shrink and keeps its Circle avatars round (and no longer blanks) in a pop-out window, deleting a symmetric custom relationship cleans up the other side, and single-lineage canvas exports get distinguishing filenames in the canvases folder. **1240 tests passing across 104 suites.**

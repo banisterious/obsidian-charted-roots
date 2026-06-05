@@ -10,6 +10,7 @@
 
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
+import { setButtonDestructive } from '../../ui/button-helpers';
 import type { OrganizationInfo, PersonMembership, MembershipRecord } from '../types/organization-types';
 import { MembershipService } from '../services/membership-service';
 import { OrganizationService } from '../services/organization-service';
@@ -339,9 +340,7 @@ export class ManageOrganizationMembersModal extends Modal {
 			.addButton(btn => btn
 				.setButtonText('Cancel')
 				.onClick(() => confirmModal.close()))
-			.addButton(btn => btn
-				.setButtonText('Remove')
-				.setWarning()
+			.addButton(btn => setButtonDestructive(btn.setButtonText('Remove'))
 				.onClick(async () => {
 					confirmModal.close();
 					await this.removeMember(member);

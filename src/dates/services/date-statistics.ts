@@ -147,3 +147,5 @@ export function calculateDateStatistics(plugin: CanvasRootsPlugin): DateStatisti
 
 	return stats;
 }
+
+/* eslint-enable @typescript-eslint/no-unsafe-assignment -- Match scope of file-level disable at top. */

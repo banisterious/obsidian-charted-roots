@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian Modal / Setting APIs are typed loosely (any-typed surfaces); project policy accepts these. */
 import { App, ButtonComponent, Modal } from 'obsidian';
 import type { ConflictContext, ConflictDecision } from '../core/conflict-policy';
+import { setButtonDestructive } from './button-helpers';
 
 /**
  * Confirmation modal shown when a write would overwrite an existing
@@ -53,9 +54,8 @@ export class ConflictGuardModal extends Modal {
 				this.decision = 'cancel';
 				this.close();
 			});
-		new ButtonComponent(buttons)
-			.setButtonText(`Replace ${ctx.existingDisplay}`)
-			.setWarning()
+		setButtonDestructive(new ButtonComponent(buttons)
+			.setButtonText(`Replace ${ctx.existingDisplay}`))
 			.onClick(() => {
 				this.decision = 'replace';
 				this.close();

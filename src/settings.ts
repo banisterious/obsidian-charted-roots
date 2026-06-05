@@ -1,4 +1,5 @@
 import { App, Notice, normalizePath, PluginSettingTab, Setting, TFolder, TextComponent, AbstractInputSuggest, setIcon } from 'obsidian';
+import type { SettingDefinitionItem, SettingDefinitionRender, SettingGroup } from 'obsidian';
 import CanvasRootsPlugin from '../main';
 import type { LogLevel } from './core/logging';
 import type { RelationshipTypeDefinition } from './relationships';
@@ -967,23 +968,119 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 	private openSections: Set<string> = new Set();
 	// Track if this is the first render (to avoid restoring state on initial load)
 	private hasRendered = false;
+	// On Obsidian 1.13.0+ the declarative getSettingDefinitions() path hosts the
+	// whole tab inside a framework-provided container; this points at that host so
+	// refreshSettings() re-renders the right element. Null on older app versions,
+	// where display() drives the imperative tab against containerEl instead.
+	private hostEl: HTMLElement | null = null;
 
 	constructor(app: App, plugin: CanvasRootsPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
 
-	display(): void {
-		const { containerEl } = this;
+	/**
+	 * Declarative entry point used by Obsidian 1.13.0+. The whole tab is a
+	 * heavily-customized, collapsible, searchable UI that doesn't map onto the
+	 * framework's per-row control model, so rather than re-express ~100 settings
+	 * declaratively (and maintain two divergent copies) this hosts the existing
+	 * imperative tab inside the framework-provided group container. The framework
+	 * calls getSettingDefinitions() on 1.13.0+ and skips display(); older versions
+	 * keep calling display(). Both paths render the same UI via renderSettingsInto().
+	 */
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const hosted: SettingDefinitionRender = {
+			name: '',
+			searchable: false,
+			render: (_setting: Setting, group: SettingGroup) => {
+				// SettingGroup.listEl is a 1.11.0+ API; this callback only runs on
+				// 1.13.0+ (where getSettingDefinitions() is consulted), so the access
+				// is always safe — the cast keeps the version-aware linter quiet.
+				const listEl = (group as { listEl: HTMLElement }).listEl;
+				// The framework re-runs render defs on every settings change to
+				// re-evaluate predicates. Our hosted UI manages its own refreshes
+				// (refreshSettings), so on a framework re-render reuse the already
+				// built host — moving the live node preserves open sections, scroll,
+				// and focus instead of tearing the whole tab down on each interaction.
+				if (this.hostEl && this.hostEl.childElementCount > 0) {
+					listEl.appendChild(this.hostEl);
+					return;
+				}
+				// Render into a dedicated child so refreshSettings() can clear only
+				// our content, never the framework's own scaffolding.
+				const host = listEl.createDiv({ cls: 'cr-settings-host' });
+				this.hostEl = host;
+				this.rerender(host);
+			},
+		};
+		return [hosted];
+	}
 
-		// Save current scroll position and section states before re-render
-		const scrollTop = containerEl.scrollTop;
+	display(): void {
+		// Obsidian < 1.13.0 entry point (and the 1.13.0 fallback when
+		// getSettingDefinitions() returns nothing). Drives the imperative tab.
+		this.hostEl = null;
+		this.rerender(this.containerEl);
+	}
+
+	hide(): void {
+		// Drop the host so the next open rebuilds fresh (settings may have changed
+		// elsewhere) rather than re-attaching a stale node.
+		this.hostEl = null;
+		this.hasRendered = false;
+		super.hide();
+	}
+
+	/**
+	 * Re-run an internal refresh (the old imperative refresh point). Targets the
+	 * 1.13.0 host container when present, otherwise the imperative containerEl.
+	 * Used by conditional toggles and the alias editors to rebuild after a change.
+	 */
+	private refreshSettings(): void {
+		this.rerender(this.hostEl ?? this.containerEl);
+	}
+
+	/** Rebuild the full tab into the given container, preserving section open state and scroll. */
+	private rerender(container: HTMLElement): void {
+		// On 1.13.0 the scrollable element is an ancestor of the host, not the
+		// host itself, so resolve the real scroll parent to save/restore against.
+		const scrollEl = this.getScrollParent(container);
+		const scrollTop = scrollEl ? scrollEl.scrollTop : 0;
 		if (this.hasRendered) {
-			this.saveOpenSections(containerEl);
+			this.saveOpenSections(container);
 		}
 
-		containerEl.empty();
+		container.empty();
+		this.renderSettingsInto(container);
 
+		// Restore section open states and scroll position after re-render
+		if (this.hasRendered) {
+			this.restoreOpenSections(container);
+			// Use requestAnimationFrame to ensure DOM is updated before scrolling
+			window.requestAnimationFrame(() => {
+				if (scrollEl) scrollEl.scrollTop = scrollTop;
+			});
+		}
+		this.hasRendered = true;
+	}
+
+	/** Nearest scrollable ancestor (or the element itself), for scroll preservation across re-renders. */
+	private getScrollParent(el: HTMLElement): HTMLElement | null {
+		let node: HTMLElement | null = el;
+		while (node) {
+			if (node.scrollHeight > node.clientHeight) {
+				const overflowY = node.ownerDocument.defaultView?.getComputedStyle(node).overflowY ?? '';
+				if (overflowY === 'auto' || overflowY === 'scroll') {
+					return node;
+				}
+			}
+			node = node.parentElement;
+		}
+		return el;
+	}
+
+	/** Build the search box and all eleven sections into the container. */
+	private renderSettingsInto(containerEl: HTMLElement): void {
 		// Search box for filtering settings
 		const searchContainer = containerEl.createDiv({ cls: 'cr-settings-search' });
 		new Setting(searchContainer)
@@ -1007,16 +1104,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		this.renderResearchSection(containerEl);
 		this.renderAliasesSection(containerEl);
 		this.renderAdvancedSection(containerEl);
-
-		// Restore section open states and scroll position after re-render
-		if (this.hasRendered) {
-			this.restoreOpenSections(containerEl);
-			// Use requestAnimationFrame to ensure DOM is updated before scrolling
-			window.requestAnimationFrame(() => {
-				containerEl.scrollTop = scrollTop;
-			});
-		}
-		this.hasRendered = true;
 	}
 
 	private renderFoldersSection(containerEl: HTMLElement): void {
@@ -1202,7 +1289,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					// Re-register file modification handler with new settings
 					this.plugin.registerFileModificationHandler();
 					// Refresh display to update disabled state
-					this.display();
+					this.refreshSettings();
 				}));
 
 		// Sync on file modify
@@ -1806,7 +1893,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableInclusiveParents = value;
 					await this.plugin.saveSettings();
-					this.display(); // Refresh to show/hide label setting
+					this.refreshSettings(); // Refresh to show/hide label setting
 				}));
 
 		if (this.plugin.settings.enableInclusiveParents) {
@@ -1864,7 +1951,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.useCategorySubfolders = value;
 					await this.plugin.saveSettings();
-					this.display(); // Refresh to show/hide overrides section
+					this.refreshSettings(); // Refresh to show/hide overrides section
 				}));
 
 		// Show category folder overrides section if enabled
@@ -2036,7 +2123,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.trackFactSourcing = value;
 					await this.plugin.saveSettings();
-					this.display();
+					this.refreshSettings();
 				}));
 
 		if (this.plugin.settings.trackFactSourcing) {
@@ -2076,7 +2163,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.enableDnaTracking = value;
 					await this.plugin.saveSettings();
-					this.display();
+					this.refreshSettings();
 				}));
 
 		if (this.plugin.settings.enableDnaTracking) {
@@ -2165,7 +2252,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value: FolderFilterMode) => {
 					this.plugin.settings.folderFilterMode = value;
 					await this.plugin.saveSettings();
-					this.display();
+					this.refreshSettings();
 				}));
 
 		if (this.plugin.settings.folderFilterMode !== 'disabled') {
@@ -2397,8 +2484,13 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 	 * Save which sections are currently open
 	 */
 	private saveOpenSections(containerEl: HTMLElement): void {
-		this.openSections.clear();
 		const sections = containerEl.querySelectorAll<HTMLDetailsElement>('.cr-settings-section[data-section-name]');
+		// Nothing rendered yet (e.g. a fresh framework-provided host): keep the
+		// last known state instead of clearing it.
+		if (sections.length === 0) {
+			return;
+		}
+		this.openSections.clear();
 		sections.forEach(section => {
 			if (section.open && section.dataset.sectionName) {
 				this.openSections.add(section.dataset.sectionName);
@@ -2495,7 +2587,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 									if (value === '') {
 										if (currentAlias) {
 											await propertyAliasService.removeAlias(currentAlias);
-											this.display();
+											this.refreshSettings();
 										}
 									} else if (value !== meta.canonical && value !== currentAlias) {
 										const existingMapping = propertyAliasService.aliases[value];
@@ -2504,7 +2596,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 											text.inputEl.value = currentAlias;
 										} else {
 											await propertyAliasService.setAlias(value, meta.canonical);
-											this.display();
+											this.refreshSettings();
 										}
 									}
 								})();
@@ -2514,7 +2606,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 							button.setIcon('x').setTooltip('Clear alias').onClick(async () => {
 								if (currentAlias) {
 									await propertyAliasService.removeAlias(currentAlias);
-									this.display();
+									this.refreshSettings();
 								}
 							});
 							button.extraSettingsEl.addClass(currentAlias ? 'cr-clear-btn--enabled' : 'cr-clear-btn--disabled');
@@ -2573,7 +2665,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 									if (value === '') {
 										if (userValue) {
 											await valueAliasService.removeAlias(field, userValue);
-											this.display();
+											this.refreshSettings();
 										}
 									} else if (value.toLowerCase() !== canonicalValue.toLowerCase() && value !== userValue) {
 										const existingMapping = aliases[value.toLowerCase()];
@@ -2585,7 +2677,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 												await valueAliasService.removeAlias(field, userValue);
 											}
 											await valueAliasService.setAlias(field, value, canonicalValue);
-											this.display();
+											this.refreshSettings();
 										}
 									}
 								})();
@@ -2595,7 +2687,7 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 							button.setIcon('x').setTooltip('Clear alias').onClick(async () => {
 								if (userValue) {
 									await valueAliasService.removeAlias(field, userValue);
-									this.display();
+									this.refreshSettings();
 								}
 							});
 							button.extraSettingsEl.addClass(userValue ? 'cr-clear-btn--enabled' : 'cr-clear-btn--disabled');

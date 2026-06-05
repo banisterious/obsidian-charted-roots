@@ -7,7 +7,7 @@
  */
 
 import { ItemView, WorkspaceLeaf, Menu, TFile, Notice, setIcon } from 'obsidian';
-import f3, { TreeDatum } from 'family-chart';
+import f3 from 'family-chart';
 import * as d3 from 'd3';
 
 import type CanvasRootsPlugin from '../../../main';
@@ -1943,7 +1943,37 @@ export class FamilyChartView extends ItemView {
 		if (this.cardStyle !== 'circle' || !this.f3Chart) return;
 		const svg = this.f3Chart.svg as SVGSVGElement | undefined;
 		if (!svg) return;
+		// Re-assert the round clip on every avatar...
 		d3.select(svg).selectAll('.card_image').style('clip-path', 'circle(50%)');
+		// ...and re-inject any gender disc that f3's fit-to-view re-render dropped.
+		// The per-card onCardUpdate hook (addOpenNoteButton) injects the disc, but
+		// position-only updates like fit may not re-run it, so the colored ring
+		// vanished after "Fit to view" even though the avatar stayed round (#677).
+		d3.select(svg)
+			.selectAll<SVGGElement, { data?: { data?: { gender?: string }; main?: boolean } }>('.card_cont')
+			.each((datum, index, nodes) => {
+				this.ensureCircleDisc(nodes[index], datum?.data?.data?.gender, !!datum?.data?.main);
+			});
+	}
+
+	/**
+	 * Inject the gender-colored disc behind a circle card's round avatar, unless
+	 * one is already present. Shared by the per-card update hook and the
+	 * after-update re-assertion so both paths produce an identical ring (#677).
+	 */
+	private ensureCircleDisc(cardEl: SVGGElement, gender: string | undefined, isMain: boolean): void {
+		const inner = d3.select(cardEl).select('.card-inner');
+		if (inner.empty() || !inner.select('.cr-circle-disc').empty()) return;
+		const dim = this.getCardDimensions('circle');
+		const discClass = gender === 'M' ? 'card-male'
+			: gender === 'F' ? 'card-female'
+			: gender === 'X' ? 'card-nonbinary'
+			: 'card-genderless';
+		inner.insert('circle', ':first-child')
+			.attr('class', `cr-circle-disc ${discClass}${isMain ? ' cr-circle-disc--main' : ''}`)
+			.attr('cx', dim.img_x + dim.img_w / 2)
+			.attr('cy', dim.img_y + dim.img_h / 2)
+			.attr('r', dim.img_w / 2 + 4);
 	}
 
 	/**
@@ -1992,20 +2022,8 @@ export class FamilyChartView extends ItemView {
 			// styles.css, so the Community CSS scanner (which only reads
 			// styles.css) stays clean — see #669/v0.22.60.
 			d3.select(cardEl).select('.card_image').style('clip-path', 'circle(50%)');
-			const inner = d3.select(cardEl).select('.card-inner');
-			if (!inner.empty() && inner.select('.cr-circle-disc').empty()) {
-				const dim = this.getCardDimensions('circle');
-				const discClass = gender === 'M' ? 'card-male'
-					: gender === 'F' ? 'card-female'
-					: gender === 'X' ? 'card-nonbinary'
-					: 'card-genderless';
-				const isMain = !!(d.data as { main?: boolean }).main;
-				inner.insert('circle', ':first-child')
-					.attr('class', `cr-circle-disc ${discClass}${isMain ? ' cr-circle-disc--main' : ''}`)
-					.attr('cx', dim.img_x + dim.img_w / 2)
-					.attr('cy', dim.img_y + dim.img_h / 2)
-					.attr('r', dim.img_w / 2 + 4);
-			}
+			const isMain = !!(d.data as { main?: boolean }).main;
+			this.ensureCircleDisc(cardEl, gender, isMain);
 		}
 
 		// Check if button already exists (prevents duplicates on re-render)
@@ -4405,11 +4423,11 @@ export class FamilyChartView extends ItemView {
 		// `.f3` container as the cards, so it inherits the identical font cascade
 		// (card tspans set no font-size of their own).
 		const svgNs = 'http://www.w3.org/2000/svg';
-		const measureSvg = document.createElementNS(svgNs, 'svg');
+		const measureSvg = activeDocument.createElementNS(svgNs, 'svg');
 		// `.cr-fcv-measure` parks it offscreen (absolute, hidden, zero-size) so it
 		// renders for getComputedTextLength without disturbing the chart layout.
 		measureSvg.setAttribute('class', 'cr-fcv-measure');
-		const measureText = document.createElementNS(svgNs, 'text');
+		const measureText = activeDocument.createElementNS(svgNs, 'text');
 		measureSvg.appendChild(measureText);
 		container.appendChild(measureSvg);
 
