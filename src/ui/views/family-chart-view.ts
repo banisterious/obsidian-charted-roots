@@ -4214,11 +4214,12 @@ export class FamilyChartView extends ItemView {
 
 		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
-				// Strip all previous highlight classes
+				// Strip all previous highlight classes and any dim overlay
 				this.classList.remove('cr-hl-dim', 'cr-hl-match');
 				for (const c of HIGHLIGHT_COLORS) {
 					this.classList.remove(`cr-hl-match--${c.value}`);
 				}
+				this.querySelector('.cr-hl-dim-overlay')?.remove();
 
 				if (!active) return;
 
@@ -4233,6 +4234,31 @@ export class FamilyChartView extends ItemView {
 					this.classList.add(`cr-hl-match--${match.color}`);
 				} else {
 					this.classList.add('cr-hl-dim');
+					// Fade the card with an overlay rect (fill-opacity, no stacking
+					// context) instead of CSS opacity on the card group, which
+					// Chromium paints below the connector lines on Linux/macOS
+					// (#670). Clone the card's body rect so the overlay matches its
+					// exact size and rounded corners — the group's bounding box
+					// includes the open-note button, which protrudes past the card
+					// on the smaller styles and made the overlay overhang.
+					const cardG = this.querySelector('.card');
+					const body = cardG?.querySelector('.card-body-rect');
+					if (body instanceof SVGGraphicsElement) {
+						const overlay = body.cloneNode(false) as SVGElement;
+						overlay.removeAttribute('style');
+						overlay.removeAttribute('fill');
+						overlay.setAttribute('class', 'cr-hl-dim-overlay');
+						body.parentNode?.appendChild(overlay);
+					} else if (cardG instanceof SVGGraphicsElement) {
+						// Bodyless fallback (e.g. the Circle style): bounding box.
+						const bbox = cardG.getBBox();
+						d3.select(cardG).append('rect')
+							.attr('class', 'cr-hl-dim-overlay')
+							.attr('x', bbox.x)
+							.attr('y', bbox.y)
+							.attr('width', bbox.width)
+							.attr('height', bbox.height);
+					}
 				}
 			});
 	}
