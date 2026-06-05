@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.62] - 2026-06-04
+
+A small follow-up release polishing three items reported after v0.22.61: the Statistics Dashboard's issues card now names only the data-quality categories that actually have something in them, the Split canvas wizard's completion screen lays out correctly, and Family Chart Circle avatars keep their colored ring after "fit to view". Under the hood, the settings tab and its buttons now use Obsidian 1.13.0's settings and button APIs where the running app provides them, while continuing to support older versions — no visible change on current releases. **1245 tests passing across 105 suites.**
+
 ### Fixed
 
 - **Statistics Dashboard issues card lists only the categories with something to fix** ([#676](https://github.com/banisterious/obsidian-charted-roots/issues/676)): The dashboard's summary "Issues" card always spelled out "Missing births + orphans + unsourced events" in its subtitle, even when one of those categories had a zero count — so with birth dates fully complete it still read "Missing births" despite none being missing. The subtitle now names only the categories that actually contribute to the count. Follows up the v0.22.61 fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
