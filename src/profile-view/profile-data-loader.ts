@@ -448,20 +448,8 @@ export class ProfileDataLoader {
 		const mediaService = this.plugin.getMediaService();
 		if (!mediaService) return [];
 
-		// Parse crop data if frontmatter provided (#354)
-		const cropMap = new Map<string, import('../core/media-service').MediaCrop>();
-		if (frontmatter && Array.isArray(frontmatter.media_crop)) {
-			for (const entry of frontmatter.media_crop) {
-				if (typeof entry === 'object' && entry) {
-					const obj = entry as Record<string, unknown>;
-					const image = obj.image as string;
-					if (image && typeof obj.x === 'number' && typeof obj.y === 'number' &&
-						typeof obj.w === 'number' && typeof obj.h === 'number') {
-						cropMap.set(image, { x: obj.x, y: obj.y, w: obj.w, h: obj.h });
-					}
-				}
-			}
-		}
+		// Parse crop data if frontmatter provided (#354, flat form #683)
+		const cropMap = frontmatter ? mediaService.parseMediaCrops(frontmatter) : new Map<string, import('../core/media-service').MediaCrop>();
 
 		const items: MediaItem[] = [];
 

@@ -7,7 +7,7 @@
  */
 
 import { type App, TFile, setIcon } from 'obsidian';
-import type { MediaService } from '../../core/media-service';
+import { type MediaService, parseMediaCropFields } from '../../core/media-service';
 import { applyCropToImage } from '../../core/crop-renderer';
 import type {
 	ProfileEntityData,
@@ -90,20 +90,11 @@ export function renderIdentityHeader(
 					alt: data.name
 				}
 			});
-			// Apply crop region if defined (#354)
+			// Apply crop region if defined (#354, flat form #683)
 			const cache = options.app.metadataCache.getFileCache(data.file);
-			if (cache?.frontmatter?.media_crop && Array.isArray(cache.frontmatter.media_crop)) {
-				for (const entry of cache.frontmatter.media_crop) {
-					if (typeof entry === 'object' && entry &&
-						(entry as Record<string, unknown>).image === thumb.name) {
-						const obj = entry as Record<string, unknown>;
-						if (typeof obj.x === 'number' && typeof obj.y === 'number' &&
-							typeof obj.w === 'number' && typeof obj.h === 'number') {
-							void applyCropToImage(options.app, img, thumb, { x: obj.x, y: obj.y, w: obj.w, h: obj.h });
-						}
-						break;
-					}
-				}
+			const crop = cache?.frontmatter ? parseMediaCropFields(cache.frontmatter).get(thumb.name) : undefined;
+			if (crop) {
+				void applyCropToImage(options.app, img, thumb, crop);
 			}
 			img.addEventListener('error', () => {
 				avatarEl.remove();

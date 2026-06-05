@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Gramps XML Importer for Charted Roots
  *
@@ -13,6 +12,7 @@ import { createPersonNote, PersonData, findPersonByCrId } from '../core/person-n
 import { createPlaceNote, PlaceData } from '../core/place-note-writer';
 import { writeNoteFile, buildNoteReferenceMap } from '../core/note-writer';
 import { generateCrId } from '../core/uuid';
+import { applyMediaCropFields, type MediaCrop } from '../core/media-service';
 import { getErrorMessage } from '../core/error-utils';
 import { getLogger } from '../core/logging';
 import { sanitizeName } from '../utils/name-sanitization';
@@ -860,17 +860,14 @@ export class GrampsImporter {
 			dynamicBlockTypes: options.dynamicBlockTypes
 		});
 
-		// Write media crop regions if any (#354)
+		// Write media crop regions if any (#354, flat form #683)
 		if (mediaCrops.length > 0) {
 			await this.app.fileManager.processFrontMatter(file, (fm) => {
-				fm.media_crop = mediaCrops.map(c => ({
-					image: c.image,
-					x: c.x,
-					y: c.y,
-					w: c.w,
-					h: c.h,
-					percent: c.percent
-				}));
+				const crops = new Map<string, MediaCrop>();
+				for (const c of mediaCrops) {
+					crops.set(c.image, { x: c.x, y: c.y, w: c.w, h: c.h, percent: c.percent });
+				}
+				applyMediaCropFields(fm, crops);
 			});
 		}
 

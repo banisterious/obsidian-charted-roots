@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Image crop regions are stored as flat properties** ([#683](https://github.com/banisterious/obsidian-charted-roots/issues/683)): Crop data for images was stored as a nested YAML array (`media_crop: [{ image, x, y, w, h }]`). Obsidian does not fully support nested properties, so the Data Quality pane flagged a warning on every note that had a crop. Crops now use flat parallel arrays (`media_crop_image`, `media_crop_x`, `media_crop_y`, `media_crop_w`, `media_crop_h`), which the Data Quality pane accepts. Existing notes still render, setting or changing a crop migrates that note automatically, and **Flatten nested properties** (Control Center) converts the rest in bulk. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.62] - 2026-06-04
 
 A small follow-up release polishing three items reported after v0.22.61: the Statistics Dashboard's issues card now names only the data-quality categories that actually have something in them, the Split canvas wizard's completion screen lays out correctly, and Family Chart Circle avatars keep their colored ring after "fit to view". Under the hood, the settings tab and its buttons now use Obsidian 1.13.0's settings and button APIs where the running app provides them, while continuing to support older versions — no visible change on current releases. **1245 tests passing across 105 suites.**

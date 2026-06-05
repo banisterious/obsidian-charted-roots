@@ -57,6 +57,132 @@ export interface MediaCrop {
 	percent?: boolean;
 }
 
+/**
+ * Frontmatter keys holding the flat crop arrays (#683). `media_crop_image` is
+ * the filename anchor; x/y/w/h (and optional percent) are index-aligned with it.
+ */
+const MEDIA_CROP_FIELDS = [
+	'media_crop_image',
+	'media_crop_x',
+	'media_crop_y',
+	'media_crop_w',
+	'media_crop_h',
+	'media_crop_percent',
+] as const;
+
+function asNumberArray(value: unknown): number[] {
+	return Array.isArray(value) ? value.map(v => (typeof v === 'number' ? v : NaN)) : [];
+}
+
+/**
+ * Read crops from the flat parallel-array form (#683): `media_crop_image`
+ * carries the filenames, with `media_crop_x/y/w/h` (and optional
+ * `media_crop_percent`) index-aligned to it. Entries with a non-string filename
+ * or a non-numeric coordinate are skipped.
+ */
+function parseFlatMediaCrops(frontmatter: Record<string, unknown>): Map<string, MediaCrop> {
+	const crops = new Map<string, MediaCrop>();
+	const images = frontmatter.media_crop_image;
+	if (!Array.isArray(images)) return crops;
+
+	const xs = asNumberArray(frontmatter.media_crop_x);
+	const ys = asNumberArray(frontmatter.media_crop_y);
+	const ws = asNumberArray(frontmatter.media_crop_w);
+	const hs = asNumberArray(frontmatter.media_crop_h);
+	const percents = Array.isArray(frontmatter.media_crop_percent) ? frontmatter.media_crop_percent : [];
+
+	for (let i = 0; i < images.length; i++) {
+		const image = images[i];
+		const x = xs[i];
+		const y = ys[i];
+		const w = ws[i];
+		const h = hs[i];
+		if (typeof image !== 'string' || !image) continue;
+		if ([x, y, w, h].some(n => typeof n !== 'number' || Number.isNaN(n))) continue;
+		const percent = percents[i] === true;
+		crops.set(image, { x, y, w, h, percent });
+	}
+
+	return crops;
+}
+
+/**
+ * Read crops from the legacy nested array form: `media_crop: [{ image, x, y, w,
+ * h, percent? }]`. Retained so notes written before #683 (and not yet migrated)
+ * still render.
+ */
+function parseLegacyMediaCrops(frontmatter: Record<string, unknown>): Map<string, MediaCrop> {
+	const crops = new Map<string, MediaCrop>();
+	const rawCrops = frontmatter.media_crop;
+	if (!Array.isArray(rawCrops)) return crops;
+
+	for (const entry of rawCrops) {
+		if (typeof entry !== 'object' || !entry) continue;
+		const obj = entry as Record<string, unknown>;
+		const image = obj.image;
+		const x = typeof obj.x === 'number' ? obj.x : undefined;
+		const y = typeof obj.y === 'number' ? obj.y : undefined;
+		const w = typeof obj.w === 'number' ? obj.w : undefined;
+		const h = typeof obj.h === 'number' ? obj.h : undefined;
+
+		if (typeof image === 'string' && image && x !== undefined && y !== undefined && w !== undefined && h !== undefined) {
+			crops.set(image, { x, y, w, h, percent: obj.percent === true });
+		}
+	}
+
+	return crops;
+}
+
+/**
+ * Read crop regions from either supported frontmatter form (#683), keyed by
+ * image filename. The flat parallel-array form wins when present; otherwise the
+ * legacy nested array is read, so a vault mid-migration renders either way.
+ */
+export function parseMediaCropFields(frontmatter: Record<string, unknown>): Map<string, MediaCrop> {
+	if (Array.isArray(frontmatter.media_crop_image)) {
+		return parseFlatMediaCrops(frontmatter);
+	}
+	return parseLegacyMediaCrops(frontmatter);
+}
+
+/**
+ * Write `crops` (filename → crop) onto `fm` as the flat parallel arrays (#683),
+ * replacing whatever crop fields were there. Always clears the legacy nested
+ * `media_crop` key and any prior flat keys first, so this both serializes and
+ * migrates. `media_crop_percent` is emitted only when a crop actually uses it,
+ * keeping the common pixel-crop case compact. With no crops, all keys are removed.
+ */
+export function applyMediaCropFields(fm: Record<string, unknown>, crops: Map<string, MediaCrop>): void {
+	delete fm.media_crop;
+	for (const key of MEDIA_CROP_FIELDS) delete fm[key];
+	if (crops.size === 0) return;
+
+	const images: string[] = [];
+	const xs: number[] = [];
+	const ys: number[] = [];
+	const ws: number[] = [];
+	const hs: number[] = [];
+	const percents: boolean[] = [];
+	let anyPercent = false;
+
+	for (const [image, crop] of crops) {
+		images.push(image);
+		xs.push(crop.x);
+		ys.push(crop.y);
+		ws.push(crop.w);
+		hs.push(crop.h);
+		percents.push(crop.percent === true);
+		if (crop.percent === true) anyPercent = true;
+	}
+
+	fm.media_crop_image = images;
+	fm.media_crop_x = xs;
+	fm.media_crop_y = ys;
+	fm.media_crop_w = ws;
+	fm.media_crop_h = hs;
+	if (anyPercent) fm.media_crop_percent = percents;
+}
+
 export interface MediaItem {
 	/** Original media reference from frontmatter (wikilink or path) */
 	mediaRef: string;
@@ -270,31 +396,13 @@ export class MediaService {
 	}
 
 	/**
-	 * Parse media_crop array from frontmatter (#354)
-	 * Returns a map of image filename → crop region
+	 * Parse crop regions from frontmatter (#354, flattened in #683).
+	 * Returns a map of image filename → crop region. Delegates to the pure
+	 * reader, which accepts the flat parallel-array form and the legacy nested
+	 * array form.
 	 */
 	parseMediaCrops(frontmatter: Record<string, unknown>): Map<string, MediaCrop> {
-		const crops = new Map<string, MediaCrop>();
-		const rawCrops = frontmatter.media_crop;
-
-		if (!Array.isArray(rawCrops)) return crops;
-
-		for (const entry of rawCrops) {
-			if (typeof entry !== 'object' || !entry) continue;
-			const obj = entry as Record<string, unknown>;
-			const image = obj.image as string;
-			const x = typeof obj.x === 'number' ? obj.x : undefined;
-			const y = typeof obj.y === 'number' ? obj.y : undefined;
-			const w = typeof obj.w === 'number' ? obj.w : undefined;
-			const h = typeof obj.h === 'number' ? obj.h : undefined;
-
-			if (image && x !== undefined && y !== undefined && w !== undefined && h !== undefined) {
-				const percent = obj.percent === true;
-				crops.set(image, { x, y, w, h, percent });
-			}
-		}
-
-		return crops;
+		return parseMediaCropFields(frontmatter);
 	}
 
 	/**

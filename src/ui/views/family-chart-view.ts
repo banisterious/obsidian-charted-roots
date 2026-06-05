@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Interactive Family Chart View
  *
@@ -1614,22 +1614,11 @@ export class FamilyChartView extends ItemView {
 			// Resolve and cache the avatar URL
 			const thumbnailFile = mediaService.getFirstThumbnailFile(person.media);
 			if (thumbnailFile) {
-				// Check for crop region (#354)
+				// Check for crop region (#354, flat form #683)
 				const cache = this.app.metadataCache.getFileCache(person.file);
-				const crops = cache?.frontmatter?.media_crop;
-				let cropForThumb: import('../../core/media-service').MediaCrop | undefined;
-				if (Array.isArray(crops)) {
-					for (const entry of crops) {
-						if (typeof entry === 'object' && entry &&
-							(entry as Record<string, unknown>).image === thumbnailFile.name) {
-							const obj = entry as Record<string, unknown>;
-							if (typeof obj.x === 'number' && typeof obj.y === 'number' &&
-								typeof obj.w === 'number' && typeof obj.h === 'number') {
-								cropForThumb = { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
-							}
-						}
-					}
-				}
+				const cropForThumb = cache?.frontmatter
+					? mediaService.parseMediaCrops(cache.frontmatter).get(thumbnailFile.name)
+					: undefined;
 
 				if (cropForThumb) {
 					// Await crop generation so the cropped URL is in cache before chart renders
