@@ -92,6 +92,8 @@ Charted Roots automatically detects disconnected family groups by analyzing rela
 - Always up-to-date (recomputed on demand)
 - Zero configuration required
 
+Detected families appear in the Person Picker's **Family groups** sidebar (labelled *Family 1*, *Family 2*, and so on). This detection is the automatic part, and it does **not** write anything into your notes. The `group_name` property described below is separate and optional: it stays blank unless you set it yourself.
+
 **Customizing Group Names:**
 
 By default, groups are named "Family 1", "Family 2", etc. You can customize these names:
@@ -108,7 +110,7 @@ By default, groups are named "Family 1", "Family 2", etc. You can customize thes
    ---
    ```
 
-**Note:** The `group_name` property sets the display name for the entire connected family group. If multiple people in the same group have different names, the most common one is used.
+**Note:** `group_name` is optional and blank by default. A family is detected and shown in the picker whether or not you set it; assigning a `group_name` simply renames that detected group and overrides its `Family N` label. If multiple people in the same group have different names, the most common one is used. Because it does not auto-populate, seeing the property empty on your notes is expected until you assign one.
 
 **In the Person Picker:** the Family groups sidebar uses each component's `collectionName` for the tab label when every member of that component shares one (otherwise it falls back to `Family 1` / `Family 2` etc.). Components that share the same `collectionName` across disjoint graph regions — for example a "player_group_alpha" group spanning unrelated characters — are merged into a single tab in the picker rather than appearing as separate "Family N" entries. To get an unrelated set of people to merge, give every member the same `group_name` value.
 
@@ -172,8 +174,9 @@ Filter generated trees by collection membership:
 |---------|-------------|-------------|
 | **Purpose** | Identify connected families | Organize for your needs |
 | **Detection** | Automatic (from relationships) | Manual (you assign) |
-| **Property** | `group_name` | `collection` |
-| **Zero Config** | ✅ Yes | ❌ Optional |
+| **Where it shows** | Person Picker "Family N" tabs | Wherever you use the collection |
+| **Property** | `group_name` — optional, blank by default (sets a custom name) | `collection` — you set it |
+| **Zero Config** | ✅ Detection is automatic; naming is optional | ❌ You assign |
 | **Use Cases** | Multi-family vaults, auto-naming | Lineages, generations, factions |
 
 **Pro Tip:** Use both together! Group names for automated organization, collections for your custom research categories.
