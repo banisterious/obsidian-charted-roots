@@ -3134,9 +3134,11 @@ export class CreatePersonModal extends Modal {
 				data.birthPlaceCrId = this.birthPlaceField.crId;
 				data.birthPlaceName = this.birthPlaceField.name;
 			} else {
-				// Explicitly clear birth place if unlinked
-				data.birthPlaceCrId = undefined;
-				data.birthPlaceName = undefined;
+				// Explicitly clear birth place if unlinked. Empty string (not
+				// undefined) is the "clear this property" signal the writer acts
+				// on; undefined means "leave unchanged" (#680), matching father/mother.
+				data.birthPlaceCrId = '';
+				data.birthPlaceName = '';
 			}
 
 			// Add death place
@@ -3144,9 +3146,9 @@ export class CreatePersonModal extends Modal {
 				data.deathPlaceCrId = this.deathPlaceField.crId;
 				data.deathPlaceName = this.deathPlaceField.name;
 			} else {
-				// Explicitly clear death place if unlinked
-				data.deathPlaceCrId = undefined;
-				data.deathPlaceName = undefined;
+				// Explicitly clear death place if unlinked (empty string, see above; #680).
+				data.deathPlaceCrId = '';
+				data.deathPlaceName = '';
 			}
 
 			// Add sources

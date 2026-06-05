@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Unlinking a birth or death place in the Edit Person modal now removes it on save** ([#680](https://github.com/banisterious/obsidian-charted-roots/issues/680)): Clearing a person's birth place or death place and saving without choosing a replacement left the old `birth_place` / `death_place` wikilink (and its `_id`) in the note. The modal now signals a cleared place the same way it signals a cleared parent, so the writer removes both properties. Reported by [@tenephor](https://github.com/tenephor).
+
 ### Changed
 
 - **Image crop regions are stored as flat properties** ([#683](https://github.com/banisterious/obsidian-charted-roots/issues/683)): Crop data for images was stored as a nested YAML array (`media_crop: [{ image, x, y, w, h }]`). Obsidian does not fully support nested properties, so the Data Quality pane flagged a warning on every note that had a crop. Crops now use flat parallel arrays (`media_crop_image`, `media_crop_x`, `media_crop_y`, `media_crop_w`, `media_crop_h`), which the Data Quality pane accepts. Existing notes still render, setting or changing a crop migrates that note automatically, and **Flatten nested properties** (Control Center) converts the rest in bulk. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
