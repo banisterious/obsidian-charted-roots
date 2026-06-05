@@ -115,3 +115,32 @@ describe('updatePersonNote — clearing birth/death place (#680)', () => {
 		expect(fm.birth_place_id).toBe('place-naboo');
 	});
 });
+
+describe('updatePersonNote — burial date (#682)', () => {
+	it('writes a provided burial date', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, { burialDate: '19 BBY' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).burial_date).toBe('19 BBY');
+	});
+
+	it('removes burial_date when cleared with an empty string', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker', burial_date: '19 BBY' });
+
+		await updatePersonNote(app, file, { burialDate: '' } as Partial<PersonData>);
+
+		expect('burial_date' in frontmatterOf(app, file)).toBe(false);
+	});
+
+	it('leaves an existing burial date untouched when not provided (undefined)', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker', burial_date: '19 BBY' });
+
+		await updatePersonNote(app, file, { name: 'Anakin Skywalker' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).burial_date).toBe('19 BBY');
+	});
+});

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Burial date field in the Create/Edit Person modal** ([#682](https://github.com/banisterious/obsidian-charted-roots/issues/682)): The person modal now has a "Burial date" field alongside the birth and death dates, writing the `burial_date` property (previously only set by import or by editing frontmatter by hand). Clearing it removes the property. Requested by [@tenephor](https://github.com/tenephor).
+
 ### Fixed
 
 - **Unlinking a birth or death place in the Edit Person modal now removes it on save** ([#680](https://github.com/banisterious/obsidian-charted-roots/issues/680)): Clearing a person's birth place or death place and saving without choosing a replacement left the old `birth_place` / `death_place` wikilink (and its `_id`) in the note. The modal now signals a cleared place the same way it signals a cleared parent, so the writer removes both properties. Reported by [@tenephor](https://github.com/tenephor).

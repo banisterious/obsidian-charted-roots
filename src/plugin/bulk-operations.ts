@@ -231,6 +231,7 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			// Dates and places
 			born: fm.born,
 			died: fm.died,
+			buried: fm.burial_date,
 			birthPlace: fm.birth_place,
 			deathPlace: fm.death_place,
 			birthPlaceId: fm.birth_place_id,

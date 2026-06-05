@@ -1648,6 +1648,7 @@ function renderPersonTableRow(
 				cr_living: typeof fm.cr_living === 'boolean' ? fm.cr_living : (fm.cr_living === 'true' ? true : (fm.cr_living === 'false' ? false : undefined)),
 				born: person.birthDate,
 				died: person.deathDate,
+				buried: fm.burial_date,
 				birthPlace: person.birthPlace?.placeName,
 				deathPlace: person.deathPlace?.placeName,
 				birthPlaceId: fm.birth_place_id,
