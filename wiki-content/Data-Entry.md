@@ -280,6 +280,8 @@ father_id: xyz-789-uvw-012
 
 Capture genealogical data directly from web pages using [Obsidian Web Clipper](https://help.obsidian.md/Clipper). This method is ideal for collecting data from online sources like obituaries, Find A Grave, FamilySearch, and historical archives.
 
+For obituary pages, the [FinalNotes Obituary Research Guide](https://www.finalnotes.page/obituary-research-guide/) provides a practical checklist for extracting names, dates, relationships, service details, and follow-up searches before promoting clipped data into your main tree.
+
 ### Quick Overview
 
 1. Install Obsidian Web Clipper browser extension
