@@ -3,6 +3,7 @@ import {
 	orderMovementPlaces,
 	buildLocationSequence,
 	collapseNestedLocations,
+	rollUpToAttestedAncestor,
 } from '../src/statistics/services/migration-analysis';
 import { placeNamesEqual, isSegmentAncestor } from '../src/utils/place-segments';
 
@@ -88,5 +89,59 @@ describe('collapseNestedLocations (#643)', () => {
 			sameLocation,
 		);
 		expect(collapsed).toHaveLength(1);
+	});
+});
+
+describe('rollUpToAttestedAncestor (#643 sub-place roll-up)', () => {
+	// Ancestors are passed as node ids; the resolver returns the representative
+	// display string for an attested ancestor (so a sub-place destination merges
+	// into the bucket the coarser place already uses), or null when unattested.
+	// Here node "coruscant-id" is attested and represented as "Coruscant".
+	const attestedNameFor = (id: string): string | null =>
+		id === 'coruscant-id' ? 'Coruscant' : null;
+
+	it('rolls a sub-place up to its attested parent', () => {
+		expect(rollUpToAttestedAncestor('Jedi Temple', ['coruscant-id'], attestedNameFor))
+			.toBe('Coruscant');
+	});
+
+	it('returns the nearest attested ancestor, not a farther one', () => {
+		const resolver = (id: string): string | null => {
+			if (id === 'coruscant-id') return 'Coruscant';
+			if (id === 'coruscant-system-id') return 'Coruscant System';
+			return null;
+		};
+		expect(rollUpToAttestedAncestor(
+			'Jedi Temple',
+			['coruscant-id', 'coruscant-system-id', 'galaxy-id'],
+			resolver,
+		)).toBe('Coruscant');
+	});
+
+	it('keeps the place when no ancestor is attested', () => {
+		expect(rollUpToAttestedAncestor('Jedi Temple', ['coruscant-id'], () => null))
+			.toBe('Jedi Temple');
+	});
+
+	it('skips an unattested nearer ancestor to reach an attested farther one', () => {
+		expect(rollUpToAttestedAncestor(
+			'Jedi Temple',
+			['temple-district-id', 'coruscant-id'],
+			attestedNameFor,
+		)).toBe('Coruscant');
+	});
+
+	it('rolls up to the attested representative even when spelled differently', () => {
+		// The link basename ("Suffolk County Massachusetts") differs from the place
+		// title; matching is by node id, and the representative string is returned.
+		const resolver = (id: string): string | null =>
+			id === 'suffolk-id' ? 'Suffolk County Massachusetts' : null;
+		expect(rollUpToAttestedAncestor('Boston Suffolk County', ['suffolk-id'], resolver))
+			.toBe('Suffolk County Massachusetts');
+	});
+
+	it('keeps a place with no ancestors at all', () => {
+		expect(rollUpToAttestedAncestor('Coruscant', [], attestedNameFor))
+			.toBe('Coruscant');
 	});
 });

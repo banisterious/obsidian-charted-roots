@@ -22,6 +22,7 @@ import {
 	orderMovementPlaces,
 	buildLocationSequence,
 	collapseNestedLocations,
+	rollUpToAttestedAncestor,
 	type DatedPlace
 } from './migration-analysis';
 import type {
@@ -1378,13 +1379,15 @@ export class StatisticsService {
 		const sameLocation = (a: string, b: string): boolean =>
 			this.migrationSameLocation(a, b, placeGraph);
 
-		const routeCount = new Map<string, number>();
-		const destinationCount = new Map<string, number>();
-		const originCount = new Map<string, number>();
 		let analyzedCount = 0;
 		let movedCount = 0;
 		let analyzedFromEvents = 0;
 		let analyzedFromBirthDeath = 0;
+
+		// Pass 1: reduce each person to their endpoints (origin, destination) and
+		// whether they moved. Tallying is deferred to pass 2 so destinations can be
+		// rolled up against the full set of attested places (#643 sub-place roll-up).
+		const journeys: Array<{ origin: string; destination: string; moved: boolean }> = [];
 
 		for (const person of people) {
 			// Primary signal: movement events (Residence / Immigration), ordered
@@ -1407,23 +1410,46 @@ export class StatisticsService {
 				analyzedFromBirthDeath++;
 			}
 
-			const origin = sequence[0];
-			const destination = sequence[sequence.length - 1];
-			originCount.set(origin, (originCount.get(origin) ?? 0) + 1);
-			destinationCount.set(destination, (destinationCount.get(destination) ?? 0) + 1);
-
 			// "Moved" means more than one distinct location once parent/child
 			// places are collapsed, so a city and a homestead on it (or a lifetime
 			// A -> B -> A round trip) are scored correctly.
 			const distinctLocations = collapseNestedLocations(sequence, sameLocation);
-			if (distinctLocations.length > 1) {
-				movedCount++;
-				// Only record a route when start and end are genuinely different
-				// places (a net relocation), not a round trip back to the origin.
-				if (!sameLocation(origin, destination)) {
-					const routeKey = `${origin}|||${destination}`;
-					routeCount.set(routeKey, (routeCount.get(routeKey) ?? 0) + 1);
-				}
+			const moved = distinctLocations.length > 1;
+			if (moved) movedCount++;
+			journeys.push({
+				origin: sequence[0],
+				destination: sequence[sequence.length - 1],
+				moved
+			});
+		}
+
+		// Sub-place roll-up (#643): a destination nested inside a place other
+		// journeys name directly (Jedi Temple inside Coruscant) should count toward
+		// that coarser place, so its migrant tally isn't split off. Roll origins and
+		// destinations independently, each against its own set of attested places.
+		// Anchors are keyed by resolved place-node id (identity, not display string)
+		// so a sub-place rolls up even when GEDCOM titles and link basenames differ.
+		const originAnchors = this.buildPlaceAnchors(journeys.map(j => j.origin), placeGraph);
+		const destinationAnchors = this.buildPlaceAnchors(journeys.map(j => j.destination), placeGraph);
+		const rollUp = (place: string, anchors: Map<string, string>): string =>
+			this.rollUpToParentPlace(place, anchors, placeGraph);
+
+		// Pass 2: tally origins, destinations, and routes from the rolled-up endpoints.
+		const routeCount = new Map<string, number>();
+		const destinationCount = new Map<string, number>();
+		const originCount = new Map<string, number>();
+
+		for (const journey of journeys) {
+			const origin = rollUp(journey.origin, originAnchors);
+			const destination = rollUp(journey.destination, destinationAnchors);
+			originCount.set(origin, (originCount.get(origin) ?? 0) + 1);
+			destinationCount.set(destination, (destinationCount.get(destination) ?? 0) + 1);
+
+			// Only record a route when start and end are genuinely different places
+			// (a net relocation), not a round trip back to the origin.
+			if (journey.moved && !sameLocation(origin, destination)) {
+				const routeKey = `${origin}|||${destination}`;
+				routeCount.set(routeKey, (routeCount.get(routeKey) ?? 0) + 1);
 			}
 		}
 
@@ -1507,6 +1533,40 @@ export class StatisticsService {
 			if (placeGraph.getAncestors(nodeB.id).some(p => p.id === nodeA.id)) return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Index a list of place strings by their resolved place-node id, keeping the
+	 * first display string seen for each node as its representative (#643). The
+	 * resulting map is the set of "attested" places for roll-up: keyed by identity
+	 * so a sub-place can be matched against an ancestor regardless of how either is
+	 * spelled, with a value that merges into the same tally bucket. Strings that
+	 * don't resolve to a known place are skipped (they can't be a roll-up target).
+	 */
+	private buildPlaceAnchors(places: string[], placeGraph: PlaceGraphService): Map<string, string> {
+		const anchors = new Map<string, string>();
+		for (const place of places) {
+			const node = placeGraph.getPlaceByName(place);
+			if (node && !anchors.has(node.id)) {
+				anchors.set(node.id, place);
+			}
+		}
+		return anchors;
+	}
+
+	/**
+	 * Roll a place up to its nearest ancestor that is itself an attested migration
+	 * endpoint (#643). Resolves the place in the graph, walks its ancestry (nearest
+	 * first), and returns the representative string of the closest ancestor node in
+	 * `anchors`. Returns the place unchanged when it isn't a known place or no
+	 * ancestor is attested, so only genuine sub-places of places people actually
+	 * name get consolidated.
+	 */
+	private rollUpToParentPlace(place: string, anchors: Map<string, string>, placeGraph: PlaceGraphService): string {
+		const node = placeGraph.getPlaceByName(place);
+		if (!node) return place;
+		const ancestorIds = placeGraph.getAncestors(node.id).map(a => a.id);
+		return rollUpToAttestedAncestor(place, ancestorIds, id => anchors.get(id) ?? null);
 	}
 
 	/**

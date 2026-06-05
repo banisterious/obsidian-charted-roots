@@ -77,3 +77,33 @@ export function collapseNestedLocations(
 	}
 	return kept;
 }
+
+/**
+ * Roll a place up to the nearest ancestor that is itself an attested migration
+ * endpoint (#643). A destination that is a fine-grained sub-place (Quinlan ->
+ * Jedi Temple) should count toward the coarser place other journeys name
+ * directly (Coruscant), so its migrant tally isn't split off.
+ *
+ * `ancestorsNearestFirst` holds ancestor identifiers from immediate parent
+ * outward. `attestedNameFor` returns the canonical display name to roll into
+ * when an ancestor is attested, or null when it isn't — matching is by identity
+ * (resolved place node), not by display string, because GEDCOM-imported places
+ * carry a short `title` ("Suffolk County") that differs from the basename other
+ * notes link by ("Suffolk County Massachusetts"). The nearest attested ancestor
+ * wins; the place is returned unchanged when none is attested, so a sub-place
+ * nobody else's journey contains keeps its own name rather than rolling up to an
+ * arbitrary level.
+ */
+export function rollUpToAttestedAncestor(
+	place: string,
+	ancestorsNearestFirst: string[],
+	attestedNameFor: (ancestorId: string) => string | null
+): string {
+	for (const ancestorId of ancestorsNearestFirst) {
+		const name = attestedNameFor(ancestorId);
+		if (name !== null) {
+			return name;
+		}
+	}
+	return place;
+}
