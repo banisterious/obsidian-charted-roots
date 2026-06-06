@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.63] - 2026-06-05
+
+A reporter-driven follow-up release. GEDCOM and GEDCOM-X imports now keep generational name suffixes (Sr. / Jr. / III) so relatives who share a name stay distinct, clearing a person's birth or death place in the Edit Person modal removes it on save, the event-driven migration analysis gains three accuracy refinements, and Family Chart highlight groups no longer paint dimmed cards under the connector lines. The person modal also gains a burial date field, and image crop regions move to flat properties so they no longer trip the Data Quality nested-property warning. **1289 tests passing across 111 suites.**
+
 ### Added
 
 - **Burial date field in the Create/Edit Person modal** ([#682](https://github.com/banisterious/obsidian-charted-roots/issues/682)): The person modal now has a "Burial date" field alongside the birth and death dates, writing the `burial_date` property (previously only set by import or by editing frontmatter by hand). Clearing it removes the property. Requested by [@tenephor](https://github.com/tenephor).
