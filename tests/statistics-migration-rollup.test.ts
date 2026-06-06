@@ -38,16 +38,24 @@ function person(name: string, birthPlace: string): PersonNode {
 	} as unknown as PersonNode;
 }
 
-function makeService(people: PersonNode[], events: Record<string, MockEvent[]>): StatisticsService {
+function makeService(
+	people: PersonNode[],
+	events: Record<string, MockEvent[]>,
+	setupPlaces?: (app: App) => void
+): StatisticsService {
 	const app = new App();
 
-	// A small place hierarchy: Jedi Temple inside Coruscant; Lonely Outpost inside
-	// Outer Rim (which is never a migration endpoint); Shili the shared origin.
-	addPlace(app, 'Coruscant 643b', 'iss643b-p01-tst-200');
-	addPlace(app, 'Jedi Temple 643b', 'iss643b-p02-tst-201', 'Coruscant 643b');
-	addPlace(app, 'Outer Rim 643b', 'iss643b-p03-tst-202');
-	addPlace(app, 'Lonely Outpost 643b', 'iss643b-p04-tst-203', 'Outer Rim 643b');
-	addPlace(app, 'Shili 643b', 'iss643b-p05-tst-204');
+	if (setupPlaces) {
+		setupPlaces(app);
+	} else {
+		// A small place hierarchy: Jedi Temple inside Coruscant; Lonely Outpost inside
+		// Outer Rim (which is never a migration endpoint); Shili the shared origin.
+		addPlace(app, 'Coruscant 643b', 'iss643b-p01-tst-200');
+		addPlace(app, 'Jedi Temple 643b', 'iss643b-p02-tst-201', 'Coruscant 643b');
+		addPlace(app, 'Outer Rim 643b', 'iss643b-p03-tst-202');
+		addPlace(app, 'Lonely Outpost 643b', 'iss643b-p04-tst-203', 'Outer Rim 643b');
+		addPlace(app, 'Shili 643b', 'iss643b-p05-tst-204');
+	}
 
 	const settings = {
 		enableFictionalDates: false,
@@ -122,5 +130,63 @@ describe('StatisticsService migration sub-place roll-up (#643b)', () => {
 		const routes = new Map(analysis.topRoutes.map(r => [`${r.from}|||${r.to}`, r.count]));
 		expect(routes.get('Shili 643b|||Coruscant 643b')).toBe(3);
 		expect(routes.get('Shili 643b|||Lonely Outpost 643b')).toBe(1);
+	});
+});
+
+/**
+ * #684 — per-leg routes through the real service. A net first -> last model
+ * undercounts a group's shared move (members born elsewhere land on a different
+ * row) and shows no route at all for a round trip. Counting each leg fixes both.
+ */
+describe('StatisticsService per-leg migration routes (#684)', () => {
+	function setupPlaces(app: App): void {
+		addPlace(app, 'Startown 684', 'iss684-p01-tst-300');
+		addPlace(app, 'Midtown 684', 'iss684-p02-tst-301');
+		addPlace(app, 'Newtown 684', 'iss684-p03-tst-302');
+		addPlace(app, 'Tatooine 684', 'iss684-p04-tst-303');
+		addPlace(app, 'Ator 684', 'iss684-p05-tst-304');
+	}
+
+	// Family of four moves to Newtown: father + two children born at Startown; the
+	// mother was born at Midtown and moved Midtown -> Startown before the family
+	// move. Plus a round trip (Cliegg: Tatooine -> Ator -> Tatooine) and a one-way
+	// mover (Owen: Ator -> Tatooine) who share the Ator -> Tatooine leg.
+	const people = [
+		person('Father 684', '[[Startown 684]]'),
+		person('Child One 684', '[[Startown 684]]'),
+		person('Child Two 684', '[[Startown 684]]'),
+		person('Mother 684', '[[Midtown 684]]'),
+		person('Cliegg 684', '[[Tatooine 684]]'),
+		person('Owen 684', '[[Ator 684]]'),
+	];
+	const events: Record<string, MockEvent[]> = {
+		'[[Father 684]]': [immigration('Newtown 684', '1990')],
+		'[[Child One 684]]': [immigration('Newtown 684', '1992')],
+		'[[Child Two 684]]': [immigration('Newtown 684', '1993')],
+		'[[Mother 684]]': [immigration('Startown 684', '1985'), immigration('Newtown 684', '1990')],
+		'[[Cliegg 684]]': [immigration('Ator 684', '2000'), immigration('Tatooine 684', '2010')],
+		'[[Owen 684]]': [immigration('Tatooine 684', '2005')],
+	};
+
+	function routes(): Map<string, number> {
+		const analysis = makeService(people, events, setupPlaces).getMigrationAnalysis();
+		return new Map(analysis.topRoutes.map(r => [`${r.from}|||${r.to}`, r.count]));
+	}
+
+	it('counts the family shared leg for every member, including one born elsewhere', () => {
+		expect(routes().get('Startown 684|||Newtown 684')).toBe(4);
+		expect(routes().get('Midtown 684|||Startown 684')).toBe(1);
+	});
+
+	it('puts a round-tripper and a one-way mover on the same shared leg', () => {
+		expect(routes().get('Ator 684|||Tatooine 684')).toBe(2);
+		expect(routes().get('Tatooine 684|||Ator 684')).toBe(1);
+	});
+
+	it('still counts each person once for the moved/rate totals', () => {
+		const analysis = makeService(people, events, setupPlaces).getMigrationAnalysis();
+		expect(analysis.analyzedCount).toBe(6);
+		expect(analysis.movedCount).toBe(6);
+		expect(analysis.migrationRate).toBe(100);
 	});
 });

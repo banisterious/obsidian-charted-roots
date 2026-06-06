@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Migration routes now count each move, not just the net journey** ([#684](https://github.com/banisterious/obsidian-charted-roots/issues/684)): The Statistics Dashboard and Places "Top migration routes" previously modeled each person as a single origin -> destination pair (their first known place to their last), which undercounted shared moves and hid round trips. A family that gathers at one place and moves on now counts every member on the shared leg even when they were born in different places, a round trip (A -> B -> A) contributes both of its legs instead of vanishing, and intermediate stops appear as their own routes. The migration rate and moved/analyzed totals are unchanged (still "did this person move at all"), and the parent/child place collapse still applies per leg so a place and its own sub-place don't read as a move. Follows up [#643](https://github.com/banisterious/obsidian-charted-roots/issues/643). Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.63] - 2026-06-05
 
 A reporter-driven follow-up release. GEDCOM and GEDCOM-X imports now keep generational name suffixes (Sr. / Jr. / III) so relatives who share a name stay distinct, clearing a person's birth or death place in the Edit Person modal removes it on save, the event-driven migration analysis gains three accuracy refinements, and Family Chart highlight groups no longer paint dimmed cards under the connector lines. The person modal also gains a burial date field, and image crop regions move to flat properties so they no longer trip the Data Quality nested-property warning. **1289 tests passing across 111 suites.**

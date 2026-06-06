@@ -3,6 +3,8 @@ import {
 	orderMovementPlaces,
 	buildLocationSequence,
 	collapseNestedLocations,
+	collapseConsecutiveLocations,
+	extractMigrationLegs,
 	rollUpToAttestedAncestor,
 } from '../src/statistics/services/migration-analysis';
 import { placeNamesEqual, isSegmentAncestor } from '../src/utils/place-segments';
@@ -89,6 +91,95 @@ describe('collapseNestedLocations (#643)', () => {
 			sameLocation,
 		);
 		expect(collapsed).toHaveLength(1);
+	});
+});
+
+describe('collapseConsecutiveLocations (#684 per-leg)', () => {
+	it('keeps a round trip as three stops (unlike the global collapse)', () => {
+		expect(collapseConsecutiveLocations(['Tatooine', 'Coruscant', 'Tatooine'], sameLocation))
+			.toEqual(['Tatooine', 'Coruscant', 'Tatooine']);
+	});
+
+	it('merges adjacent duplicates', () => {
+		expect(collapseConsecutiveLocations(['Shili', 'Shili', 'Coruscant'], sameLocation))
+			.toEqual(['Shili', 'Coruscant']);
+	});
+
+	it('merges an adjacent parent/child hop into one stop', () => {
+		// Tatooine -> Lars Homestead (on Tatooine) -> Coruscant is one move, not two.
+		expect(collapseConsecutiveLocations(
+			['Tatooine', 'Lars Homestead, Tatooine', 'Coruscant'],
+			sameLocation,
+		)).toEqual(['Tatooine', 'Coruscant']);
+	});
+
+	it('returns a single stop when the person never left', () => {
+		expect(collapseConsecutiveLocations(['Tatooine', 'Tatooine'], sameLocation))
+			.toEqual(['Tatooine']);
+	});
+
+	it('drops blank entries', () => {
+		expect(collapseConsecutiveLocations(['', 'Shili', '', 'Coruscant'], sameLocation))
+			.toEqual(['Shili', 'Coruscant']);
+	});
+});
+
+describe('extractMigrationLegs (#684)', () => {
+	it('splits stops into consecutive legs', () => {
+		expect(extractMigrationLegs(['Shili', 'Mandalore', 'Coruscant']))
+			.toEqual([['Shili', 'Mandalore'], ['Mandalore', 'Coruscant']]);
+	});
+
+	it('gives a round trip both of its legs', () => {
+		expect(extractMigrationLegs(['Tatooine', 'Ator', 'Tatooine']))
+			.toEqual([['Tatooine', 'Ator'], ['Ator', 'Tatooine']]);
+	});
+
+	it('returns no legs for a single stop or none', () => {
+		expect(extractMigrationLegs(['Tatooine'])).toEqual([]);
+		expect(extractMigrationLegs([])).toEqual([]);
+	});
+});
+
+describe('per-leg route aggregation (#684 acceptance)', () => {
+	// Mirrors the service's pass-2b: collapse each person's sequence to stops, take
+	// the legs, and tally. Roll-up is exercised separately (rollUpToAttestedAncestor
+	// above); here every place is a distinct leaf, so a leg's endpoints count as-is.
+	function tallyRoutes(sequences: string[][]): Map<string, number> {
+		const counts = new Map<string, number>();
+		for (const seq of sequences) {
+			const stops = collapseConsecutiveLocations(seq, sameLocation);
+			for (const [from, to] of extractMigrationLegs(stops)) {
+				if (sameLocation(from, to)) continue;
+				const key = `${from} -> ${to}`;
+				counts.set(key, (counts.get(key) ?? 0) + 1);
+			}
+		}
+		return counts;
+	}
+
+	it('counts a group share leg for every member, even from different birthplaces', () => {
+		// Family of four moves S -> N. Father + two children were born at S; the
+		// mother was born at M and moved M -> S -> N. The shared S -> N leg is 4.
+		const counts = tallyRoutes([
+			['S', 'N'],          // father
+			['S', 'N'],          // child 1
+			['S', 'N'],          // child 2
+			['M', 'S', 'N'],     // mother
+		]);
+		expect(counts.get('S -> N')).toBe(4);
+		expect(counts.get('M -> S')).toBe(1);
+	});
+
+	it('shows round-trip and one-way movers together on the shared leg', () => {
+		// Cliegg: Tatooine -> Ator -> Tatooine (round trip, net no move). Owen:
+		// Ator -> Tatooine. Both made the Ator -> Tatooine leg.
+		const counts = tallyRoutes([
+			['Tatooine', 'Ator', 'Tatooine'],  // Cliegg
+			['Ator', 'Tatooine'],              // Owen
+		]);
+		expect(counts.get('Ator -> Tatooine')).toBe(2);
+		expect(counts.get('Tatooine -> Ator')).toBe(1);
 	});
 });
 

@@ -79,6 +79,47 @@ export function collapseNestedLocations(
 }
 
 /**
+ * Reduce a location sequence to its per-leg "stops": consecutive runs of the
+ * same location (equal, or one nested inside the other) collapse to their first
+ * occurrence, but a location that recurs after the person left it is kept. So a
+ * round trip A -> B -> A stays three stops, yielding the legs A->B and B->A.
+ *
+ * This is the per-leg counterpart to {@link collapseNestedLocations}, which
+ * dedupes globally (every place against every earlier one) and so flattens a
+ * round trip to its two distinct places. Use this one for route aggregation
+ * (#684) and the other for the per-person "did they move at all" decision.
+ */
+export function collapseConsecutiveLocations(
+	places: string[],
+	sameLocation: (a: string, b: string) => boolean
+): string[] {
+	const stops: string[] = [];
+	for (const place of places) {
+		if (!place) continue;
+		const prev = stops[stops.length - 1];
+		if (prev === undefined || !sameLocation(prev, place)) {
+			stops.push(place);
+		}
+	}
+	return stops;
+}
+
+/**
+ * Split a stop sequence into its consecutive legs — each an actual move the
+ * person made (#684). Returns one [from, to] pair per adjacent stop pair, and an
+ * empty list when there was no move. Callers roll each endpoint up to its
+ * attested ancestor and drop a leg whose endpoints then resolve to the same
+ * place (a move between two sub-places of one place).
+ */
+export function extractMigrationLegs(stops: string[]): Array<[string, string]> {
+	const legs: Array<[string, string]> = [];
+	for (let i = 1; i < stops.length; i++) {
+		legs.push([stops[i - 1], stops[i]]);
+	}
+	return legs;
+}
+
+/**
  * Roll a place up to the nearest ancestor that is itself an attested migration
  * endpoint (#643). A destination that is a fine-grained sub-place (Quinlan ->
  * Jedi Temple) should count toward the coarser place other journeys name
