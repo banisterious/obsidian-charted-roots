@@ -515,7 +515,8 @@ export class FlattenNestedPropertiesModal extends Modal {
 				// media_crop is an array of crop objects: read it (legacy form) and
 				// rewrite as the flat parallel arrays, dropping the nested key (#683).
 				if (def.kind === 'media-crop') {
-					applyMediaCropFields(frontmatter, parseMediaCropFields(frontmatter));
+					const fm = frontmatter as Record<string, unknown>;
+					applyMediaCropFields(fm, parseMediaCropFields(fm));
 					continue;
 				}
 

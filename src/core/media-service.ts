@@ -92,7 +92,7 @@ function parseFlatMediaCrops(frontmatter: Record<string, unknown>): Map<string, 
 	const percents = Array.isArray(frontmatter.media_crop_percent) ? frontmatter.media_crop_percent : [];
 
 	for (let i = 0; i < images.length; i++) {
-		const image = images[i];
+		const image: unknown = images[i];
 		const x = xs[i];
 		const y = ys[i];
 		const w = ws[i];
