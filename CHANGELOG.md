@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Family Chart focus indicator is visible again** ([#689](https://github.com/banisterious/obsidian-charted-roots/issues/689)): The border drawn around the focus (root) person's card took its colour from the card's text, so the darker card text introduced in v0.22.63 made the focus outline blend into dark cards and effectively disappear. The outline now uses the theme's accent colour, independent of the text colour, so the focused person is clearly marked (in the chart and in exports). Reported by [@tenephor](https://github.com/tenephor).
+
 - **Family Chart highlight groups now work in a pop-out window**: With the Family Chart moved to its own window, Highlight Groups had no effect — cards were neither dimmed nor highlighted — even though selecting a card still worked. The highlight pass was looking for cards in the main window rather than the pop-out, so it found none. It now applies within the chart's own window. Raised in the [#670](https://github.com/banisterious/obsidian-charted-roots/issues/670) discussion by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Changed

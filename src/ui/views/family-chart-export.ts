@@ -1101,6 +1101,9 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 	const maleColor = 'rgba(69, 123, 141, 1)';
 	const nonbinaryColor = 'rgba(180, 150, 60, 1)';
 	const genderlessColor = 'rgb(59, 85, 96)';
+	// Focus (root person) outline: a contrasty accent independent of the text
+	// colour, so it stays visible against every card fill (#689).
+	const focusOutlineColor = '#8b5cf6';
 
 	// Embed CSS styles directly in the SVG for standalone rendering
 	const styleEl = createSvg('style');
@@ -1116,7 +1119,7 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 		.card-nonbinary .card-body-rect { fill: ${nonbinaryColor}; }
 		.card-genderless .card-body-rect { fill: ${genderlessColor}; }
 		.link { stroke: ${textColor}; stroke-width: 2px; fill: none; }
-		.card-main-outline { stroke: ${textColor}; stroke-width: 3px; }
+		.card-main-outline { stroke: ${focusOutlineColor}; stroke-width: 3px; }
 	`;
 	svgClone.insertBefore(styleEl, svgClone.firstChild);
 

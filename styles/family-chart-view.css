@@ -317,9 +317,11 @@
   fill: #ffffff;
 }
 
-/* Main card outline */
+/* Focus (root person) card outline. Uses the theme accent, not currentColor:
+   the outline used to inherit the card text colour, which #672 turned near-black
+   on dark cards and made the focus indicator invisible (#689). */
 .cr-fcv-chart-container.f3 .card-main-outline {
-  stroke: currentColor;
+  stroke: var(--interactive-accent);
   stroke-width: 3px;
 }
 
