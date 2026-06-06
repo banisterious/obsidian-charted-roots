@@ -18,6 +18,7 @@ import {
 	GeoCoordinates,
 	CustomCoordinates,
 	HistoricalName,
+	parseHistoricalNames,
 	DEFAULT_PLACE_CATEGORY,
 	supportsUniverse,
 	supportsRealCoordinates
@@ -1219,30 +1220,12 @@ export class PlaceGraphService {
 	}
 
 	/**
-	 * Parse the `historical_names` array from frontmatter into HistoricalName
-	 * entries. Tolerates the canonical object form (`{ name, period? }`), a bare
-	 * string (name only), and skips malformed entries. (#635)
+	 * Parse `historical_names` from frontmatter into HistoricalName entries.
+	 * Delegates to the shared reader, which handles the flat parallel-array shape
+	 * plus the legacy nested and bare-string forms. (#635)
 	 */
 	private parseHistoricalNames(fm: Record<string, unknown>): HistoricalName[] {
-		const raw = fm.historical_names;
-		if (!Array.isArray(raw)) return [];
-
-		const result: HistoricalName[] = [];
-		for (const entry of raw) {
-			if (typeof entry === 'string') {
-				const name = entry.trim();
-				if (name) result.push({ name });
-			} else if (entry && typeof entry === 'object') {
-				const obj = entry as Record<string, unknown>;
-				const name = typeof obj.name === 'string' ? obj.name.trim() : '';
-				if (!name) continue;
-				const period = typeof obj.period === 'string' && obj.period.trim()
-					? obj.period.trim()
-					: undefined;
-				result.push(period ? { name, period } : { name });
-			}
-		}
-		return result;
+		return parseHistoricalNames(fm);
 	}
 
 	/**

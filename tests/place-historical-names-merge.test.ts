@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { computeMergedHistoricalNames, type PlaceNode, type HistoricalName } from '../src/models/place';
+import {
+	computeMergedHistoricalNames,
+	parseHistoricalNames,
+	toFlatHistoricalNames,
+	type PlaceNode,
+	type HistoricalName,
+} from '../src/models/place';
 import { PlaceGraphService } from '../src/core/place-graph';
 
 /**
@@ -111,5 +117,46 @@ describe('PlaceGraphService.parseHistoricalNames — load survives round-trip (#
 	it('returns an empty array when historical_names is absent or not an array', () => {
 		expect(parse({})).toEqual([]);
 		expect(parse({ historical_names: 'Bombay' })).toEqual([]);
+	});
+});
+
+describe('parseHistoricalNames — flat parallel-array form (#687)', () => {
+	it('reads a flat string list with index-aligned periods', () => {
+		expect(parseHistoricalNames({
+			historical_names: ['Bombay', 'Heptanesia'],
+			historical_name_periods: ['British Raj', ''],
+		})).toEqual([{ name: 'Bombay', period: 'British Raj' }, { name: 'Heptanesia' }]);
+	});
+
+	it('reads a flat string list with no periods array', () => {
+		expect(parseHistoricalNames({ historical_names: ['Lutèce', 'Paris'] }))
+			.toEqual([{ name: 'Lutèce' }, { name: 'Paris' }]);
+	});
+
+	it('still reads the legacy nested object form (backward compatibility)', () => {
+		expect(parseHistoricalNames({ historical_names: [{ name: 'Bombay', period: 'British Raj' }] }))
+			.toEqual([{ name: 'Bombay', period: 'British Raj' }]);
+	});
+});
+
+describe('toFlatHistoricalNames (#687)', () => {
+	it('returns a plain string list when no entry has a period', () => {
+		expect(toFlatHistoricalNames([{ name: 'Bombay' }, { name: 'Heptanesia' }]))
+			.toEqual({ historical_names: ['Bombay', 'Heptanesia'] });
+	});
+
+	it('includes an index-aligned periods array when any entry has a period', () => {
+		expect(toFlatHistoricalNames([{ name: 'Bombay', period: 'British Raj' }, { name: 'Heptanesia' }]))
+			.toEqual({ historical_names: ['Bombay', 'Heptanesia'], historical_name_periods: ['British Raj', ''] });
+	});
+
+	it('returns null for an empty list', () => {
+		expect(toFlatHistoricalNames([])).toBeNull();
+	});
+
+	it('round-trips through parseHistoricalNames', () => {
+		const entries: HistoricalName[] = [{ name: 'Bombay', period: 'British Raj' }, { name: 'Heptanesia' }];
+		const flat = toFlatHistoricalNames(entries)!;
+		expect(parseHistoricalNames(flat as unknown as Record<string, unknown>)).toEqual(entries);
 	});
 });

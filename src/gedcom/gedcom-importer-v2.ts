@@ -31,6 +31,7 @@ import type { CreateEventData, EventConfidence } from '../events/types/event-typ
 import { US_STATE_ABBREVIATIONS, CA_PROVINCE_ABBREVIATIONS } from '../utils/place-name-normalizer';
 import { consolidatePlaceVariants, mergeVariantHistoricalNames } from './gedcom-place-variants';
 import { isSameLocationDifferentJurisdiction } from '../utils/place-segments';
+import { parseHistoricalNames, toFlatHistoricalNames } from '../models/place';
 import type { CitationData } from '../sources/types/citation-types';
 import { CitationNoteService } from '../sources/services/citation-note-service';
 
@@ -2627,7 +2628,7 @@ export class GedcomImporterV2 {
 
 		// Fold any variant spellings of this place into historical_names (#687),
 		// deduped against what the note already carries.
-		const existingHistorical = this.readHistoricalNames(fileCache?.frontmatter?.historical_names);
+		const existingHistorical = parseHistoricalNames(fileCache?.frontmatter ?? {});
 		const mergedHistorical = mergeVariantHistoricalNames(
 			existingHistorical,
 			String(currentFullName ?? placeString),
@@ -2677,34 +2678,18 @@ export class GedcomImporterV2 {
 				frontmatter.full_name = newFullName;
 			}
 			if (historicalChanged) {
-				frontmatter.historical_names = mergedHistorical;
+				// Flat parallel arrays, not nested objects (#687).
+				const flat = toFlatHistoricalNames(mergedHistorical);
+				if (flat) {
+					frontmatter.historical_names = flat.historical_names;
+					if (flat.historical_name_periods) {
+						frontmatter.historical_name_periods = flat.historical_name_periods;
+					}
+				}
 			}
 		});
 
 		return true;
-	}
-
-	/**
-	 * Coerce a raw frontmatter `historical_names` value into a normalized list,
-	 * accepting both the object form (`{ name, period }`) and the bare-string form,
-	 * and dropping anything malformed (#687, mirrors the place-graph reader).
-	 */
-	private readHistoricalNames(raw: unknown): Array<{ name: string; period?: string }> {
-		if (!Array.isArray(raw)) return [];
-		const result: Array<{ name: string; period?: string }> = [];
-		for (const entry of raw) {
-			if (typeof entry === 'string' && entry.trim()) {
-				result.push({ name: entry.trim() });
-			} else if (entry && typeof entry === 'object') {
-				const obj = entry as { name?: unknown; period?: unknown };
-				if (typeof obj.name === 'string' && obj.name.trim()) {
-					result.push(typeof obj.period === 'string' && obj.period.trim()
-						? { name: obj.name.trim(), period: obj.period.trim() }
-						: { name: obj.name.trim() });
-				}
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -2760,12 +2745,13 @@ export class GedcomImporterV2 {
 		frontmatterLines.push(`full_name: "${placeString.replace(/"/g, '\\"')}"`);
 
 		// Preserve any variant spellings that consolidated into this place as
-		// historical names, so the discarded forms aren't lost (#687 / #635).
-		const historicalNames = mergeVariantHistoricalNames([], placeString, variants);
-		if (historicalNames.length > 0) {
+		// historical names. Flat list (not nested objects) so the property stays
+		// Obsidian-friendly (#687 / #635); import variants carry no period.
+		const flatHistorical = toFlatHistoricalNames(mergeVariantHistoricalNames([], placeString, variants));
+		if (flatHistorical) {
 			frontmatterLines.push('historical_names:');
-			for (const historical of historicalNames) {
-				frontmatterLines.push(`  - name: "${historical.name.replace(/"/g, '\\"')}"`);
+			for (const name of flatHistorical.historical_names) {
+				frontmatterLines.push(`  - "${name.replace(/"/g, '\\"')}"`);
 			}
 		}
 

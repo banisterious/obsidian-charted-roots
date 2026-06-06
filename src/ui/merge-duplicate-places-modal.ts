@@ -7,7 +7,7 @@
 import { App, ButtonComponent, Menu, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
-import { PlaceNode, HistoricalName, computeMergedHistoricalNames } from '../models/place';
+import { PlaceNode, computeMergedHistoricalNames, toFlatHistoricalNames } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { FolderFilterService } from '../core/folder-filter';
 import { US_STATE_ABBREVIATIONS, US_STATE_NAMES } from '../utils/place-name-normalizer';
@@ -1237,9 +1237,17 @@ export class MergeDuplicatePlacesModal extends Modal {
 		if (!(canonicalFile instanceof TFile)) return 0;
 
 		await this.app.fileManager.processFrontMatter(canonicalFile, (fm: Record<string, unknown>) => {
-			fm.historical_names = merged.map((hn: HistoricalName) =>
-				hn.period ? { name: hn.name, period: hn.period } : { name: hn.name }
-			);
+			// Flat parallel arrays, not nested objects (Obsidian doesn't fully
+			// support nested properties); periods array only when one is set.
+			const flat = toFlatHistoricalNames(merged);
+			if (flat) {
+				fm.historical_names = flat.historical_names;
+				if (flat.historical_name_periods) {
+					fm.historical_name_periods = flat.historical_name_periods;
+				} else {
+					delete fm.historical_name_periods;
+				}
+			}
 		});
 		// Keep the in-memory node consistent for any later operation this session.
 		canonical.historicalNames = merged;

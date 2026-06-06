@@ -472,8 +472,7 @@ place_category: historical
 ${p('place_type')}: <% tp.system.suggester(["City", "Town", "Village", "Country", "State/Province", "Region", "Kingdom", "Empire"], ["city", "town", "village", "country", "state", "region", "kingdom", "empire"]) %>
 ${p('parent_place')}:
 historical_names:
-  - name:
-    period:
+historical_name_periods:
 ---
 
 # <% tp.file.title %>
@@ -530,8 +529,7 @@ custom_coordinates:
   y:
   map:
 historical_names:
-  - name:
-    period:
+historical_name_periods:
 ${p('collection')}:
 ---
 

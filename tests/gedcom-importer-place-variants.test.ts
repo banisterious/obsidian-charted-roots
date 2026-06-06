@@ -52,11 +52,13 @@ describe('GEDCOM place-variant consolidation on import (#687)', () => {
 		const provincePath = placeToNoteInfo.get('Québec, Canada').path;
 		expect(placeToNoteInfo.get('Quebec, Canada').path).toBe(provincePath);
 
-		// The discarded spelling is preserved as a historical name on the city note.
+		// The discarded spelling is preserved as a historical name on the city note,
+		// written as a FLAT string list (not a nested `- name:` object) (#687).
 		const cityFile = (importer as any).app.vault.getAbstractFileByPath(cityPath);
 		const content = await (importer as any).app.vault.read(cityFile);
 		expect(content).toContain('historical_names:');
-		expect(content).toContain('Montreal, Quebec, Canada');
+		expect(content).toContain('- "Montreal, Quebec, Canada"');
+		expect(content).not.toContain('- name:');
 	});
 
 	it('leaves a clean place set as one note each (no historical_names)', async () => {
