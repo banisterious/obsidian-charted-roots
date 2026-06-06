@@ -3,7 +3,7 @@
  *
  * Visual modal for selecting a rectangular region of an image.
  * The user draws/adjusts a rectangle on the image, and the
- * coordinates are saved to the note's media_crop frontmatter.
+ * coordinates are saved to the note's flat crop properties (#683).
  */
 
 import { Modal, App, TFile, Notice } from 'obsidian';

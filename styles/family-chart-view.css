@@ -1403,14 +1403,18 @@
   isolation: isolate;
 }
 
-/* Family-chart's library writes inline `opacity: 1` on card_cont during
- * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
- * `.on("end", ...)` cleanup to family-chart's SVG and HTML cardUpdate
- * transitions so the inline style is removed once the animation completes,
- * letting this CSS rule take effect without `!important`. */
-.cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3;
-  transition: opacity 0.2s ease;
+/* Dim non-matching cards by fading them toward the chart background with an
+ * overlay <rect> (.cr-hl-dim-overlay) injected per card in applyHighlightClasses,
+ * NOT with CSS `opacity` on `.card_cont`. CSS opacity gives the card group a
+ * stacking context that Chromium mis-orders beneath the links layer on Linux and
+ * macOS (#670) — present even with hardware acceleration off, so it is a
+ * paint-order quirk, not GPU compositing. `fill-opacity` on a plain rect creates
+ * no stacking context, so the card group keeps its normal paint order above the
+ * connector lines on every platform. */
+.cr-fcv-chart-container .cr-hl-dim-overlay {
+  fill: var(--background-color);
+  fill-opacity: 0.7;
+  pointer-events: none;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {

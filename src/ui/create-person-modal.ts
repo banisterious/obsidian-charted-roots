@@ -127,6 +127,7 @@ export class CreatePersonModal extends Modal {
 				// Dates and places
 				born?: string;
 				died?: string;
+				buried?: string;
 				birthPlace?: string;
 				deathPlace?: string;
 				birthPlaceId?: string;
@@ -233,6 +234,7 @@ export class CreatePersonModal extends Modal {
 				// Dates and places
 				birthDate: ep.born,
 				deathDate: ep.died,
+				burialDate: ep.buried,
 				birthPlace: ep.birthPlace,
 				deathPlace: ep.deathPlace,
 				occupation: ep.occupation,
@@ -534,6 +536,17 @@ export class CreatePersonModal extends Modal {
 		// Death place (link field)
 		this.createPlaceField(form, 'Death place', this.deathPlaceField);
 
+		// Burial date (#682)
+		new Setting(form)
+			.setName('Burial date')
+			.setDesc('Date of burial or interment')
+			.addText(text => text
+				.setPlaceholder('e.g., 1952-08-23')
+				.setValue(this.personData.burialDate || '')
+				.onChange(value => {
+					this.personData.burialDate = value || undefined;
+				}));
+
 		// === DNA INFORMATION (inline expansion, only when DNA tracking enabled) ===
 		if (this.plugin?.settings.enableDnaTracking) {
 			this.renderDnaSection(form);
@@ -805,6 +818,7 @@ export class CreatePersonModal extends Modal {
 			pronouns: this.personData.pronouns,
 			birthDate: this.personData.birthDate,
 			deathDate: this.personData.deathDate,
+			burialDate: this.personData.burialDate,
 			occupation: this.personData.occupation,
 			researchLevel: this.personData.researchLevel,
 			collection: this.getCollectionValue(),
@@ -857,6 +871,7 @@ export class CreatePersonModal extends Modal {
 		this.personData.pronouns = formData.pronouns;
 		this.personData.birthDate = formData.birthDate;
 		this.personData.deathDate = formData.deathDate;
+		this.personData.burialDate = formData.burialDate;
 		this.personData.occupation = formData.occupation;
 		this.personData.researchLevel = formData.researchLevel;
 		this.personData.collection = formData.collection;
@@ -3020,6 +3035,7 @@ export class CreatePersonModal extends Modal {
 				personType: this.personData.personType ?? '',
 				birthDate: this.personData.birthDate ?? '',
 				deathDate: this.personData.deathDate ?? '',
+				burialDate: this.personData.burialDate ?? '',
 				sex: this.personData.sex ?? '',
 				pronouns: this.personData.pronouns ?? [],
 				nickname: this.personData.nickname ?? '',
@@ -3134,9 +3150,11 @@ export class CreatePersonModal extends Modal {
 				data.birthPlaceCrId = this.birthPlaceField.crId;
 				data.birthPlaceName = this.birthPlaceField.name;
 			} else {
-				// Explicitly clear birth place if unlinked
-				data.birthPlaceCrId = undefined;
-				data.birthPlaceName = undefined;
+				// Explicitly clear birth place if unlinked. Empty string (not
+				// undefined) is the "clear this property" signal the writer acts
+				// on; undefined means "leave unchanged" (#680), matching father/mother.
+				data.birthPlaceCrId = '';
+				data.birthPlaceName = '';
 			}
 
 			// Add death place
@@ -3144,9 +3162,9 @@ export class CreatePersonModal extends Modal {
 				data.deathPlaceCrId = this.deathPlaceField.crId;
 				data.deathPlaceName = this.deathPlaceField.name;
 			} else {
-				// Explicitly clear death place if unlinked
-				data.deathPlaceCrId = undefined;
-				data.deathPlaceName = undefined;
+				// Explicitly clear death place if unlinked (empty string, see above; #680).
+				data.deathPlaceCrId = '';
+				data.deathPlaceName = '';
 			}
 
 			// Add sources

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 /**
  * Interactive Family Chart View
  *
@@ -1614,22 +1614,11 @@ export class FamilyChartView extends ItemView {
 			// Resolve and cache the avatar URL
 			const thumbnailFile = mediaService.getFirstThumbnailFile(person.media);
 			if (thumbnailFile) {
-				// Check for crop region (#354)
+				// Check for crop region (#354, flat form #683)
 				const cache = this.app.metadataCache.getFileCache(person.file);
-				const crops = cache?.frontmatter?.media_crop;
-				let cropForThumb: import('../../core/media-service').MediaCrop | undefined;
-				if (Array.isArray(crops)) {
-					for (const entry of crops) {
-						if (typeof entry === 'object' && entry &&
-							(entry as Record<string, unknown>).image === thumbnailFile.name) {
-							const obj = entry as Record<string, unknown>;
-							if (typeof obj.x === 'number' && typeof obj.y === 'number' &&
-								typeof obj.w === 'number' && typeof obj.h === 'number') {
-								cropForThumb = { x: obj.x, y: obj.y, w: obj.w, h: obj.h };
-							}
-						}
-					}
-				}
+				const cropForThumb = cache?.frontmatter
+					? mediaService.parseMediaCrops(cache.frontmatter).get(thumbnailFile.name)
+					: undefined;
 
 				if (cropForThumb) {
 					// Await crop generation so the cropped URL is in cache before chart renders
@@ -4214,11 +4203,12 @@ export class FamilyChartView extends ItemView {
 
 		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
-				// Strip all previous highlight classes
+				// Strip all previous highlight classes and any dim overlay
 				this.classList.remove('cr-hl-dim', 'cr-hl-match');
 				for (const c of HIGHLIGHT_COLORS) {
 					this.classList.remove(`cr-hl-match--${c.value}`);
 				}
+				this.querySelector('.cr-hl-dim-overlay')?.remove();
 
 				if (!active) return;
 
@@ -4233,6 +4223,31 @@ export class FamilyChartView extends ItemView {
 					this.classList.add(`cr-hl-match--${match.color}`);
 				} else {
 					this.classList.add('cr-hl-dim');
+					// Fade the card with an overlay rect (fill-opacity, no stacking
+					// context) instead of CSS opacity on the card group, which
+					// Chromium paints below the connector lines on Linux/macOS
+					// (#670). Clone the card's body rect so the overlay matches its
+					// exact size and rounded corners — the group's bounding box
+					// includes the open-note button, which protrudes past the card
+					// on the smaller styles and made the overlay overhang.
+					const cardG = this.querySelector('.card');
+					const body = cardG?.querySelector('.card-body-rect');
+					if (body instanceof SVGGraphicsElement) {
+						const overlay = body.cloneNode(false) as SVGElement;
+						overlay.removeAttribute('style');
+						overlay.removeAttribute('fill');
+						overlay.setAttribute('class', 'cr-hl-dim-overlay');
+						body.parentNode?.appendChild(overlay);
+					} else if (cardG instanceof SVGGraphicsElement) {
+						// Bodyless fallback (e.g. the Circle style): bounding box.
+						const bbox = cardG.getBBox();
+						d3.select(cardG).append('rect')
+							.attr('class', 'cr-hl-dim-overlay')
+							.attr('x', bbox.x)
+							.attr('y', bbox.y)
+							.attr('width', bbox.width)
+							.attr('height', bbox.height);
+					}
 				}
 			});
 	}

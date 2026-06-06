@@ -2073,15 +2073,21 @@ export class StatisticsView extends ItemView {
 	}
 
 	/**
-	 * Register event handlers for vault changes
+	 * Register event handlers for vault changes.
+	 *
+	 * Edits and new notes are tracked via `metadataCache.on('changed')` rather
+	 * than `vault.on('modify')`/`'create'`: the vault event fires on save, before
+	 * Obsidian re-parses the frontmatter, so a refresh triggered off it re-scans
+	 * the stale cache and a just-added Immigration/Residence event still reads as
+	 * absent, leaving the migration numbers "off" until a later resave or reboot
+	 * (#643). The metadata-cache event fires *after* the re-parse — and after the
+	 * event/family-graph services have invalidated their own caches off the same
+	 * signal — so the refresh sees the new data. Deletes still use the vault event
+	 * (no cache to await).
 	 */
 	private registerEventHandlers(): void {
-		// Listen for vault changes to schedule refresh
 		this.registerEvent(
-			this.app.vault.on('modify', () => this.scheduleRefresh())
-		);
-		this.registerEvent(
-			this.app.vault.on('create', () => this.scheduleRefresh())
+			this.app.metadataCache.on('changed', () => this.scheduleRefresh())
 		);
 		this.registerEvent(
 			this.app.vault.on('delete', () => this.scheduleRefresh())

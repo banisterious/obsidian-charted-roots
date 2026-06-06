@@ -16,6 +16,7 @@ import type { PlaceCategory } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateMissingPlacesModal } from './create-missing-places-modal';
 import { pluralize } from '../utils/format-utils';
+import { createStatisticsService } from '../statistics';
 import { StandardizePlacesModal, findPlaceNameVariations } from './standardize-places-modal';
 import { MergeDuplicatePlacesModal, findDuplicatePlaceNotes } from './merge-duplicate-places-modal';
 import { StandardizePlaceTypesModal, findNonStandardTypePlaces } from './standardize-place-types-modal';
@@ -876,15 +877,19 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin, 
 		}
 	}
 
-	// Migration patterns
-	if (stats.migrationPatterns.length > 0) {
+	// Migration patterns — routed through the event-driven analysis (#643) so it
+	// matches the Statistics Dashboard: movement events as the primary signal,
+	// parent/child places collapsed (no bogus "Tatooine → Lars Homestead" pair),
+	// living migrants included.
+	const migration = createStatisticsService(plugin.app, plugin.settings, plugin).getMigrationAnalysis();
+	if (migration.topRoutes.length > 0) {
 		const migrationSection = detailsContent.createDiv({ cls: 'crc-stats-section' });
 		migrationSection.createEl('h5', { text: 'Migration patterns', cls: 'crc-stats-section-title' });
 
 		const migrationList = migrationSection.createDiv({ cls: 'crc-stats-inline-list' });
-		for (const pattern of stats.migrationPatterns.slice(0, 5)) {
+		for (const route of migration.topRoutes.slice(0, 5)) {
 			migrationList.createEl('span', {
-				text: `${pattern.from} → ${pattern.to}: ${pattern.count}`,
+				text: `${route.from} → ${route.to}: ${route.count}`,
 				cls: 'crc-stats-inline-item'
 			});
 		}

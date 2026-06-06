@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-04 21:23:19 UTC
+ * - Generated: 2026-06-06 01:17:47 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17099,7 +17099,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1524 lines, 38.93 KB */
+/* Component Size: 1528 lines, 39.19 KB */
 
 /**
  * Family Chart View Styles
@@ -18506,14 +18506,18 @@ settings:
   isolation: isolate;
 }
 
-/* Family-chart's library writes inline `opacity: 1` on card_cont during
- * transitions. Our patch-family-chart.js postinstall (Patches 2 + 3) adds
- * `.on("end", ...)` cleanup to family-chart's SVG and HTML cardUpdate
- * transitions so the inline style is removed once the animation completes,
- * letting this CSS rule take effect without `!important`. */
-.cr-fcv-chart-container.cr-hl-active .card_cont.cr-hl-dim {
-  opacity: 0.3;
-  transition: opacity 0.2s ease;
+/* Dim non-matching cards by fading them toward the chart background with an
+ * overlay <rect> (.cr-hl-dim-overlay) injected per card in applyHighlightClasses,
+ * NOT with CSS `opacity` on `.card_cont`. CSS opacity gives the card group a
+ * stacking context that Chromium mis-orders beneath the links layer on Linux and
+ * macOS (#670) — present even with hardware acceleration off, so it is a
+ * paint-order quirk, not GPU compositing. `fill-opacity` on a plain rect creates
+ * no stacking context, so the card group keeps its normal paint order above the
+ * connector lines on every platform. */
+.cr-fcv-chart-container .cr-hl-dim-overlay {
+  fill: var(--background-color);
+  fill-opacity: 0.7;
+  pointer-events: none;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {
@@ -41146,11 +41150,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-04 21:23:21 UTC
+ * Build completed: 2026-06-06 01:17:49 UTC
  * Components processed: 50
- * Total lines: 40677
- * Total size: 833.4 KB
- * Build duration: 1.23 seconds
+ * Total lines: 40681
+ * Total size: 833.65 KB
+ * Build duration: 2.19 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41172,7 +41176,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1524 lines, 38.93 KB
+ * - family-chart-view.css: 1528 lines, 39.19 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB

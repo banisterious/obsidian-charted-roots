@@ -16,6 +16,7 @@ import {
 	extractTypeName,
 	convertGender
 } from './gedcomx-types';
+import { composePersonName } from '../gedcom/gedcom-name';
 import { getLogger } from '../core/logging';
 
 const logger = getLogger('GedcomXParser');
@@ -266,6 +267,7 @@ export class GedcomXParser {
 		let fullName = nameForm.fullText;
 		let givenName: string | undefined;
 		let surname: string | undefined;
+		let suffix: string | undefined;
 
 		// Extract parts if available
 		if (nameForm.parts && nameForm.parts.length > 0) {
@@ -275,6 +277,8 @@ export class GedcomXParser {
 					givenName = part.value;
 				} else if (partType === 'Surname' || partType === 'Family') {
 					surname = part.value;
+				} else if (partType === 'Suffix') {
+					suffix = part.value;
 				}
 			}
 
@@ -282,6 +286,14 @@ export class GedcomXParser {
 			if (!fullName && (givenName || surname)) {
 				fullName = [givenName, surname].filter(Boolean).join(' ');
 			}
+		}
+
+		// Fold a generational suffix (Suffix name-part) into the name so same-name
+		// relatives stay distinct instead of colliding (#685). composePersonName
+		// no-ops when the suffix is already the trailing word, so a fullText that
+		// already includes it isn't doubled.
+		if (fullName) {
+			fullName = composePersonName(fullName, suffix);
 		}
 
 		// Look for a nickname in the names array (a name with type containing 'Nickname')

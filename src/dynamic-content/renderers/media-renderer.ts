@@ -13,7 +13,7 @@ import type { DynamicContentService } from '../services/dynamic-content-service'
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { openGalleryLightbox, type LightboxItem } from '../../ui/media-lightbox-modal';
 import { PdfThumbnailService } from '../../core/pdf-thumbnail-service';
-import { type MediaCrop } from '../../core/media-service';
+import { type MediaCrop, parseMediaCropFields, applyMediaCropFields } from '../../core/media-service';
 import { applyCropToImage } from '../../core/crop-renderer';
 import { CropRegionModal, type CropRegionResult } from '../../core/ui/crop-region-modal';
 import { CaptionModal, type CaptionResult } from '../../core/ui/caption-modal';
@@ -142,20 +142,8 @@ export class MediaRenderer {
 		// Parse filter option
 		const filter = this.parseFilter(config.filter);
 
-		// Parse media_crop array (#354)
-		const cropMap = new Map<string, MediaCrop>();
-		if (Array.isArray(frontmatter.media_crop)) {
-			for (const entry of frontmatter.media_crop) {
-				if (typeof entry === 'object' && entry) {
-					const obj = entry as Record<string, unknown>;
-					const image = obj.image as string;
-					if (image && typeof obj.x === 'number' && typeof obj.y === 'number' &&
-						typeof obj.w === 'number' && typeof obj.h === 'number') {
-						cropMap.set(image, { x: obj.x, y: obj.y, w: obj.w, h: obj.h });
-					}
-				}
-			}
-		}
+		// Parse crop regions (#354, flat form #683) — filename → crop.
+		const cropMap = parseMediaCropFields(frontmatter);
 
 		// Parse media_captions (#523) — flat parallel array, index-aligned
 		// with `media:` so each caption corresponds to the same-index entry.
@@ -863,39 +851,29 @@ export class MediaRenderer {
 		if (!this.currentContext) return;
 
 		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
-			const crops = Array.isArray(fm.media_crop) ? [...fm.media_crop] : [];
-
-			// Remove existing crop for this image
-			const filtered = crops.filter((c: Record<string, unknown>) => c.image !== result.image);
-
-			// Add new crop
-			filtered.push({
-				image: result.image,
+			// Read existing crops (either form), set this image, write flat (#683).
+			const crops = parseMediaCropFields(fm);
+			crops.set(result.image, {
 				x: result.crop.x,
 				y: result.crop.y,
 				w: result.crop.w,
-				h: result.crop.h
+				h: result.crop.h,
+				...(result.crop.percent === true ? { percent: true } : {})
 			});
-
-			fm.media_crop = filtered;
+			applyMediaCropFields(fm, crops);
 		});
 	}
 
 	/**
-	 * Remove crop region from the entity note's frontmatter (#354)
+	 * Remove crop region from the entity note's frontmatter (#354, flat form #683)
 	 */
 	private removeCropFromFrontmatter(imageName: string): void {
 		if (!this.currentContext) return;
 
 		void this.plugin.app.fileManager.processFrontMatter(this.currentContext.file, (fm) => {
-			if (!Array.isArray(fm.media_crop)) return;
-
-			fm.media_crop = fm.media_crop.filter((c: Record<string, unknown>) => c.image !== imageName);
-
-			// Remove property entirely if empty
-			if (fm.media_crop.length === 0) {
-				delete fm.media_crop;
-			}
+			const crops = parseMediaCropFields(fm);
+			if (!crops.delete(imageName)) return;
+			applyMediaCropFields(fm, crops);
 		});
 
 		new Notice('Crop region removed');

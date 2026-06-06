@@ -246,9 +246,6 @@ export interface PlaceStatistics {
 	topBirthPlaces: Array<{ place: string; count: number }>;
 	topDeathPlaces: Array<{ place: string; count: number }>;
 
-	/** Migration patterns (birth place -> death place) */
-	migrationPatterns: Array<{ from: string; to: string; count: number }>;
-
 	/** Data quality issues */
 	issues: PlaceIssue[];
 }

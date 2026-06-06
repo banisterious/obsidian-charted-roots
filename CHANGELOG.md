@@ -12,6 +12,28 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.63] - 2026-06-05
+
+A reporter-driven follow-up release. GEDCOM and GEDCOM-X imports now keep generational name suffixes (Sr. / Jr. / III) so relatives who share a name stay distinct, clearing a person's birth or death place in the Edit Person modal removes it on save, the event-driven migration analysis gains three accuracy refinements, and Family Chart highlight groups no longer paint dimmed cards under the connector lines. The person modal also gains a burial date field, and image crop regions move to flat properties so they no longer trip the Data Quality nested-property warning. **1289 tests passing across 111 suites.**
+
+### Added
+
+- **Burial date field in the Create/Edit Person modal** ([#682](https://github.com/banisterious/obsidian-charted-roots/issues/682)): The person modal now has a "Burial date" field alongside the birth and death dates, writing the `burial_date` property (previously only set by import or by editing frontmatter by hand). Clearing it removes the property. Requested by [@tenephor](https://github.com/tenephor).
+
+### Fixed
+
+- **GEDCOM and GEDCOM-X import keep generational name suffixes** ([#685](https://github.com/banisterious/obsidian-charted-roots/issues/685)): When an import had relatives who share a given name and surname and differ only by a suffix (Sr. / Jr. / III, stored in GEDCOM's `NSFX` tag or a GEDCOM-X `Suffix` name-part), the suffix was dropped from the note name, so they collided to one base name and were numbered instead (`John Smith`, `John Smith 1`, `John Smith 2`). The suffix is now folded into the name (and therefore the filename), so each person stays distinct (`John Smith Jr.`, `John Smith III`). Reported by [@inerlogic](https://github.com/inerlogic).
+
+- **Unlinking a birth or death place in the Edit Person modal now removes it on save** ([#680](https://github.com/banisterious/obsidian-charted-roots/issues/680)): Clearing a person's birth place or death place and saving without choosing a replacement left the old `birth_place` / `death_place` wikilink (and its `_id`) in the note. The modal now signals a cleared place the same way it signals a cleared parent, so the writer removes both properties. Reported by [@tenephor](https://github.com/tenephor).
+
+- **Migration analysis follow-ups** ([#643](https://github.com/banisterious/obsidian-charted-roots/issues/643)): Three refinements to the event-driven migration analysis from v0.22.61. The **Place statistics** card on the Places tab now uses the same event-driven analysis as the Statistics Dashboard, so the two agree (it previously still inferred moves from birth and death locations). A destination that is a **sub-place** now counts toward the place that contains it when other journeys name that place directly, so a move into a building or district counts toward its city rather than splitting off its own tally. And the **Statistics Dashboard refreshes on its own** after you add or edit a movement event, instead of reading stale until a resave or reboot. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Family Chart highlight groups no longer paint dimmed cards under the connector lines** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): With highlight groups active, the dimmed (non-matching) cards could render *beneath* the relationship lines on Linux and macOS, so the lines cut across them. Dimming now uses an overlay over each card instead of lowering the card's opacity, which avoids the stacking-context quirk that pushed dimmed cards below the lines. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Changed
+
+- **Image crop regions are stored as flat properties** ([#683](https://github.com/banisterious/obsidian-charted-roots/issues/683)): Crop data for images was stored as a nested YAML array (`media_crop: [{ image, x, y, w, h }]`). Obsidian does not fully support nested properties, so the Data Quality pane flagged a warning on every note that had a crop. Crops now use flat parallel arrays (`media_crop_image`, `media_crop_x`, `media_crop_y`, `media_crop_w`, `media_crop_h`), which the Data Quality pane accepts. Existing notes still render, setting or changing a crop migrates that note automatically, and **Flatten nested properties** (Control Center) converts the rest in bulk. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.62] - 2026-06-04
 
 A small follow-up release polishing three items reported after v0.22.61: the Statistics Dashboard's issues card now names only the data-quality categories that actually have something in them, the Split canvas wizard's completion screen lays out correctly, and Family Chart Circle avatars keep their colored ring after "fit to view". Under the hood, the settings tab and its buttons now use Obsidian 1.13.0's settings and button APIs where the running app provides them, while continuing to support older versions — no visible change on current releases. **1245 tests passing across 105 suites.**

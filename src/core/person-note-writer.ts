@@ -1662,6 +1662,14 @@ export async function updatePersonNote(
 				delete frontmatter.adoption_date;
 			}
 		}
+		// Burial date (#682)
+		if (person.burialDate !== undefined) {
+			if (person.burialDate) {
+				frontmatter.burial_date = person.burialDate;
+			} else {
+				delete frontmatter.burial_date;
+			}
+		}
 		if (person.researchLevel !== undefined) {
 			if (person.researchLevel !== null) {
 				frontmatter.research_level = person.researchLevel;

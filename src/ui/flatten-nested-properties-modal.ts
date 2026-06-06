@@ -9,6 +9,7 @@ import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { detectNoteType } from '../utils/note-type-detection';
 import { pluralize } from '../utils/format-utils';
+import { parseMediaCropFields, applyMediaCropFields } from '../core/media-service';
 
 /**
  * Definition of a nested property that can be flattened
@@ -22,6 +23,12 @@ interface NestedPropertyDefinition {
 	displayName: string;
 	/** Description of what this property contains */
 	description: string;
+	/**
+	 * Shape of the nested value. 'object' (default) is `prop: { child }`;
+	 * 'media-crop' is the legacy `media_crop: [{ image, x, y, w, h }]` array,
+	 * converted to the flat parallel arrays via the media-service helpers (#683).
+	 */
+	kind?: 'object' | 'media-crop';
 }
 
 /**
@@ -58,6 +65,13 @@ const NESTED_PROPERTY_DEFINITIONS: NestedPropertyDefinition[] = [
 		children: ['x', 'y', 'map'],
 		displayName: 'Custom map coordinates',
 		description: 'custom_coordinates: { x, y, map } → custom_coordinates_x, custom_coordinates_y, custom_coordinates_map'
+	},
+	{
+		nestedName: 'media_crop',
+		children: [],
+		displayName: 'Image crop regions',
+		description: 'media_crop: [{ image, x, y, w, h }] → media_crop_image, media_crop_x, media_crop_y, media_crop_w, media_crop_h',
+		kind: 'media-crop'
 	}
 ];
 
@@ -249,13 +263,17 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 			// Check each selected property
 			for (const propName of this.selectedProperties) {
-				// Check if the nested property exists and is an object (not flat)
-				if (
-					frontmatter[propName] !== undefined &&
-					typeof frontmatter[propName] === 'object' &&
-					frontmatter[propName] !== null &&
-					!Array.isArray(frontmatter[propName])
-				) {
+				const value = frontmatter[propName];
+				if (value === undefined || value === null) continue;
+
+				const def = NESTED_PROPERTY_DEFINITIONS.find(d => d.nestedName === propName);
+				const isNested = def?.kind === 'media-crop'
+					// Legacy media_crop is an array of crop objects (#683).
+					? Array.isArray(value) && value.some(e => typeof e === 'object' && e !== null)
+					// Object-of-children properties are nested when non-array objects.
+					: typeof value === 'object' && !Array.isArray(value);
+
+				if (isNested) {
 					nestedPropsInFile.push(propName);
 				}
 			}
@@ -491,8 +509,17 @@ export class FlattenNestedPropertiesModal extends Modal {
 
 		await this.app.fileManager.processFrontMatter(file, (frontmatter) => {
 			for (const propName of nestedProperties) {
-				const nestedValue = frontmatter[propName];
+				const def = NESTED_PROPERTY_DEFINITIONS.find(d => d.nestedName === propName);
+				if (!def) continue;
 
+				// media_crop is an array of crop objects: read it (legacy form) and
+				// rewrite as the flat parallel arrays, dropping the nested key (#683).
+				if (def.kind === 'media-crop') {
+					applyMediaCropFields(frontmatter, parseMediaCropFields(frontmatter));
+					continue;
+				}
+
+				const nestedValue = frontmatter[propName];
 				if (
 					nestedValue === undefined ||
 					typeof nestedValue !== 'object' ||
@@ -501,10 +528,6 @@ export class FlattenNestedPropertiesModal extends Modal {
 				) {
 					continue;
 				}
-
-				// Get the definition for this property
-				const def = NESTED_PROPERTY_DEFINITIONS.find(d => d.nestedName === propName);
-				if (!def) continue;
 
 				// Flatten each child property
 				for (const childName of def.children) {

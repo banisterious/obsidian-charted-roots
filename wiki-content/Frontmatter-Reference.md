@@ -833,27 +833,31 @@ media:
 
 Define crop regions for images to display specific portions (e.g., a face from a group photo). The crop is applied when rendering thumbnails in the media block, Family Chart avatars, and Entity Profile View.
 
+Crops are stored as flat parallel arrays, all index-aligned with `media_crop_image`. Only images that have a crop appear; an image with no crop is simply absent from these arrays. Each property is a flat list (not a nested object), so it stays compatible with Obsidian's properties editor and Dataview.
+
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
-| `media_crop` | `array` | Array of crop region definitions | See below |
-| `media_crop[].image` | `string` | Filename matching a media item | `"group-photo.jpg"` |
-| `media_crop[].x` | `number` | X offset (pixels from left) | `100` |
-| `media_crop[].y` | `number` | Y offset (pixels from top) | `50` |
-| `media_crop[].w` | `number` | Width of crop region (pixels) | `200` |
-| `media_crop[].h` | `number` | Height of crop region (pixels) | `250` |
+| `media_crop_image` | `string[]` | Filenames that have a crop (the anchor the other arrays align to) | `["group-photo.jpg"]` |
+| `media_crop_x` | `number[]` | X offset (pixels from left) per cropped image | `[100]` |
+| `media_crop_y` | `number[]` | Y offset (pixels from top) per cropped image | `[50]` |
+| `media_crop_w` | `number[]` | Width of crop region (pixels) per cropped image | `[200]` |
+| `media_crop_h` | `number[]` | Height of crop region (pixels) per cropped image | `[250]` |
+| `media_crop_percent` | `boolean[]` | Optional; `true` where x/y/w/h are percentages (0-100) rather than pixels (Gramps import). Omitted when all crops are pixel-based | `[false]` |
 
 ```yaml
 media:
   - "[[group-photo.jpg]]"
-media_crop:
-  - image: group-photo.jpg
-    x: 100
-    y: 50
-    w: 200
-    h: 250
+media_crop_image:
+  - group-photo.jpg
+media_crop_x: [100]
+media_crop_y: [50]
+media_crop_w: [200]
+media_crop_h: [250]
 ```
 
-To set a crop visually, right-click an image in the `charted-roots-media` block and select **Set crop region**.
+To set a crop visually, right-click an image in the `charted-roots-media` block and select **Set crop region** — the flat properties are written for you.
+
+> **Migrating from the older format:** earlier versions stored crops as a nested `media_crop: [{ image, x, y, w, h }]` array. Obsidian does not fully support nested properties, so the Data Quality pane flags them. Run **Flatten nested properties** (Control Center) to convert any existing `media_crop` to the flat arrays above; editing a crop on a note also migrates that note automatically.
 
 ### Citation Override
 

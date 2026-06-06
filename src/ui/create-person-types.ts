@@ -55,6 +55,7 @@ export interface PersonFormData {
 	pronouns?: string[];
 	birthDate?: string;
 	deathDate?: string;
+	burialDate?: string;
 	occupation?: string;
 	researchLevel?: ResearchLevel;
 	collection?: string;
