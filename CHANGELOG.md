@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.64] - 2026-06-06
+
+A reporter-driven release across Family Chart, migration statistics, and GEDCOM import. The Family Chart's focus indicator is visible again, and highlight groups now work when the chart is in a pop-out window. Migration routes count each move a person made rather than only their net birthplace-to-final journey, so shared family moves and round trips are represented. And GEDCOM import folds variant spellings of the same place into one note instead of creating duplicates, with historical place names now stored as flat properties. **1326 tests passing across 113 suites.**
+
 ### Fixed
 
 - **Family Chart focus indicator is visible again** ([#689](https://github.com/banisterious/obsidian-charted-roots/issues/689)): The border drawn around the focus (root) person's card took its colour from the card's text, so the darker card text introduced in v0.22.63 made the focus outline blend into dark cards and effectively disappear. The outline now uses the theme's accent colour, independent of the text colour, so the focused person is clearly marked (in the chart and in exports). Reported by [@tenephor](https://github.com/tenephor).
