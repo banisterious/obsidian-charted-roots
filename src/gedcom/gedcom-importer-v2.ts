@@ -20,6 +20,7 @@ import {
 } from './gedcom-types';
 import { preprocessGedcom, preprocessGedcomAsync, type GedcomCompatibilityMode, type PreprocessResult } from './gedcom-preprocessor';
 import { formatGedcomNotesSection } from './gedcom-note-formatter';
+import { composePersonName } from './gedcom-name';
 import { writeGedcomNoteFile, buildGedcomNoteReferenceMap } from '../core/note-writer';
 import { getLogger } from '../core/logging';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
@@ -829,7 +830,9 @@ export class GedcomImporterV2 {
 
 		// Convert GEDCOM individual to PersonData
 		const personData: PersonData = {
-			name: individual.name || 'Unknown',
+			// Fold the NSFX suffix into the name so same-name relatives (Jr./III)
+			// stay distinct instead of colliding to "Name 1" / "Name 2" (#685).
+			name: composePersonName(individual.name || 'Unknown', individual.nameSuffix),
 			crId: crId,
 			nickname: individual.nickname,
 			namePrefix: individual.namePrefix,
