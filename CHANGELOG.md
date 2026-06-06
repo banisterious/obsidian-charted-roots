@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Family Chart highlight groups now work in a pop-out window**: With the Family Chart moved to its own window, Highlight Groups had no effect — cards were neither dimmed nor highlighted — even though selecting a card still worked. The highlight pass was looking for cards in the main window rather than the pop-out, so it found none. It now applies within the chart's own window. Raised in the [#670](https://github.com/banisterious/obsidian-charted-roots/issues/670) discussion by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Changed
 
 - **Migration routes now count each move, not just the net journey** ([#684](https://github.com/banisterious/obsidian-charted-roots/issues/684)): The Statistics Dashboard and Places "Top migration routes" previously modeled each person as a single origin -> destination pair (their first known place to their last), which undercounted shared moves and hid round trips. A family that gathers at one place and moves on now counts every member on the shared leg even when they were born in different places, a round trip (A -> B -> A) contributes both of its legs instead of vanishing, and intermediate stops appear as their own routes. The migration rate and moved/analyzed totals are unchanged (still "did this person move at all"), and the parent/child place collapse still applies per leg so a place and its own sub-place don't read as a move. Follows up [#643](https://github.com/banisterious/obsidian-charted-roots/issues/643). Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
