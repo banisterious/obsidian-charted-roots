@@ -34,6 +34,28 @@ export const US_STATE_NAMES = new Set(
 );
 
 /**
+ * Canadian province and territory abbreviations mapped to full names (#687).
+ * Covers the two-letter postal codes plus the common older / longhand forms a
+ * GEDCOM might carry (PQ, Que, Ont, Sask, Alta, Man, Nfld). None of these codes
+ * collide with a US state abbreviation, so expanding them is unambiguous.
+ */
+export const CA_PROVINCE_ABBREVIATIONS: Record<string, string> = {
+	'AB': 'Alberta', 'ALTA': 'Alberta',
+	'BC': 'British Columbia',
+	'MB': 'Manitoba', 'MAN': 'Manitoba',
+	'NB': 'New Brunswick',
+	'NL': 'Newfoundland and Labrador', 'NF': 'Newfoundland and Labrador', 'NFLD': 'Newfoundland and Labrador',
+	'NS': 'Nova Scotia',
+	'NT': 'Northwest Territories',
+	'NU': 'Nunavut',
+	'ON': 'Ontario', 'ONT': 'Ontario',
+	'PE': 'Prince Edward Island', 'PEI': 'Prince Edward Island',
+	'QC': 'Quebec', 'PQ': 'Quebec', 'QUE': 'Quebec',
+	'SK': 'Saskatchewan', 'SASK': 'Saskatchewan',
+	'YT': 'Yukon', 'YK': 'Yukon'
+};
+
+/**
  * Check if a string is a US state name (full or abbreviated)
  */
 export function isUSState(value: string): boolean {
