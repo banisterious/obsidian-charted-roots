@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Family Chart highlight dimming no longer clips connector lines on Circle cards** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): With Highlight Groups active and the Circle card style, the dim layer on non-matching cards was sized to a bounding box, which overhung the round card and faintly dimmed the connector lines passing near it. The dim layer now matches the card's circle, so the lines stay clean. Follows up the v0.22.63 highlight-dimming fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.64] - 2026-06-06
 
 A reporter-driven release across Family Chart, migration statistics, and GEDCOM import. The Family Chart's focus indicator is visible again, and highlight groups now work when the chart is in a pop-out window. Migration routes count each move a person made rather than only their net birthplace-to-final journey, so shared family moves and round trips are represented. And GEDCOM import folds variant spellings of the same place into one note instead of creating duplicates, with historical place names now stored as flat properties. **1326 tests passing across 113 suites.**

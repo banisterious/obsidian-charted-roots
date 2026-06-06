@@ -4237,14 +4237,25 @@ export class FamilyChartView extends ItemView {
 					// on the smaller styles and made the overlay overhang.
 					const cardG = this.querySelector('.card');
 					const body = cardG?.querySelector('.card-body-rect');
+					const disc = cardG?.querySelector('.cr-circle-disc');
 					if (body instanceof SVGGraphicsElement) {
 						const overlay = body.cloneNode(false) as SVGElement;
 						overlay.removeAttribute('style');
 						overlay.removeAttribute('fill');
 						overlay.setAttribute('class', 'cr-hl-dim-overlay');
 						body.parentNode?.appendChild(overlay);
+					} else if (disc instanceof SVGGraphicsElement) {
+						// Circle style: clone the gender disc so the dim layer is the
+						// same circle as the visible card. The bounding-box fallback
+						// below overhangs the round card and faintly dims the connector
+						// lines passing near it (#670 follow-up).
+						const overlay = disc.cloneNode(false) as SVGElement;
+						overlay.removeAttribute('style');
+						overlay.removeAttribute('fill');
+						overlay.setAttribute('class', 'cr-hl-dim-overlay');
+						disc.parentNode?.appendChild(overlay);
 					} else if (cardG instanceof SVGGraphicsElement) {
-						// Bodyless fallback (e.g. the Circle style): bounding box.
+						// Bodyless fallback: bounding box.
 						const bbox = cardG.getBBox();
 						d3.select(cardG).append('rect')
 							.attr('class', 'cr-hl-dim-overlay')
