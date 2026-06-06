@@ -10,6 +10,7 @@ import { createLucideIcon } from './lucide-icons';
 import { detectNoteType } from '../utils/note-type-detection';
 import { pluralize } from '../utils/format-utils';
 import { parseMediaCropFields, applyMediaCropFields } from '../core/media-service';
+import { parseHistoricalNames, toFlatHistoricalNames } from '../models/place';
 
 /**
  * Definition of a nested property that can be flattened
@@ -26,9 +27,11 @@ interface NestedPropertyDefinition {
 	/**
 	 * Shape of the nested value. 'object' (default) is `prop: { child }`;
 	 * 'media-crop' is the legacy `media_crop: [{ image, x, y, w, h }]` array,
-	 * converted to the flat parallel arrays via the media-service helpers (#683).
+	 * converted to the flat parallel arrays via the media-service helpers (#683);
+	 * 'historical-names' is the legacy `historical_names: [{ name, period }]`
+	 * array, converted to flat `historical_names` + `historical_name_periods`.
 	 */
-	kind?: 'object' | 'media-crop';
+	kind?: 'object' | 'media-crop' | 'historical-names';
 }
 
 /**
@@ -72,6 +75,13 @@ const NESTED_PROPERTY_DEFINITIONS: NestedPropertyDefinition[] = [
 		displayName: 'Image crop regions',
 		description: 'media_crop: [{ image, x, y, w, h }] → media_crop_image, media_crop_x, media_crop_y, media_crop_w, media_crop_h',
 		kind: 'media-crop'
+	},
+	{
+		nestedName: 'historical_names',
+		children: [],
+		displayName: 'Historical place names',
+		description: 'historical_names: [{ name, period }] → historical_names, historical_name_periods',
+		kind: 'historical-names'
 	}
 ];
 
@@ -267,8 +277,11 @@ export class FlattenNestedPropertiesModal extends Modal {
 				if (value === undefined || value === null) continue;
 
 				const def = NESTED_PROPERTY_DEFINITIONS.find(d => d.nestedName === propName);
-				const isNested = def?.kind === 'media-crop'
-					// Legacy media_crop is an array of crop objects (#683).
+				const isArrayOfObjects = def?.kind === 'media-crop' || def?.kind === 'historical-names';
+				const isNested = isArrayOfObjects
+					// Legacy media_crop / historical_names are arrays of objects; the
+					// flattened forms are arrays of scalars, so only object entries
+					// count as still-nested (#683 / #687).
 					? Array.isArray(value) && value.some(e => typeof e === 'object' && e !== null)
 					// Object-of-children properties are nested when non-array objects.
 					: typeof value === 'object' && !Array.isArray(value);
@@ -515,7 +528,27 @@ export class FlattenNestedPropertiesModal extends Modal {
 				// media_crop is an array of crop objects: read it (legacy form) and
 				// rewrite as the flat parallel arrays, dropping the nested key (#683).
 				if (def.kind === 'media-crop') {
-					applyMediaCropFields(frontmatter, parseMediaCropFields(frontmatter));
+					const fm = frontmatter as Record<string, unknown>;
+					applyMediaCropFields(fm, parseMediaCropFields(fm));
+					continue;
+				}
+
+				// historical_names is a legacy array of { name, period } objects:
+				// read it and rewrite as the flat parallel arrays (#687).
+				if (def.kind === 'historical-names') {
+					const fm = frontmatter as Record<string, unknown>;
+					const flat = toFlatHistoricalNames(parseHistoricalNames(fm));
+					if (flat) {
+						fm.historical_names = flat.historical_names;
+						if (flat.historical_name_periods) {
+							fm.historical_name_periods = flat.historical_name_periods;
+						} else {
+							delete fm.historical_name_periods;
+						}
+					} else {
+						delete fm.historical_names;
+						delete fm.historical_name_periods;
+					}
 					continue;
 				}
 

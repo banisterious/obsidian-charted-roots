@@ -28,7 +28,10 @@ import { generateCrId } from '../core/uuid';
 import { getErrorMessage } from '../core/error-utils';
 import { capitalize } from '../utils/format-utils';
 import type { CreateEventData, EventConfidence } from '../events/types/event-types';
-import { US_STATE_ABBREVIATIONS } from '../utils/place-name-normalizer';
+import { US_STATE_ABBREVIATIONS, CA_PROVINCE_ABBREVIATIONS } from '../utils/place-name-normalizer';
+import { consolidatePlaceVariants, mergeVariantHistoricalNames } from './gedcom-place-variants';
+import { isSameLocationDifferentJurisdiction } from '../utils/place-segments';
+import { parseHistoricalNames, toFlatHistoricalNames } from '../models/place';
 import type { CitationData } from '../sources/types/citation-types';
 import { CitationNoteService } from '../sources/services/citation-note-service';
 
@@ -2260,21 +2263,28 @@ export class GedcomImporterV2 {
 			.map(p => p.trim().replace(/\s+/g, ' ')) // Collapse multiple spaces
 			.filter(p => p.length > 0)
 			.flatMap(p => {
-				// First check if the whole part is a state abbreviation
-				const upperPart = p.toUpperCase();
-				if (US_STATE_ABBREVIATIONS[upperPart]) {
-					return [US_STATE_ABBREVIATIONS[upperPart]];
+				// Expand a US state or Canadian province abbreviation (#687),
+				// tolerating a trailing period (e.g. "Que." or "SC."), to its full
+				// name so variant abbreviations collapse to one place string.
+				const expandRegion = (token: string): string | undefined => {
+					const key = token.toUpperCase().replace(/\.$/, '');
+					return US_STATE_ABBREVIATIONS[key] ?? CA_PROVINCE_ABBREVIATIONS[key];
+				};
+
+				// First check if the whole part is a region abbreviation
+				const wholeExpansion = expandRegion(p);
+				if (wholeExpansion) {
+					return [wholeExpansion];
 				}
 
-				// Check for space-separated state abbreviation at the end (e.g., "Abbeville SC")
+				// Check for a space-separated abbreviation at the end (e.g., "Abbeville SC")
 				const words = p.split(' ');
 				if (words.length >= 2) {
-					const lastWord = words[words.length - 1].toUpperCase();
-					if (US_STATE_ABBREVIATIONS[lastWord]) {
-						// Split into locality and state
+					const lastExpansion = expandRegion(words[words.length - 1]);
+					if (lastExpansion) {
+						// Split into locality and region
 						const locality = words.slice(0, -1).join(' ');
-						const state = US_STATE_ABBREVIATIONS[lastWord];
-						return [locality, state];
+						return [locality, lastExpansion];
 					}
 				}
 
@@ -2380,26 +2390,43 @@ export class GedcomImporterV2 {
 		// Build a set of all place strings for context-aware type inference
 		const allPlaceStrings = new Set(places.keys());
 
-		// Sort places by hierarchy depth (fewest parts first = most general)
-		// This ensures parent places are created before children
-		const sortedPlaces = Array.from(places.entries())
+		// Consolidate variant spellings of the same place (#687): "Montréal, Québec,
+		// Canada" / "Montreal, Quebec, Canada" / "Montreal, QC, Canada" should yield
+		// one note, not three. Only the canonical form gets a note; the other forms
+		// are folded into its historical_names and still resolve to it for linking.
+		const consolidation = consolidatePlaceVariants(
+			Array.from(places.keys()),
+			(a, b) => isSameLocationDifferentJurisdiction(a, b)
+		);
+
+		// Sort the canonical places by hierarchy depth (fewest parts first = most
+		// general) so parent places are created before their children.
+		const canonicalEntries = Array.from(consolidation.membersOf.keys())
+			.map(canonical => [canonical, places.get(canonical) ?? this.parsePlaceHierarchy(canonical)] as [string, string[]])
 			.sort((a, b) => a[1].length - b[1].length);
 
-		const totalPlaces = sortedPlaces.length;
+		const totalPlaces = canonicalEntries.length;
 		let placeIndex = 0;
 
-		for (const [placeString, parts] of sortedPlaces) {
+		for (const [placeString, parts] of canonicalEntries) {
 			reportProgress({ phase: 'places', current: placeIndex, total: totalPlaces });
 			try {
+				const variants = consolidation.variantsOf.get(placeString) ?? [];
 				const result = await this.createOrUpdatePlaceNote(
 					placeString,
 					parts,
 					placeToNoteInfo,
 					existingPlaces,
 					options,
-					allPlaceStrings
+					allPlaceStrings,
+					variants
 				);
-				placeToNoteInfo.set(placeString, { path: result.path, crId: result.crId });
+				// Register the canonical AND every variant form so a person or event
+				// referencing any spelling resolves to this one note (#687).
+				const info: PlaceNoteInfo = { path: result.path, crId: result.crId };
+				for (const member of consolidation.membersOf.get(placeString) ?? [placeString]) {
+					placeToNoteInfo.set(member, info);
+				}
 				if (result.wasUpdated) {
 					updated++;
 				} else {
@@ -2532,7 +2559,8 @@ export class GedcomImporterV2 {
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
 		existingPlaces: { byFullName: Map<string, TFile>; byTitleAndParent: Map<string, TFile> },
 		options: GedcomImportOptionsV2,
-		allPlaceStrings?: Set<string>
+		allPlaceStrings?: Set<string>,
+		variants: string[] = []
 	): Promise<{ path: string; crId: string; wasUpdated: boolean }> {
 		// Check if place already exists using multiple strategies
 		const existingFile = this.findExistingPlace(placeString, parts, placeToNoteInfo, existingPlaces);
@@ -2542,12 +2570,14 @@ export class GedcomImporterV2 {
 			const fileCache = this.app.metadataCache.getFileCache(existingFile);
 			let crId = fileCache?.frontmatter?.cr_id;
 
-			// Update existing place note if parent wikilink needs to be added/updated
+			// Update existing place note if parent wikilink or variant historical
+			// names need to be added/updated
 			const wasUpdated = await this.updateExistingPlaceNote(
 				existingFile,
 				parts,
 				placeToNoteInfo,
-				placeString
+				placeString,
+				variants
 			);
 
 			// If no cr_id exists, add one
@@ -2562,7 +2592,7 @@ export class GedcomImporterV2 {
 		}
 
 		// Create new place note
-		const result = await this.createPlaceNote(placeString, parts, placeToNoteInfo, options, allPlaceStrings);
+		const result = await this.createPlaceNote(placeString, parts, placeToNoteInfo, options, allPlaceStrings, variants);
 		return { path: result.path, crId: result.crId, wasUpdated: false };
 	}
 
@@ -2574,7 +2604,8 @@ export class GedcomImporterV2 {
 		file: TFile,
 		parts: string[],
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
-		placeString: string
+		placeString: string,
+		variants: string[] = []
 	): Promise<boolean> {
 		// Check current frontmatter
 		const fileCache = this.app.metadataCache.getFileCache(file);
@@ -2592,6 +2623,19 @@ export class GedcomImporterV2 {
 		// Check if full_name needs to be added/updated
 		if (!currentFullName) {
 			newFullName = placeString;
+			needsUpdate = true;
+		}
+
+		// Fold any variant spellings of this place into historical_names (#687),
+		// deduped against what the note already carries.
+		const existingHistorical = parseHistoricalNames(fileCache?.frontmatter ?? {});
+		const mergedHistorical = mergeVariantHistoricalNames(
+			existingHistorical,
+			String(currentFullName ?? placeString),
+			variants
+		);
+		const historicalChanged = mergedHistorical.length > existingHistorical.length;
+		if (historicalChanged) {
 			needsUpdate = true;
 		}
 
@@ -2633,6 +2677,16 @@ export class GedcomImporterV2 {
 			if (newFullName) {
 				frontmatter.full_name = newFullName;
 			}
+			if (historicalChanged) {
+				// Flat parallel arrays, not nested objects (#687).
+				const flat = toFlatHistoricalNames(mergedHistorical);
+				if (flat) {
+					frontmatter.historical_names = flat.historical_names;
+					if (flat.historical_name_periods) {
+						frontmatter.historical_name_periods = flat.historical_name_periods;
+					}
+				}
+			}
 		});
 
 		return true;
@@ -2646,7 +2700,8 @@ export class GedcomImporterV2 {
 		parts: string[],
 		placeToNoteInfo: Map<string, PlaceNoteInfo>,
 		options: GedcomImportOptionsV2,
-		allPlaceStrings?: Set<string>
+		allPlaceStrings?: Set<string>,
+		variants: string[] = []
 	): Promise<{ path: string; crId: string }> {
 		const crId = generateCrId();
 
@@ -2688,6 +2743,17 @@ export class GedcomImporterV2 {
 
 		// Add full place string for reference/search
 		frontmatterLines.push(`full_name: "${placeString.replace(/"/g, '\\"')}"`);
+
+		// Preserve any variant spellings that consolidated into this place as
+		// historical names. Flat list (not nested objects) so the property stays
+		// Obsidian-friendly (#687 / #635); import variants carry no period.
+		const flatHistorical = toFlatHistoricalNames(mergeVariantHistoricalNames([], placeString, variants));
+		if (flatHistorical) {
+			frontmatterLines.push('historical_names:');
+			for (const name of flatHistorical.historical_names) {
+				frontmatterLines.push(`  - "${name.replace(/"/g, '\\"')}"`);
+			}
+		}
 
 		frontmatterLines.push('---');
 

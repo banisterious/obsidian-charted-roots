@@ -73,6 +73,61 @@ export interface HistoricalName {
 }
 
 /**
+ * Read `historical_names` from frontmatter into HistoricalName entries.
+ *
+ * The current shape is flat parallel arrays — a `historical_names` string list
+ * with an index-aligned, optional `historical_name_periods` string list — so the
+ * property isn't a nested object (Obsidian doesn't fully support those). For
+ * backward compatibility this also reads the legacy nested form (`[{ name,
+ * period }]`) and a bare-string array, so notes written before the flatten still
+ * load. Malformed entries are skipped.
+ */
+export function parseHistoricalNames(fm: Record<string, unknown>): HistoricalName[] {
+	const raw = fm.historical_names;
+	if (!Array.isArray(raw)) return [];
+
+	const periods = Array.isArray(fm.historical_name_periods) ? fm.historical_name_periods : [];
+	const periodAt = (i: number): string | undefined => {
+		const p = periods[i];
+		return typeof p === 'string' && p.trim() ? p.trim() : undefined;
+	};
+
+	const result: HistoricalName[] = [];
+	for (let i = 0; i < raw.length; i++) {
+		const entry = raw[i];
+		if (typeof entry === 'string') {
+			const name = entry.trim();
+			if (name) result.push(periodAt(i) ? { name, period: periodAt(i) } : { name });
+		} else if (entry && typeof entry === 'object') {
+			// Legacy nested form: { name, period? }
+			const obj = entry as Record<string, unknown>;
+			const name = typeof obj.name === 'string' ? obj.name.trim() : '';
+			if (!name) continue;
+			const period = typeof obj.period === 'string' && obj.period.trim() ? obj.period.trim() : undefined;
+			result.push(period ? { name, period } : { name });
+		}
+	}
+	return result;
+}
+
+/**
+ * Serialize HistoricalName entries to the flat parallel-array frontmatter shape.
+ * Returns `null` when the list is empty (so callers can clear the properties).
+ * `historical_name_periods` is only included when at least one entry has a
+ * period, keeping the common period-less case a plain string list.
+ */
+export function toFlatHistoricalNames(
+	names: HistoricalName[]
+): { historical_names: string[]; historical_name_periods?: string[] } | null {
+	if (names.length === 0) return null;
+	const historical_names = names.map(h => h.name);
+	if (names.some(h => h.period)) {
+		return { historical_names, historical_name_periods: names.map(h => h.period ?? '') };
+	}
+	return { historical_names };
+}
+
+/**
  * Fold the names of discarded duplicate places into a canonical place's
  * historical names, so a merge preserves the older/variant forms instead of
  * trashing them with the duplicate note. The canonical (modern) name stays
@@ -151,8 +206,11 @@ export interface Place {
 	/** Custom coordinates for fictional places or custom maps */
 	custom_coordinates?: CustomCoordinates;
 
-	/** Historical names the place has had */
-	historical_names?: HistoricalName[];
+	/** Historical names the place has had (flat list; see historical_name_periods) */
+	historical_names?: string[];
+
+	/** Periods for each historical name, index-aligned with historical_names */
+	historical_name_periods?: string[];
 
 	/** User-defined collection/grouping name (shared with person notes) */
 	collection?: string;

@@ -862,7 +862,7 @@ export class GrampsImporter {
 
 		// Write media crop regions if any (#354, flat form #683)
 		if (mediaCrops.length > 0) {
-			await this.app.fileManager.processFrontMatter(file, (fm) => {
+			await this.app.fileManager.processFrontMatter(file, (fm: Record<string, unknown>) => {
 				const crops = new Map<string, MediaCrop>();
 				for (const c of mediaCrops) {
 					crops.set(c.image, { x: c.x, y: c.y, w: c.w, h: c.h, percent: c.percent });
@@ -2253,5 +2253,3 @@ export class GrampsImporter {
 			.trim();
 	}
 }
-
-/* eslint-enable @typescript-eslint/no-unsafe-member-access -- Match scope of file-level disable at top. */

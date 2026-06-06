@@ -1,0 +1,168 @@
+0 HEAD
+1 SOUR Charted Roots Test
+2 VERS 1.0
+2 NAME Charted Roots Place-Variant Sample (#687)
+1 DEST ANY
+1 DATE 6 JUN 2026
+1 SUBM @SUBM1@
+1 FILE place-variants.ged
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+0 @SUBM1@ SUBM
+1 NAME Charted Roots User
+0 @NOTE1@ NOTE
+1 CONT Fixture for #687: one real place appears under several PLAC forms so the
+1 CONT import should consolidate them into a single place note rather than one
+1 CONT note per spelling. Expected place notes after import (8 total):
+1 CONT   - Canada
+1 CONT   - Quebec (province)  <- "Québec, Canada" + "Quebec, Canada"
+1 CONT   - Ontario            <- abbreviations Ont. / ON all expand to Ontario
+1 CONT   - Nova Scotia        <- abbreviation NS expands to Nova Scotia
+1 CONT   - Montreal (city)    <- Montréal/Montreal + QC/PQ; variants in historical_names
+1 CONT   - Quebec (city)      <- "Québec, Québec, Canada" + "Quebec, Quebec, Canada"
+1 CONT   - Toronto            <- Ontario / Ont. / ON forms all collapse
+1 CONT   - Halifax            <- Nova Scotia / NS forms collapse
+1 CONT Quebec the CITY and Quebec the PROVINCE must stay SEPARATE (a leaf-only
+1 CONT match is never merged). The Montreal and Quebec-city notes should each
+1 CONT carry their discarded spellings under historical_names.
+0 @I1@ INDI
+1 NAME John /Tremblay/
+2 GIVN John
+2 SURN Tremblay
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 1950
+2 PLAC Montréal, Québec, Canada
+1 DEAT
+2 DATE 22 JUL 2020
+2 PLAC Montreal, QC, Canada
+1 FAMS @F1@
+1 FAMC @F3@
+0 @I2@ INDI
+1 NAME Marie /Gagnon/
+2 GIVN Marie
+2 SURN Gagnon
+1 SEX F
+1 BIRT
+2 DATE 8 JUN 1952
+2 PLAC Montreal, Quebec, Canada
+1 FAMS @F1@
+1 FAMC @F4@
+0 @I3@ INDI
+1 NAME Pierre /Tremblay/
+2 GIVN Pierre
+2 SURN Tremblay
+1 SEX M
+1 BIRT
+2 DATE 12 APR 1975
+2 PLAC Québec, Québec, Canada
+1 FAMC @F1@
+1 FAMS @F2@
+0 @I4@ INDI
+1 NAME Sophie /Tremblay/
+2 GIVN Sophie
+2 SURN Tremblay
+1 SEX F
+1 BIRT
+2 DATE 3 SEP 1978
+2 PLAC Toronto, Ontario, Canada
+1 FAMC @F1@
+0 @I5@ INDI
+1 NAME Claire /Roy/
+2 GIVN Claire
+2 SURN Roy
+1 SEX F
+1 BIRT
+2 DATE 22 NOV 1977
+2 PLAC Toronto, Ont., Canada
+1 FAMS @F2@
+0 @I6@ INDI
+1 NAME Luc /Tremblay/
+2 GIVN Luc
+2 SURN Tremblay
+1 SEX M
+1 BIRT
+2 DATE 5 JAN 2005
+2 PLAC Toronto, ON, Canada
+1 FAMC @F2@
+0 @I7@ INDI
+1 NAME Anne /Tremblay/
+2 GIVN Anne
+2 SURN Tremblay
+1 SEX F
+1 BIRT
+2 DATE 18 AUG 2008
+2 PLAC Quebec, Quebec, Canada
+1 FAMC @F2@
+0 @I8@ INDI
+1 NAME Joseph /Tremblay/
+2 GIVN Joseph
+2 SURN Tremblay
+1 SEX M
+1 BIRT
+2 DATE 5 FEB 1920
+2 PLAC Halifax, Nova Scotia, Canada
+1 DEAT
+2 DATE 14 NOV 1995
+2 PLAC Montreal, PQ, Canada
+1 FAMS @F3@
+0 @I9@ INDI
+1 NAME Madeleine /Bouchard/
+2 GIVN Madeleine
+2 SURN Bouchard
+1 SEX F
+1 BIRT
+2 DATE 12 MAY 1925
+2 PLAC Halifax, NS, Canada
+1 FAMS @F3@
+0 @I10@ INDI
+1 NAME Georges /Gagnon/
+2 GIVN Georges
+2 SURN Gagnon
+1 SEX M
+1 BIRT
+2 DATE 28 SEP 1922
+2 PLAC Montreal, QC, Canada
+1 FAMS @F4@
+0 @I11@ INDI
+1 NAME Thérèse /Lavoie/
+2 GIVN Thérèse
+2 SURN Lavoie
+1 SEX F
+1 BIRT
+2 DATE 14 DEC 1928
+2 PLAC Quebec, Canada
+1 FAMS @F4@
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 MARR
+2 DATE 14 JUN 1974
+2 PLAC Montréal, Québec, Canada
+1 CHIL @I3@
+1 CHIL @I4@
+0 @F2@ FAM
+1 HUSB @I3@
+1 WIFE @I5@
+1 MARR
+2 DATE 25 AUG 2002
+2 PLAC Toronto, ON, Canada
+1 CHIL @I6@
+1 CHIL @I7@
+0 @F3@ FAM
+1 HUSB @I8@
+1 WIFE @I9@
+1 MARR
+2 DATE 10 APR 1948
+2 PLAC Halifax, Nova Scotia, Canada
+1 CHIL @I1@
+0 @F4@ FAM
+1 HUSB @I10@
+1 WIFE @I11@
+1 MARR
+2 DATE 5 MAY 1950
+2 PLAC Montreal, Quebec, Canada
+1 CHIL @I2@
+0 TRLR

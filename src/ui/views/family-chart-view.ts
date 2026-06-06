@@ -4201,7 +4201,12 @@ export class FamilyChartView extends ItemView {
 		}
 		const groups = this.highlightGroups;
 
-		d3.selectAll<Element, { data: { id: string } }>('.card_cont')
+		// Scope the card iteration to this view's own container, not the global
+		// document. A bare d3.selectAll queries the main window's document and so
+		// matches nothing when the chart is in a detached pop-out window, leaving
+		// highlight groups with no effect there (surfaced in the #670 discussion;
+		// same pop-out-document family as #677/#678).
+		d3.select(this.chartContainerEl).selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
 				// Strip all previous highlight classes and any dim overlay
 				this.classList.remove('cr-hl-dim', 'cr-hl-match');
@@ -5707,4 +5712,4 @@ export class FamilyChartView extends ItemView {
 	}
 }
 
-/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */
+/* eslint-enable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument -- Match scope of file-level disable at top. */

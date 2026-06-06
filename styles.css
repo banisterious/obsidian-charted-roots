@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-06 01:17:47 UTC
+ * - Generated: 2026-06-06 18:13:11 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -17099,7 +17099,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1528 lines, 39.19 KB */
+/* Component Size: 1530 lines, 39.4 KB */
 
 /**
  * Family Chart View Styles
@@ -17420,9 +17420,11 @@ settings:
   fill: #ffffff;
 }
 
-/* Main card outline */
+/* Focus (root person) card outline. Uses the theme accent, not currentColor:
+   the outline used to inherit the card text colour, which #672 turned near-black
+   on dark cards and made the focus indicator invisible (#689). */
 .cr-fcv-chart-container.f3 .card-main-outline {
-  stroke: currentColor;
+  stroke: var(--interactive-accent);
   stroke-width: 3px;
 }
 
@@ -41150,11 +41152,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-06 01:17:49 UTC
+ * Build completed: 2026-06-06 18:13:12 UTC
  * Components processed: 50
- * Total lines: 40681
- * Total size: 833.65 KB
- * Build duration: 2.19 seconds
+ * Total lines: 40683
+ * Total size: 833.86 KB
+ * Build duration: 1.12 seconds
  *
  * Component breakdown:
  * - variables.css: 79 lines, 2.45 KB
@@ -41176,7 +41178,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1528 lines, 39.19 KB
+ * - family-chart-view.css: 1530 lines, 39.4 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB

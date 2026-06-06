@@ -22,6 +22,8 @@ import {
 	orderMovementPlaces,
 	buildLocationSequence,
 	collapseNestedLocations,
+	collapseConsecutiveLocations,
+	extractMigrationLegs,
 	rollUpToAttestedAncestor,
 	type DatedPlace
 } from './migration-analysis';
@@ -1387,7 +1389,7 @@ export class StatisticsService {
 		// Pass 1: reduce each person to their endpoints (origin, destination) and
 		// whether they moved. Tallying is deferred to pass 2 so destinations can be
 		// rolled up against the full set of attested places (#643 sub-place roll-up).
-		const journeys: Array<{ origin: string; destination: string; moved: boolean }> = [];
+		const journeys: Array<{ origin: string; destination: string; stops: string[]; moved: boolean }> = [];
 
 		for (const person of people) {
 			// Primary signal: movement events (Residence / Immigration), ordered
@@ -1419,6 +1421,10 @@ export class StatisticsService {
 			journeys.push({
 				origin: sequence[0],
 				destination: sequence[sequence.length - 1],
+				// Per-leg stops keep a round trip's shape (A -> B -> A stays three
+				// stops) for route aggregation; the global collapse above is only for
+				// the per-person "did they move" decision (#684).
+				stops: collapseConsecutiveLocations(sequence, sameLocation),
 				moved
 			});
 		}
@@ -1434,8 +1440,9 @@ export class StatisticsService {
 		const rollUp = (place: string, anchors: Map<string, string>): string =>
 			this.rollUpToParentPlace(place, anchors, placeGraph);
 
-		// Pass 2: tally origins, destinations, and routes from the rolled-up endpoints.
-		const routeCount = new Map<string, number>();
+		// Pass 2a: tally origins and destinations from each person's net endpoints
+		// (where they started and ended up — kept net, not per-leg, so a waypoint
+		// doesn't inflate either list).
 		const destinationCount = new Map<string, number>();
 		const originCount = new Map<string, number>();
 
@@ -1444,11 +1451,23 @@ export class StatisticsService {
 			const destination = rollUp(journey.destination, destinationAnchors);
 			originCount.set(origin, (originCount.get(origin) ?? 0) + 1);
 			destinationCount.set(destination, (destinationCount.get(destination) ?? 0) + 1);
+		}
 
-			// Only record a route when start and end are genuinely different places
-			// (a net relocation), not a round trip back to the origin.
-			if (journey.moved && !sameLocation(origin, destination)) {
-				const routeKey = `${origin}|||${destination}`;
+		// Pass 2b: per-leg routes (#684). Count every actual move (each consecutive
+		// stop pair), not just the net origin -> destination. So a group's shared leg
+		// counts every member even when they were born in different places, a round
+		// trip A -> B -> A contributes both legs, and intermediate waypoints appear.
+		// Leg endpoints roll up against the full set of attested leg endpoints (a
+		// waypoint is both an origin and a destination); a leg whose ends then resolve
+		// to the same place — a hop between two sub-places of one place — is dropped.
+		const legAnchors = this.buildPlaceAnchors(journeys.flatMap(j => j.stops), placeGraph);
+		const routeCount = new Map<string, number>();
+		for (const journey of journeys) {
+			for (const [from, to] of extractMigrationLegs(journey.stops)) {
+				const rolledFrom = rollUp(from, legAnchors);
+				const rolledTo = rollUp(to, legAnchors);
+				if (sameLocation(rolledFrom, rolledTo)) continue;
+				const routeKey = `${rolledFrom}|||${rolledTo}`;
 				routeCount.set(routeKey, (routeCount.get(routeKey) ?? 0) + 1);
 			}
 		}
