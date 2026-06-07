@@ -431,6 +431,7 @@ Settings for the Events & Timelines feature.
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Events folder** | `Charted Roots/Events` | Default folder for new event notes |
+| **Event type display** | Icon with label | How event types appear on timelines, canvas event nodes, and maps: **Icon with label**, **Icon (with tooltip)**, or **Text label** |
 | **Show built-in event types** | On | Include 22 built-in event types |
 | **Custom event types** | *(empty)* | User-defined event types |
 

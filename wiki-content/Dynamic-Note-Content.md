@@ -98,7 +98,7 @@ You can overlay historical events alongside a person's life events by referencin
 - 1941-1945: World War II
 ```
 
-Dates can be a single year (`1914`), a year range (`1861-1865`), or a full date (`1929-10-29`).
+Dates can be a single year (`1914`), a year range (`1861-1865`), or a full date (`1929-10-29`). Fictional-calendar dates also work — an era abbreviation plus a year in either order (`BBY 32` or `32 BBY`), including ranges (`BBY 22 - BBY 19`) — and they sort chronologically alongside dates from real-world or other eras.
 
 **Usage:** Reference the note in your timeline block:
 

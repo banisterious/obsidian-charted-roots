@@ -122,6 +122,10 @@ Click the **X** button next to the date field to clear the filter. The selected 
 - Approximate dates (`ABT 1850`, `BEF 1900`, etc.) fall back to year-level comparison — appropriate for genealogy data where day precision usually isn't known.
 - Custom non-family relationships (liege/vassal, ally/rival, etc.) are not filtered by date yet — support for that lands alongside [#386](https://github.com/banisterious/obsidian-charted-roots/issues/386).
 
+### Focus Indicator
+
+The focus (root) person's card is marked with an outline so you can pick it out in a large tree. The outline uses your Obsidian accent colour (Settings > Appearance > Accent color) rather than the card's text colour, so it stays clearly visible on every card style and in both light and dark themes, and it carries through to chart exports. To change its colour, change your accent colour.
+
 ### Kinship Labels
 
 Toggle relationship labels on connecting lines to show how people are related:

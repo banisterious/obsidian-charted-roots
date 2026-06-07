@@ -56,7 +56,7 @@ The import wizard guides you through 7 steps:
 | **1. Format** | Select GEDCOM 5.5.1, GEDCOM X (JSON), Gramps XML/.gpkg, or CSV |
 | **2. File** | Drag-and-drop or click to select your import file |
 | **3. Options** | Configure entity types, target folder, conflict handling, dynamic blocks |
-| **4. Preview** | Review entity counts and duplicate warnings |
+| **4. Preview** | Review entity counts, the projected note total, duplicate warnings, and a large-import warning |
 | **5. Import** | Watch progress with real-time log |
 | **6. Numbering** | Optional reference numbering (Ahnentafel, d'Aboville, Henry, Generation) |
 | **7. Complete** | Summary with quick actions |
@@ -66,6 +66,7 @@ The import wizard guides you through 7 steps:
 - **Dynamic blocks toggle** — Enable or disable dynamic content blocks in imported notes
 - **Integrated numbering** — Apply reference numbers immediately after import without leaving the wizard
 - **Gramps media extraction** — `.gpkg` packages automatically extract embedded media files
+- **Large-import warning** — the Preview step shows the total number of notes the import will create and warns when that total is large enough to slow Obsidian down (around 10,000+), so you can narrow the file (for example, to your direct lines plus a few generations) before committing
 
 ### Export Wizard
 
