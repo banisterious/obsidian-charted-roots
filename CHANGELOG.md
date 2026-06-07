@@ -12,9 +12,13 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.65] - 2026-06-07
+
+A reporter-driven release focused on timelines, the Family Chart, and import. Dynamic Timeline Blocks now handle fictional calendars properly — context-note events written in eras like BBY/ABY display, and events that mix eras (BBY and ABY) sort and filter by true chronology instead of the bare year number. Event icons appear consistently across timeline rows and are shown by default. The Family Chart no longer labels unmarried co-parents as spouses, and its focus indicator stands out more clearly. Children added from a parent's Edit person modal now link back to the parent automatically, and the import wizard warns before creating a very large vault. **1361 tests passing across 117 suites.**
+
 ### Added
 
-- **Large-import warning and projected note count** ([#688](https://github.com/banisterious/obsidian-charted-roots/issues/688)): The import wizard's preview now shows the total number of notes an import will create and warns when that total is large enough to slow Obsidian down (around 10,000+), suggesting you narrow the file — for example to your direct lines plus a few generations — before proceeding. The warning appears before any notes are written, and applies to every import format (GEDCOM, GEDCOM-X, Gramps, CSV). Raised by [@inerlogic](https://github.com/inerlogic).
+- **Large-import warning and projected note count** ([#688](https://github.com/banisterious/obsidian-charted-roots/issues/688)): The import wizard's preview now shows the total number of notes an import will create and warns when that total is large enough to slow Obsidian down (around 10,000+), suggesting you narrow the file — for example to your direct lines plus a few generations — before proceeding. The warning appears before any notes are written, and applies to every import format (GEDCOM, GEDCOM-X, Gramps, CSV). Raised by [@inerlogic](https://github.com/inerlogic). The import wizard's preview now shows the total number of notes an import will create and warns when that total is large enough to slow Obsidian down (around 10,000+), suggesting you narrow the file — for example to your direct lines plus a few generations — before proceeding. The warning appears before any notes are written, and applies to every import format (GEDCOM, GEDCOM-X, Gramps, CSV). Raised by [@inerlogic](https://github.com/inerlogic).
 
 ### Changed
 
