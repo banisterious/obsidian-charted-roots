@@ -3191,6 +3191,24 @@ export class CreatePersonModal extends Modal {
 
 			await updatePersonNote(this.app, this.editingFile, data);
 
+			// Reciprocal parent link: when children are created or linked through
+			// this (the parent's) Edit Person modal, write father/mother onto each
+			// child too — listing the child on the parent isn't enough, the child
+			// also needs the reverse link (#697). addParentToChild is idempotent,
+			// so children already linked are no-ops; this mirrors how the create
+			// flow and the post-create "Add child" flow reciprocate. Done
+			// explicitly because the BidirectionalLinker doesn't heal it reliably
+			// (it skips when the parent's sex is unknown), so a user shouldn't have
+			// to run the Data Quality "Fix bidirectional relationship
+			// inconsistencies" tool after adding children.
+			if (this.personData.crId && data.childCrId) {
+				for (const childCrId of data.childCrId) {
+					if (childCrId) {
+						await addParentToChild(this.app, childCrId, this.personData.crId, data.name || '', data.sex, this.directory);
+					}
+				}
+			}
+
 			// Check if name changed and offer to rename file
 			let renamedFile: TFile | undefined;
 			const currentName = this.personData.name || '';
