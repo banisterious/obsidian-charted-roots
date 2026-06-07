@@ -240,6 +240,24 @@ export function resolveFamilyEventIcon(
 }
 
 /**
+ * Whether the Dynamic Timeline Block should draw an event-type icon on a row,
+ * given the configured icon mode. Icons are all-or-nothing per timeline: shown
+ * on every row in `icon` / `both` mode and on no row in `text` mode.
+ *
+ * This used to also flip on whenever the timeline contained ANY family event
+ * (`hasFamilyEvents`, ostensibly for row alignment), while the context and
+ * family rows drew icons unconditionally. The net effect was that a person's
+ * own events showed icons only when a family event happened to be present —
+ * so the same note could render icons on some rows but not others, and an
+ * identical event type appeared iconed on one person and bare on another
+ * (#691). The decision is now driven solely by the mode. An unset/unknown
+ * mode resolves to no icons, matching the pre-#691 `text` fallback.
+ */
+export function shouldShowTimelineIcons(iconMode: string | undefined): boolean {
+	return iconMode === 'icon' || iconMode === 'both';
+}
+
+/**
  * Renders timeline content into an HTML element
  */
 export class TimelineRenderer {
@@ -1634,9 +1652,7 @@ export class TimelineRenderer {
 	): Promise<void> {
 		const settings = this.service.getSettings();
 		const iconMode = settings.eventIconMode || 'text';
-		// Always show icons when family events are present for consistent alignment
-		const hasFamilyEvents = entries.some(e => e.isFamilyEvent);
-		const showIcon = iconMode === 'icon' || iconMode === 'both' || hasFamilyEvents;
+		const showIcon = shouldShowTimelineIcons(iconMode);
 
 		const list = contentEl.createEl('ul', { cls: 'cr-timeline__list' });
 
@@ -1653,29 +1669,35 @@ export class TimelineRenderer {
 			if (entry.isFamilyEvent) itemCls += ' cr-timeline__item--family';
 			const li = list.createEl('li', { cls: itemCls });
 
-			// Render icons (applies to both standard and format string paths)
-			if (entry.isContext) {
-				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--context' });
-				setIcon(iconSpan, 'landmark' as LucideIconName);
-			} else if (entry.isFamilyEvent) {
-				const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--family' });
-				// Adoption family events read as adoptions, not generic family events
-				// (#632) — see resolveFamilyEventIcon for the rationale.
-				const { icon, color } = resolveFamilyEventIcon(
-					entry.type,
-					settings.customEventTypes || [],
-					settings.showBuiltInEventTypes !== false
-				);
-				setIcon(iconSpan, icon);
-				if (color) iconSpan.style.setProperty('color', color);
-			} else {
-				const eventType = getEventType(
-					entry.type,
-					settings.customEventTypes || [],
-					settings.showBuiltInEventTypes !== false
-				);
+			// Render icons uniformly across every row (applies to both the
+			// standard and format-string paths). All three row kinds — context,
+			// family, and the person's own events — are gated by the same
+			// `showIcon`, so a timeline shows icons on every row or on none,
+			// driven solely by the icon mode (#691). Previously context and
+			// family rows drew icons unconditionally while personal rows were
+			// gated, producing the sporadic missing-icon inconsistency.
+			if (showIcon) {
+				if (entry.isContext) {
+					const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--context' });
+					setIcon(iconSpan, 'landmark' as LucideIconName);
+				} else if (entry.isFamilyEvent) {
+					const iconSpan = li.createSpan({ cls: 'cr-timeline__icon cr-timeline__icon--family' });
+					// Adoption family events read as adoptions, not generic family events
+					// (#632) — see resolveFamilyEventIcon for the rationale.
+					const { icon, color } = resolveFamilyEventIcon(
+						entry.type,
+						settings.customEventTypes || [],
+						settings.showBuiltInEventTypes !== false
+					);
+					setIcon(iconSpan, icon);
+					if (color) iconSpan.style.setProperty('color', color);
+				} else {
+					const eventType = getEventType(
+						entry.type,
+						settings.customEventTypes || [],
+						settings.showBuiltInEventTypes !== false
+					);
 
-				if (showIcon) {
 					if (eventType) {
 						const iconSpan = li.createSpan({ cls: 'cr-timeline__icon' });
 						setIcon(iconSpan, eventType.icon);

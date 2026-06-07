@@ -12,7 +12,13 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Timelines show event icons by default** ([#691](https://github.com/banisterious/obsidian-charted-roots/issues/691)): The **Event type display** setting now defaults to **Icon with label** instead of **Text label**, so timelines, canvas event nodes, and maps show their event-type icons out of the box. Existing vaults are migrated once on upgrade (a saved **Text label** becomes **Icon with label**); if you prefer text only, set it back in Settings and your choice sticks.
+
 ### Fixed
+
+- **Event icons now appear consistently on timelines** ([#691](https://github.com/banisterious/obsidian-charted-roots/issues/691)): In **Text label** mode, a person's own events (birth, death, their event notes) showed an icon only when the same timeline also happened to contain a family event, while historical-context and family rows always showed icons — so the same note could render icons on some rows but not others, and an identical event type appeared iconed for one person and bare for another. Event icons are now all-or-nothing per timeline, driven solely by the **Event type display** setting: every row shows an icon in **Icon** or **Icon with label** mode, and no row does in **Text label** mode. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 - **Timeline context notes now work with fictional dating systems** ([#693](https://github.com/banisterious/obsidian-charted-roots/issues/693)): A historical-context note added to a Dynamic Timeline Block (via `context: [[…]]`) only displayed its events when the dates were written as four-digit calendar years. Lines dated in a fictional era — `BBY 32`, `32 BBY`, and the like — were silently skipped, so a fictional context note showed nothing while a real-world one worked. Context dates now recognise era abbreviations (in either order) and short years, including ranges, and resolve through the same date system as the person's own events. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 

@@ -545,6 +545,13 @@ export interface CanvasRootsSettings {
 		/** True when events → event note files migration is complete */
 		eventsComplete?: boolean;
 	};
+	/**
+	 * True once the one-time #691 flip of a persisted `eventIconMode: 'text'`
+	 * to `'both'` has run. Guards the migration so a user who deliberately
+	 * re-selects `text` afterward keeps it (a version check can't, because
+	 * `lastSeenVersion` doesn't advance on normal loads).
+	 */
+	eventIconModeMigratedToBoth?: boolean;
 	// Inclusive parent relationships (opt-in feature)
 	/** Enable gender-neutral parent relationships */
 	enableInclusiveParents: boolean;
@@ -888,7 +895,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	customEventCategories: [],                 // User-defined event categories
 	categoryCustomizations: {},                // Overrides for built-in category names
 	hiddenCategories: [],                      // Hidden/deleted built-in categories
-	eventIconMode: 'text',                     // Default: text labels only (current behavior)
+	eventIconMode: 'both',                     // Default: icon + text label on every timeline row (#691)
 	// Note type detection settings
 	noteTypeDetection: {
 		enableTagDetection: true,              // Allow #person, #place, etc. as fallback
