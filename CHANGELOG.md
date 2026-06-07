@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Changed
 
+- **Family Chart focus outline is more visible** ([#689](https://github.com/banisterious/obsidian-charted-roots/issues/689)): The focus (root person) outline added last release is now drawn slightly thicker (4px instead of 3px) so it stands apart from the connector lines, which share the accent colour — at the old width the default purple accent in dark mode could be easy to miss. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 - **Timelines show event icons by default** ([#691](https://github.com/banisterious/obsidian-charted-roots/issues/691)): The **Event type display** setting now defaults to **Icon with label** instead of **Text label**, so timelines, canvas event nodes, and maps show their event-type icons out of the box. Existing vaults are migrated once on upgrade (a saved **Text label** becomes **Icon with label**); if you prefer text only, set it back in Settings and your choice sticks.
 
 ### Fixed

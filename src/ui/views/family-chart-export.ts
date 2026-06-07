@@ -1119,7 +1119,7 @@ export function prepareSvgForExport(ctx: FamilyChartExportContext, svg: SVGSVGEl
 		.card-nonbinary .card-body-rect { fill: ${nonbinaryColor}; }
 		.card-genderless .card-body-rect { fill: ${genderlessColor}; }
 		.link { stroke: ${textColor}; stroke-width: 2px; fill: none; }
-		.card-main-outline { stroke: ${focusOutlineColor}; stroke-width: 3px; }
+		.card-main-outline { stroke: ${focusOutlineColor}; stroke-width: 4px; }
 	`;
 	svgClone.insertBefore(styleEl, svgClone.firstChild);
 
