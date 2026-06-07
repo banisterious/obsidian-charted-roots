@@ -1046,6 +1046,23 @@ export default class CanvasRootsPlugin extends Plugin {
 				primaryTypeProperty: 'type'
 			};
 		}
+
+		// One-time migration (#691): the eventIconMode default changed from
+		// 'text' to 'both' so timelines show event icons out of the box.
+		// Existing installs have the old value persisted, so the default change
+		// alone won't reach them — flip a saved 'text' to 'both' exactly once.
+		// A dedicated flag guards this (not a version check: lastSeenVersion
+		// doesn't advance on normal loads). This intentionally also flips the
+		// rare deliberate-'text' user once — 'text' mode rendered icons
+		// inconsistently before this release (#691), and they can re-select it
+		// afterward, where the flag keeps their choice.
+		if (savedData && !this.settings.eventIconModeMigratedToBoth) {
+			if (savedData.eventIconMode === 'text') {
+				this.settings.eventIconMode = 'both';
+			}
+			this.settings.eventIconModeMigratedToBoth = true;
+			await this.saveSettings();
+		}
 	}
 
 	async saveSettings() {

@@ -23,6 +23,7 @@ import { GrampsParser } from '../gramps/gramps-parser';
 import { extractGpkg, type GpkgExtractionResult } from '../gramps/gpkg-extractor';
 import { GrampsImporter, type GrampsImportOptions, type GrampsImportResult } from '../gramps/gramps-importer';
 import { readFileWithDecompression } from '../core/compression-utils';
+import { estimateImportSize } from '../core/import-size-estimate';
 import { PrivacyNoticeModal } from './privacy-notice-modal';
 
 /**
@@ -774,6 +775,44 @@ export class ImportWizardModal extends Modal {
 				countEl.createDiv({ cls: 'crc-import-preview-count-value', text: String(item.count) });
 				countEl.createDiv({ cls: 'crc-import-preview-count-label', text: item.label });
 			}
+		}
+
+		// Projected total + large-import warning (#688). Surfaces how many notes
+		// the import will create across the enabled entity types, and warns when
+		// that total is large enough to noticeably degrade Obsidian — before any
+		// notes are written, so the user can scope their file down first. Shown
+		// for every import format, since vault size degrades the app regardless
+		// of source. Reuses the existing parse-warning styling (no new CSS).
+		const sizeEstimate = estimateImportSize({
+			people: previewCounts.people,
+			places: previewCounts.places,
+			sources: previewCounts.sources,
+			events: previewCounts.events,
+			importPeople: this.formData.importPeople,
+			importPlaces: this.formData.importPlaces,
+			importSources: this.formData.importSources,
+			importEvents: this.formData.importEvents
+		});
+
+		const totalEl = counts.createDiv({ cls: 'crc-import-preview-count' });
+		const totalIcon = totalEl.createDiv({ cls: 'crc-import-preview-count-icon' });
+		setIcon(totalIcon, 'layers');
+		totalEl.createDiv({ cls: 'crc-import-preview-count-value', text: sizeEstimate.totalNotes.toLocaleString() });
+		totalEl.createDiv({ cls: 'crc-import-preview-count-label', text: 'Total notes' });
+
+		if (sizeEstimate.isLarge) {
+			const sizeWarn = section.createDiv({ cls: 'crc-import-preview-warning' });
+			const sizeWarnHeader = sizeWarn.createDiv({ cls: 'crc-import-preview-warning-header' });
+			const sizeWarnIcon = sizeWarnHeader.createDiv({ cls: 'crc-import-preview-warning-icon' });
+			setIcon(sizeWarnIcon, 'alert-triangle');
+			sizeWarnHeader.createDiv({
+				cls: 'crc-import-preview-warning-text',
+				text: `Large import: about ${sizeEstimate.totalNotes.toLocaleString()} notes`
+			});
+			sizeWarn.createDiv({
+				cls: 'crc-import-preview-warning-details',
+				text: 'Vaults this large can slow Obsidian noticeably — it often begins to lag in the low thousands of notes. Consider narrowing your file (for example, to your direct lines plus a few generations) before importing.'
+			});
 		}
 
 		// Media folder selection (only show for Gramps with media files)

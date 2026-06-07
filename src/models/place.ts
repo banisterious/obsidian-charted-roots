@@ -88,13 +88,13 @@ export function parseHistoricalNames(fm: Record<string, unknown>): HistoricalNam
 
 	const periods = Array.isArray(fm.historical_name_periods) ? fm.historical_name_periods : [];
 	const periodAt = (i: number): string | undefined => {
-		const p = periods[i];
+		const p: unknown = periods[i];
 		return typeof p === 'string' && p.trim() ? p.trim() : undefined;
 	};
 
 	const result: HistoricalName[] = [];
 	for (let i = 0; i < raw.length; i++) {
-		const entry = raw[i];
+		const entry: unknown = raw[i];
 		if (typeof entry === 'string') {
 			const name = entry.trim();
 			if (name) result.push(periodAt(i) ? { name, period: periodAt(i) } : { name });

@@ -1,330 +1,236 @@
 import { describe, expect, it } from 'vitest';
 import {
 	compareTimelineEntriesByDate,
+	isWithinContextMargin,
 	type TimelineEntry,
 } from '../src/dynamic-content/renderers/timeline-renderer';
-import type { DateService } from '../src/dates/services/date-service';
 
 /**
- * Minimal DateService stub for the descending-era tiebreak tests.
- * Recognizes "BBY N" / "BBY N T..." formats and returns a fictional
- * parse with `era.direction = 'backward'`. Any other input falls
- * through to null so the comparator's pre-existing behavior holds.
+ * Timeline sort comparator. The primary key is the era-aware canonical year
+ * (`canonicalYear`, signed) so timelines order by true chronology, earliest-
+ * at-top, even across the BBY/ABY zero boundary (#695). Same-year ties break on
+ * `sort_order` (#625) then the raw-date string (#609), low-to-high in
+ * chronological mode for every era — the backward-era inversions that #609/#638
+ * used to compensate for the old era-blind `parseInt(year)` sort are gone.
  */
-function backwardEraDateServiceStub(): DateService {
+
+/** Entry with an explicit canonical year (the normal runtime case). */
+function entry(canonicalYear: number, rawDate?: string, title = 'untitled'): TimelineEntry {
 	return {
-		parseDate(dateStr?: string) {
-			if (!dateStr || !/^BBY\s+\d/.test(dateStr.trim())) return null;
-			return {
-				type: 'fictional',
-				raw: dateStr,
-				year: 0,
-				fictional: {
-					era: { id: 'bby', name: 'BBY', abbrev: 'BBY', epoch: 0, direction: 'backward' },
-					system: { id: 'star-wars', name: 'Star Wars', eras: [] },
-					year: parseInt(dateStr.replace(/^BBY\s+(\d+).*$/, '$1')),
-					raw: dateStr,
-					canonicalYear: 0,
-				},
-			};
-		},
-	} as unknown as DateService;
+		date: rawDate ?? '',
+		year: String(canonicalYear),
+		type: 'birth',
+		title,
+		rawDate,
+		canonicalYear,
+	};
 }
 
-/**
- * Fences the year-then-rawDate sort comparator added in #609 against the
- * Dynamic Timeline Block's twin / triplet reversal. Same shape as the
- * v0.22.46 sibling-sort tiebreak in `RelationshipQueryService.getChildren`,
- * but applied to the timeline-event sort path.
- */
-
-function entry(year: string, rawDate?: string, title = 'untitled'): TimelineEntry {
-	return { date: rawDate ?? '', year, type: 'birth', title, rawDate };
-}
-
-describe('compareTimelineEntriesByDate — year compare', () => {
-	it('orders distinct years chronologically (ascending)', () => {
-		const a = entry('1985');
-		const b = entry('1990');
+describe('compareTimelineEntriesByDate — canonical year compare', () => {
+	it('orders distinct years earliest-at-top (chronological)', () => {
+		const a = entry(1985);
+		const b = entry(1990);
 		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBeLessThan(0);
 		expect(compareTimelineEntriesByDate(b, a, 'chronological')).toBeGreaterThan(0);
 	});
 
-	it('orders distinct years in reverse (descending)', () => {
-		const a = entry('1985');
-		const b = entry('1990');
+	it('orders distinct years latest-at-top in reverse', () => {
+		const a = entry(1985);
+		const b = entry(1990);
 		expect(compareTimelineEntriesByDate(a, b, 'reverse')).toBeGreaterThan(0);
 		expect(compareTimelineEntriesByDate(b, a, 'reverse')).toBeLessThan(0);
 	});
 
-	it('treats unparseable year strings as 0', () => {
-		const a = entry('not-a-year', '1985-04-12');
-		const b = entry('1985', '1985-04-12');
-		// Both parseInt to 0 / 1985 respectively; a (year=0) sorts before b
+	it('orders a descending era (BBY) earliest-at-top, like Gregorian', () => {
+		// BBY counts down, so BBY 82 (-82) is earlier than BBY 22 (-22): birth
+		// at top, death below. This is the #695 flip — previously the era-blind
+		// digit sort rendered pure-BBY reversed.
+		const bornBBY82 = entry(-82, 'BBY 82', 'Born');
+		const diedBBY22 = entry(-22, 'BBY 22', 'Died');
+		expect(compareTimelineEntriesByDate(bornBBY82, diedBBY22, 'chronological')).toBeLessThan(0);
+	});
+
+	it('orders a mixed BBY/ABY timeline by true chronology (#695 headline)', () => {
+		// canonical: BBY 10 = -10, ABY 4 = +4, ABY 40 = +40
+		const bby10 = entry(-10, 'BBY 10', 'BBY 10');
+		const aby4 = entry(4, 'ABY 4', 'ABY 4');
+		const aby40 = entry(40, 'ABY 40', 'ABY 40');
+		const sorted = [aby40, bby10, aby4].sort((a, b) =>
+			compareTimelineEntriesByDate(a, b, 'chronological')
+		);
+		// earliest-at-top: BBY 10, then ABY 4, then ABY 40
+		expect(sorted.map((e) => e.title)).toEqual(['BBY 10', 'ABY 4', 'ABY 40']);
+	});
+
+	it('falls back to era-blind year digits when canonicalYear is absent', () => {
+		// No DateService / unparseable date: comparator uses parseInt(year).
+		const a: TimelineEntry = { date: '', year: '1985', type: 'birth', title: 'A' };
+		const b: TimelineEntry = { date: '', year: '1990', type: 'birth', title: 'B' };
+		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBeLessThan(0);
+	});
+
+	it('treats an unparseable year as 0 in the fallback', () => {
+		const a: TimelineEntry = { date: '', year: 'not-a-year', type: 'birth', title: 'A' };
+		const b = entry(1985);
+		// a falls back to 0, b is 1985 → a sorts before b
 		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBeLessThan(0);
 	});
 });
 
-describe('compareTimelineEntriesByDate — year-tie tiebreak (#609)', () => {
-	it('orders twins by ISO time suffix when years tie', () => {
-		// Twin A born earlier (firstborn) with timestamped birth
-		const twinA = entry('1985', '1985-04-12T03:42', 'Twin A');
-		// Twin B born later (secondborn) with timestamped birth
-		const twinB = entry('1985', '1985-04-12T03:45', 'Twin B');
+describe('compareTimelineEntriesByDate — raw-date tiebreak (#609)', () => {
+	it('orders twins by ISO time suffix when years tie (firstborn at top)', () => {
+		const twinA = entry(1985, '1985-04-12T03:42', 'Twin A');
+		const twinB = entry(1985, '1985-04-12T03:45', 'Twin B');
 		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological')).toBeLessThan(0);
 		expect(compareTimelineEntriesByDate(twinB, twinA, 'chronological')).toBeGreaterThan(0);
 	});
 
-	it('reverses the tiebreak when sortOrder is reverse', () => {
-		// In reverse mode, the chronologically later twin sorts first
-		const twinA = entry('1985', '1985-04-12T03:42', 'Twin A');
-		const twinB = entry('1985', '1985-04-12T03:45', 'Twin B');
+	it('reverses the tiebreak under reverse sort', () => {
+		const twinA = entry(1985, '1985-04-12T03:42', 'Twin A');
+		const twinB = entry(1985, '1985-04-12T03:45', 'Twin B');
 		expect(compareTimelineEntriesByDate(twinA, twinB, 'reverse')).toBeGreaterThan(0);
-		expect(compareTimelineEntriesByDate(twinB, twinA, 'reverse')).toBeLessThan(0);
 	});
 
-	it('orders fictional-era twins by time suffix', () => {
-		// BBY 29 twins, both timestamped
-		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A');
-		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B');
-		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological')).toBeLessThan(0);
+	it('orders fictional-era twins firstborn-at-top, NOT inverted (#695)', () => {
+		// Both BBY 29 (canonical -29). The earlier time suffix is the firstborn
+		// and now sorts to the top in chronological mode for backward eras too —
+		// the #609/#638 backward-era inversion is gone.
+		const firstborn = entry(-29, 'BBY 29 T20:03:04', 'Twin A (firstborn)');
+		const secondborn = entry(-29, 'BBY 29 T20:08:15', 'Twin B (secondborn)');
+		expect(compareTimelineEntriesByDate(firstborn, secondborn, 'chronological')).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(secondborn, firstborn, 'chronological')).toBeGreaterThan(0);
 	});
 
-	it('returns 0 when years tie AND raw dates are identical', () => {
-		// Two events on the same exact date — falls through to insertion
-		// order via the surrounding stable sort
-		const a = entry('1985', '1985-04-12', 'Event A');
-		const b = entry('1985', '1985-04-12', 'Event B');
+	it('returns 0 when years tie and raw dates are identical', () => {
+		const a = entry(1985, '1985-04-12', 'A');
+		const b = entry(1985, '1985-04-12', 'B');
 		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBe(0);
 		expect(compareTimelineEntriesByDate(a, b, 'reverse')).toBe(0);
 	});
 
-	it('returns 0 when years tie AND both raw dates are missing', () => {
-		const a = entry('1985');
-		const b = entry('1985');
+	it('returns 0 when years tie and both raw dates are missing', () => {
+		const a = entry(1985);
+		const b = entry(1985);
 		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBe(0);
-	});
-
-	it('tiebreaks deterministically when only one twin has a time suffix', () => {
-		// Degenerate but possible: one twin timestamped, the other not.
-		// Shorter string lex-compares as less, so the untimestamped one
-		// sorts first. The user can't disambiguate further without setting
-		// times on both — same trade-off as the v0.22.46 sibling-sort.
-		const noTime = entry('1985', '1985-04-12');
-		const withTime = entry('1985', '1985-04-12T03:45');
-		expect(compareTimelineEntriesByDate(noTime, withTime, 'chronological')).toBeLessThan(0);
 	});
 });
 
-describe('compareTimelineEntriesByDate — descending-era tiebreak (#609 follow-on)', () => {
-	const ds = backwardEraDateServiceStub();
+describe('compareTimelineEntriesByDate — sort_order tiebreak (#625)', () => {
+	function entryWithSort(canonicalYear: number, sortOrder: number | undefined, title: string, rawDate?: string): TimelineEntry {
+		return { date: rawDate ?? '', year: String(canonicalYear), type: 'event', title, rawDate, canonicalYear, sortOrder };
+	}
 
-	it('inverts the lex-compare for BBY twins in chronological mode', () => {
-		// BBY 29 twins, firstborn at T20:03:04, secondborn at T20:08:15.
-		// Surrounding year sort produces "smaller-BBY-first" (e.g., BBY 18
-		// before BBY 80), i.e., new-at-top / old-at-bottom. The tiebreak
-		// must place the secondborn (later real-time) above the firstborn
-		// to match that pattern. Without dateService, the literal lex
-		// compare would put the firstborn on top — wrong for BBY.
-		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A (firstborn)');
-		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B (secondborn)');
-		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological', ds)).toBeGreaterThan(0);
-		expect(compareTimelineEntriesByDate(twinB, twinA, 'chronological', ds)).toBeLessThan(0);
+	it('orders same-year events by sort_order (lower first in chronological)', () => {
+		const eventB = entryWithSort(1264, 1, 'Event B');
+		const eventA = entryWithSort(1264, 2, 'Event A (after Event B)');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological')).toBeGreaterThan(0);
 	});
 
-	it('inverts again under reverse sortOrder, returning firstborn to the top slot', () => {
-		// Reverse-mode BBY: year sort becomes "larger-BBY-first" (old at
-		// top). The composition of descending-era inversion and reverse
-		// inversion lands the firstborn at top, matching the surrounding
-		// old-at-top pattern.
-		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A (firstborn)');
-		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B (secondborn)');
-		expect(compareTimelineEntriesByDate(twinA, twinB, 'reverse', ds)).toBeLessThan(0);
-		expect(compareTimelineEntriesByDate(twinB, twinA, 'reverse', ds)).toBeGreaterThan(0);
+	it('inverts the sort_order order under reverse', () => {
+		const eventB = entryWithSort(1264, 1, 'Event B');
+		const eventA = entryWithSort(1264, 2, 'Event A (after Event B)');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'reverse')).toBeGreaterThan(0);
 	});
 
-	it('preserves the ISO-date tiebreak when dateService is provided', () => {
-		// ISO dates aren't fictional — parseDate returns null in the stub,
-		// so the inversion path doesn't trigger and existing behavior holds.
-		const twinA = entry('1985', '1985-04-12T03:42', 'Twin A');
-		const twinB = entry('1985', '1985-04-12T03:45', 'Twin B');
-		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological', ds)).toBeLessThan(0);
+	it('orders same-year backward-era events by sort_order WITHOUT inversion (#695)', () => {
+		// Two BBY 29 events; "before" (sort_order 1) sits above "after"
+		// (sort_order 2) in chronological mode for backward eras too.
+		const eventB = entryWithSort(-29, 1, 'Event B (before)', 'BBY 29');
+		const eventA = entryWithSort(-29, 2, 'Event A (after)', 'BBY 29');
+		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
+		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological')).toBeGreaterThan(0);
 	});
 
-	it('falls back to literal lex compare when dateService is omitted (back-compat)', () => {
-		// Backward-compat: the old three-arg signature still works.
-		const twinA = entry('29', 'BBY 29 T20:03:04', 'Twin A');
-		const twinB = entry('29', 'BBY 29 T20:08:15', 'Twin B');
-		expect(compareTimelineEntriesByDate(twinA, twinB, 'chronological')).toBeLessThan(0);
+	it('year still wins over sort_order across different years', () => {
+		const earlier = entryWithSort(1260, 5, 'Earlier year, higher sort_order');
+		const later = entryWithSort(1264, 1, 'Later year, lower sort_order');
+		expect(compareTimelineEntriesByDate(earlier, later, 'chronological')).toBeLessThan(0);
 	});
 
-	it('inverts even when only one twin has a parseable backward-era rawDate', () => {
-		// Degenerate but defensive: as long as ONE rawDate resolves to a
-		// backward era, the tiebreak inverts. (Unlikely in practice — twins
-		// share an era — but worth fencing the OR-not-AND semantics.)
-		const a = entry('29', 'BBY 29 T20:03:04', 'A');
-		const b = entry('29', 'some-non-era-string', 'B');
-		// rawA < rawB lex → without inversion, a first. With inversion: b first.
-		expect(compareTimelineEntriesByDate(a, b, 'chronological', ds)).toBeGreaterThan(0);
+	it('falls through to rawDate tiebreak when only one entry has sort_order', () => {
+		const dated = entryWithSort(1264, undefined, 'Dated event', '1264-03-12');
+		const ordered = entryWithSort(1264, 5, 'Ordered event');
+		// ordered has empty rawDate, dated has "1264-03-12"; "" < "1264-03-12"
+		// so ordered (empty rawDate) sorts first.
+		expect(compareTimelineEntriesByDate(ordered, dated, 'chronological')).toBeLessThan(0);
+	});
+});
+
+describe('isWithinContextMargin — era-aware context margin window (#695)', () => {
+	it('includes a context event inside the person life window', () => {
+		// Person lived BBY 30..BBY 20 (canonical -30..-20), margin 5 → [-35, -15].
+		expect(isWithinContextMargin(-25, -30, -20, 5)).toBe(true);
+	});
+
+	it('excludes an ABY event far after a BBY-lived person (the #695 case)', () => {
+		// Person BBY 30..BBY 20 (-30..-20), margin 5 → window [-35, -15].
+		// ABY 25 = +25 is well outside, and must NOT be pulled in by digit
+		// magnitude (era-blind, "25" would have landed inside the digit window).
+		expect(isWithinContextMargin(25, -30, -20, 5)).toBe(false);
+	});
+
+	it('includes an ABY event that is genuinely within the margin across the boundary', () => {
+		// Person BBY 3..ABY 1 (-3..+1), margin 5 → window [-8, +6]. ABY 4 (+4) is in.
+		expect(isWithinContextMargin(4, -3, 1, 5)).toBe(true);
+	});
+
+	it('respects the margin edges inclusively', () => {
+		expect(isWithinContextMargin(-35, -30, -20, 5)).toBe(true);  // lower edge
+		expect(isWithinContextMargin(-15, -30, -20, 5)).toBe(true);  // upper edge
+		expect(isWithinContextMargin(-36, -30, -20, 5)).toBe(false); // just past lower
+		expect(isWithinContextMargin(-14, -30, -20, 5)).toBe(false); // just past upper
+	});
+
+	it('excludes an entry with no resolved canonical year', () => {
+		expect(isWithinContextMargin(undefined, -30, -20, 5)).toBe(false);
+	});
+
+	it('works for Gregorian windows', () => {
+		// Person 1850..1910, margin 5 → [1845, 1915].
+		expect(isWithinContextMargin(1861, 1850, 1910, 5)).toBe(true);
+		expect(isWithinContextMargin(1930, 1850, 1910, 5)).toBe(false);
 	});
 });
 
 describe('compareTimelineEntriesByDate — stable sort integration', () => {
-	it('preserves insertion order for fully-equal entries in Array.sort', () => {
-		// Simulates the surrounding Array.prototype.sort guarantee (stable
-		// since ES2019). When the comparator returns 0, original index wins.
+	it('preserves insertion order for fully-equal entries', () => {
 		const events: TimelineEntry[] = [
-			entry('1985', '1985-04-12', 'First'),
-			entry('1985', '1985-04-12', 'Second'),
-			entry('1985', '1985-04-12', 'Third'),
+			entry(1985, '1985-04-12', 'First'),
+			entry(1985, '1985-04-12', 'Second'),
+			entry(1985, '1985-04-12', 'Third'),
 		];
-		const sorted = [...events].sort((a, b) =>
-			compareTimelineEntriesByDate(a, b, 'chronological')
-		);
+		const sorted = [...events].sort((a, b) => compareTimelineEntriesByDate(a, b, 'chronological'));
 		expect(sorted.map((e) => e.title)).toEqual(['First', 'Second', 'Third']);
 	});
 
-	it('sorts a mixed twin + non-twin set correctly', () => {
-		// Three events: two twins in 1985 (different times) + one in 1990
+	it('sorts a mixed twin + non-twin set earliest-at-top', () => {
 		const events: TimelineEntry[] = [
-			entry('1990', '1990-06-15', 'Younger sibling'),
-			entry('1985', '1985-04-12T03:45', 'Twin B (secondborn)'),
-			entry('1985', '1985-04-12T03:42', 'Twin A (firstborn)'),
+			entry(1990, '1990-06-15', 'Younger sibling'),
+			entry(1985, '1985-04-12T03:45', 'Twin B (secondborn)'),
+			entry(1985, '1985-04-12T03:42', 'Twin A (firstborn)'),
 		];
-		const sorted = [...events].sort((a, b) =>
-			compareTimelineEntriesByDate(a, b, 'chronological')
-		);
+		const sorted = [...events].sort((a, b) => compareTimelineEntriesByDate(a, b, 'chronological'));
 		expect(sorted.map((e) => e.title)).toEqual([
 			'Twin A (firstborn)',
 			'Twin B (secondborn)',
 			'Younger sibling',
 		]);
 	});
-});
 
-/**
- * #625 — Per-person Dynamic Timeline Block didn't respect `sort_order`
- * values from the v0.22.45 #569 auto-compute service. Same-year events
- * with `before`/`after` frontmatter relationships fell through to the
- * rawDate / insertion-order fallback, so the user-specified narrative
- * order (Event A `after: [[Event B]]`) was ignored on per-person
- * timelines. The fix copies `sortOrder` from the Event model into the
- * TimelineEntry and consults it as a same-year tiebreak before rawDate.
- *
- * Reported by [@doctorwodka](https://github.com/doctorwodka); confirmed by
- * [@DigitalDreamn](https://github.com/DigitalDreamn) with the historical
- * context that the bug has been latent since v0.22.39 (when before/after
- * properties first arrived).
- */
-function entryWithSort(year: string, sortOrder: number | undefined, title: string, rawDate?: string): TimelineEntry {
-	return { date: rawDate ?? '', year, type: 'event', title, rawDate, sortOrder };
-}
-
-describe('compareTimelineEntriesByDate — sort_order tiebreak on same year (#625)', () => {
-	it('orders same-year events by sort_order (lower first in chronological)', () => {
-		const eventB = entryWithSort('1264', 1, 'Event B');
-		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
-		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological')).toBeGreaterThan(0);
-	});
-
-	it('inverts sort_order order under reverse rendering', () => {
-		const eventB = entryWithSort('1264', 1, 'Event B');
-		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'reverse')).toBeGreaterThan(0);
-		expect(compareTimelineEntriesByDate(eventA, eventB, 'reverse')).toBeLessThan(0);
-	});
-
-	it('preserves chronological year-sort across years (sort_order only fires within same year)', () => {
-		const earlier = entryWithSort('1260', 5, 'Earlier year, higher sort_order');
-		const later = entryWithSort('1264', 1, 'Later year, lower sort_order');
-		// Year wins even when sort_order would invert.
-		expect(compareTimelineEntriesByDate(earlier, later, 'chronological')).toBeLessThan(0);
-	});
-
-	it('falls through to rawDate tiebreak when only one entry has sort_order', () => {
-		// Mixed: one event has sort_order (from before/after), one doesn't
-		// (e.g., a birth from the Person model, or an Event without
-		// before/after constraints). The sort_order check intentionally
-		// skips, so rawDate-or-insertion-order resolves.
-		const dated = entryWithSort('1264', undefined, 'Dated event', '1264-03-12');
-		const ordered = entryWithSort('1264', 5, 'Ordered event');
-		// Both have year 1264. dated has rawDate "1264-03-12", ordered has empty rawDate.
-		// "1264-03-12" > "" lexicographically, so ordered (empty rawDate) sorts first.
-		expect(compareTimelineEntriesByDate(ordered, dated, 'chronological')).toBeLessThan(0);
-	});
-
-	it('returns 0 when years tie, sort_orders are equal, and rawDates are equal', () => {
-		const a = entryWithSort('1264', 5, 'A');
-		const b = entryWithSort('1264', 5, 'B');
-		expect(compareTimelineEntriesByDate(a, b, 'chronological')).toBe(0);
-	});
-
-	it('sorts a mixed bag of events: distinct years + same-year-with-sort_order + same-year-no-sort_order', () => {
+	it('sorts a full life across the BBY/ABY boundary in true order', () => {
 		const events: TimelineEntry[] = [
-			entryWithSort('1264', 2, 'Event A (after Event B)'),
-			entryWithSort('1260', undefined, 'Earlier year event', '1260-05-15'),
-			entryWithSort('1264', 1, 'Event B'),
-			entryWithSort('1270', undefined, 'Later year event', '1270-01-01'),
+			entry(4, 'ABY 4', 'Battle of Endor'),
+			entry(-82, 'BBY 82', 'Born'),
+			entry(-22, 'BBY 22', 'Died'),
+			entry(-32, 'BBY 32', 'Invasion of Naboo'),
 		];
-		const sorted = [...events].sort((a, b) =>
-			compareTimelineEntriesByDate(a, b, 'chronological')
-		);
+		const sorted = [...events].sort((a, b) => compareTimelineEntriesByDate(a, b, 'chronological'));
 		expect(sorted.map((e) => e.title)).toEqual([
-			'Earlier year event',  // 1260
-			'Event B',             // 1264, sort_order 1
-			'Event A (after Event B)', // 1264, sort_order 2
-			'Later year event',    // 1270
+			'Born',               // BBY 82 (-82)
+			'Invasion of Naboo',  // BBY 32 (-32)
+			'Died',               // BBY 22 (-22)
+			'Battle of Endor',    // ABY 4 (+4)
 		]);
-	});
-});
-
-/**
- * #638 — descending-era timelines surfaced the same shape of bug at the
- * `sort_order` tiebreak that #609 fixed at the rawDate tiebreak: the topological
- * pair flips opposite to the year sort, so the locally-ordered events read in
- * the wrong direction. The fix routes both tiebreaks through the same
- * `isBackwardEraPair` helper.
- */
-describe('compareTimelineEntriesByDate — sort_order tiebreak in descending-era timelines (#638)', () => {
-	const ds = backwardEraDateServiceStub();
-
-	it('inverts the sort_order tiebreak for BBY events in chronological mode', () => {
-		// Two BBY 29 events, eventB sort_order 1 ("before"), eventA sort_order 2 ("after").
-		// The surrounding year sort renders BBY chronologically as old-at-bottom
-		// (BBY 18 above BBY 80), so the sort_order pair must also place the
-		// later-ordered event ABOVE the earlier-ordered one locally — mirroring
-		// the year sort's direction.
-		const eventB = entryWithSort('29', 1, 'Event B (sort_order 1)', 'BBY 29');
-		const eventA = entryWithSort('29', 2, 'Event A (sort_order 2, after Event B)', 'BBY 29');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological', ds)).toBeGreaterThan(0);
-		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological', ds)).toBeLessThan(0);
-	});
-
-	it('inverts again under reverse rendering, returning the lower sort_order to the top slot', () => {
-		// Reverse-mode BBY: year sort is "larger-BBY-first" (old at top).
-		// Same-year sort_order pair should follow — lower sort_order on top.
-		const eventB = entryWithSort('29', 1, 'Event B (sort_order 1)', 'BBY 29');
-		const eventA = entryWithSort('29', 2, 'Event A (sort_order 2, after Event B)', 'BBY 29');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'reverse', ds)).toBeLessThan(0);
-		expect(compareTimelineEntriesByDate(eventA, eventB, 'reverse', ds)).toBeGreaterThan(0);
-	});
-
-	it('does NOT invert when the pair is ascending-era (Gregorian) — control', () => {
-		// Same year, same sort_order shape, but Gregorian rawDate: era is
-		// not backward, so the v0.22.51 #625 behavior holds (lower sort_order first).
-		const eventB = entryWithSort('1264', 1, 'Event B', '1264');
-		const eventA = entryWithSort('1264', 2, 'Event A (after Event B)', '1264');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological', ds)).toBeLessThan(0);
-		expect(compareTimelineEntriesByDate(eventA, eventB, 'chronological', ds)).toBeGreaterThan(0);
-	});
-
-	it('does NOT invert when no dateService is supplied — falls back to pre-#638 behavior', () => {
-		// Without dateService, the helper returns false and the tiebreak runs
-		// in its non-era-aware form. Guard against accidentally inverting
-		// callers that don't pass dateService.
-		const eventB = entryWithSort('29', 1, 'Event B', 'BBY 29');
-		const eventA = entryWithSort('29', 2, 'Event A (after Event B)', 'BBY 29');
-		expect(compareTimelineEntriesByDate(eventB, eventA, 'chronological')).toBeLessThan(0);
 	});
 });
