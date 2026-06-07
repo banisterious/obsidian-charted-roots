@@ -9,7 +9,6 @@ import { MarkdownRenderer, MarkdownRenderChild, setIcon, TFile } from 'obsidian'
 import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynamic-content-service';
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
-import type { DateService } from '../../dates/services/date-service';
 import { getEventType, type EventTypeDefinition } from '../../events/types/event-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
@@ -131,83 +130,87 @@ export interface TimelineEntry {
 	 * model, family events from relationship walks, context events).
 	 */
 	sortOrder?: number;
+	/**
+	 * Era-aware canonical year (signed: negative for descending eras like BBY,
+	 * positive for ascending eras and Gregorian), resolved via DateService at
+	 * build time. Used as the primary sort key and the context-margin window so
+	 * mixed-era timelines (BBY + ABY, or custom multi-era systems) order and
+	 * filter by true chronology rather than the era-blind digit magnitude in
+	 * `year` (#695). Undefined when no DateService is available or the date
+	 * can't be parsed, in which case callers fall back to `parseInt(year)`.
+	 */
+	canonicalYear?: number;
 }
 
 /**
- * Compare two timeline entries by year, with raw-date string lex compare
- * as the tiebreak so twins / triplets sharing a year sort by their ISO-time
- * or fictional-time suffix when present (#609). Identical raw dates fall
- * through to a 0 return, leaving the surrounding `Array.prototype.sort` to
- * preserve insertion order (stable sort guaranteed by ES2019).
+ * Compare two timeline entries chronologically.
  *
- * `sortOrder` inverts both the year compare and the raw-date tiebreak, so
- * reverse-chronological timelines still order twins consistently (the
- * firstborn ends up in the "earlier" slot relative to the rendering direction).
+ * Primary key is the era-aware canonical year (`canonicalYear`, signed:
+ * negative for descending eras like BBY, positive for ascending eras and
+ * Gregorian), so a timeline sorts by true chronology even when it mixes eras
+ * across the zero boundary — `BBY 10` (-10) sorts before `ABY 4` (+4) before
+ * `ABY 40` (+40). `chronological` is earliest-at-top everywhere, matching how
+ * Gregorian timelines already sort; this replaced an era-blind `parseInt(year)`
+ * compare that rendered pure-BBY timelines reversed and mixed-era timelines in
+ * a meaningless order (#695). Entries with no `canonicalYear` (no DateService,
+ * or an unparseable date) fall back to `parseInt(year)`.
  *
- * Exported for unit testing; in production this is used by the three sort
- * sites in `TimelineRenderer` (main, template-section, secondary builder).
+ * Same-year ties break first on `sort_order` (topological `before`/`after`
+ * constraints, #625) then on the raw-date string (twin / triplet time suffix,
+ * #609). Both tiebreaks now read low-to-high in chronological mode for every
+ * era — the backward-era inversions that #609/#638 added to compensate for the
+ * old era-blind primary sort are gone, since the canonical sort no longer needs
+ * them. Identical raw dates fall through to 0, leaving the surrounding stable
+ * `Array.prototype.sort` to preserve insertion order.
+ *
+ * Exported for unit testing; in production this drives the three sort sites in
+ * `TimelineRenderer` (main, template-section, secondary builder).
  */
 /**
- * True iff either rawDate in the pair parses as a fictional date in a
- * backward-direction era (BBY / BC / etc.). The two same-year tiebreaks —
- * `sort_order` (#625, #638) and rawDate (#609) — both invert when this
- * predicate fires so they track the year sort's old-at-bottom direction.
- * Keeping the check in one place stops the two tiebreaks from drifting
- * apart if either changes later.
+ * Whether a context event falls within the focal person's life window plus a
+ * margin, comparing era-aware canonical years (#695). The window is the
+ * person's earliest..latest canonical year widened by `margin` on each side, so
+ * a context event in a different era than the person (e.g. an ABY event for a
+ * BBY-lived person) is included/excluded by true chronological distance rather
+ * than era-blind digit magnitude. An entry with no resolved canonical year is
+ * excluded (it can't be placed on the timeline reliably).
  */
-function isBackwardEraPair(
-	rawA: string,
-	rawB: string,
-	dateService: DateService | null | undefined
+export function isWithinContextMargin(
+	entryCanonicalYear: number | undefined,
+	personMinYear: number,
+	personMaxYear: number,
+	margin: number
 ): boolean {
-	if (!dateService) return false;
-	const parsedA = rawA ? dateService.parseDate(rawA) : null;
-	const parsedB = rawB ? dateService.parseDate(rawB) : null;
-	return (
-		(parsedA?.type === 'fictional' && parsedA.fictional?.era?.direction === 'backward') ||
-		(parsedB?.type === 'fictional' && parsedB.fictional?.era?.direction === 'backward')
-	);
+	if (entryCanonicalYear === undefined) return false;
+	return entryCanonicalYear >= personMinYear - margin && entryCanonicalYear <= personMaxYear + margin;
 }
 
 export function compareTimelineEntriesByDate(
 	a: TimelineEntry,
 	b: TimelineEntry,
-	sortOrder: 'chronological' | 'reverse',
-	dateService?: DateService | null
+	sortOrder: 'chronological' | 'reverse'
 ): number {
-	const yearA = parseInt(a.year) || 0;
-	const yearB = parseInt(b.year) || 0;
+	const yearA = a.canonicalYear ?? (parseInt(a.year) || 0);
+	const yearB = b.canonicalYear ?? (parseInt(b.year) || 0);
 	if (yearA !== yearB) {
 		return sortOrder === 'reverse' ? yearB - yearA : yearA - yearB;
 	}
-	const rawA = a.rawDate || '';
-	const rawB = b.rawDate || '';
-	const backward = isBackwardEraPair(rawA, rawB, dateService);
 	// Same-year tiebreak: respect `sort_order` topological values when both
 	// entries have them (#625). Events with `before`/`after` frontmatter
-	// receive sort_order values from the v0.22.45 #569 auto-compute
-	// service; per-person timelines were missed in that sweep. The check
-	// only fires when BOTH entries have a value, so events without
-	// before/after constraints (birth from person, marriage, family events,
-	// context entries) continue to fall through to the rawDate tiebreak
-	// below rather than mixing with explicitly-ordered events. In a
-	// backward-era pair, invert so the topological order follows the
-	// year sort's old-at-bottom direction (#638).
+	// receive sort_order values from the v0.22.45 #569 auto-compute service.
+	// The check only fires when BOTH entries have a value, so events without
+	// constraints fall through to the rawDate tiebreak below.
 	if (a.sortOrder !== undefined && b.sortOrder !== undefined && a.sortOrder !== b.sortOrder) {
-		let cmp = a.sortOrder - b.sortOrder;
-		if (backward) cmp = -cmp;
+		const cmp = a.sortOrder - b.sortOrder;
 		return sortOrder === 'reverse' ? -cmp : cmp;
 	}
+	const rawA = a.rawDate || '';
+	const rawB = b.rawDate || '';
 	if (rawA !== rawB) {
-		// For descending-era rawDates (BBY / BC / etc.), the literal lex
-		// compare on the era-prefixed string puts firstborn-at-top, but
-		// the surrounding year sort renders descending eras with old-at-
-		// bottom (parseInt is era-blind, so BBY 18 sorts before BBY 80).
-		// Invert the tiebreak so same-year twins follow the same direction
-		// as their year neighbours and the firstborn lands in the slot the
-		// reader expects (#609 follow-on to v0.22.48's #609 fix).
-		let cmp = rawA < rawB ? -1 : 1;
-		if (backward) cmp = -cmp;
+		// Twins / triplets sharing a year: lex-compare the raw date so the
+		// earlier time suffix (ISO `…T03:42` or fictional `BBY 29 T20:03:04`)
+		// lands first, i.e. firstborn-at-top in chronological mode (#609).
+		const cmp = rawA < rawB ? -1 : 1;
 		return sortOrder === 'reverse' ? -cmp : cmp;
 	}
 	return 0;
@@ -458,6 +461,29 @@ export class TimelineRenderer {
 	}
 
 	/**
+	 * Resolve each entry's era-aware canonical year via DateService and store it
+	 * on the entry for the chronological sort and the context-margin window
+	 * (#695). Parses the raw date (preferred, carries the era abbreviation) or
+	 * the display date, under the focal person's universe so custom calendars
+	 * sharing a built-in era abbreviation resolve correctly. Entries whose date
+	 * can't be parsed (or when no DateService is available) are left without a
+	 * canonicalYear, and the comparator / margin filter fall back to the
+	 * era-blind `year` digits for them.
+	 */
+	private assignCanonicalYears(entries: TimelineEntry[], universe: string | undefined): void {
+		const dateService = this.service.getDateService();
+		if (!dateService) return;
+		for (const entry of entries) {
+			const raw = entry.rawDate || entry.date;
+			if (!raw) continue;
+			const canonical = dateService.getCanonicalYear(raw, universe);
+			if (canonical !== null) {
+				entry.canonicalYear = canonical;
+			}
+		}
+	}
+
+	/**
 	 * Build timeline entries with context events merged in
 	 */
 	private async buildTimelineEntriesWithContext(
@@ -487,6 +513,12 @@ export class TimelineRenderer {
 			entries.push(...familyEntries);
 		}
 
+		// Resolve era-aware canonical years now that the person's own and family
+		// events are gathered. Drives the chronological sort and the margin
+		// window below so mixed-era (BBY + ABY) timelines order and filter by
+		// true chronology, not era-blind digits (#695).
+		this.assignCanonicalYears(entries, universe);
+
 		// Resolve context note path
 		const contextParam = config.context as string | undefined;
 		const settings = this.service.getSettings();
@@ -495,6 +527,7 @@ export class TimelineRenderer {
 		if (contextValue) {
 			const contextPath = extractWikilinkPath(contextValue);
 			const contextEntries = await this.parseContextNote(contextPath, context);
+			this.assignCanonicalYears(contextEntries, universe);
 
 			// Filter context events by margin (0 = no filtering, default)
 			const margin = typeof config.contextMargin === 'number'
@@ -502,18 +535,20 @@ export class TimelineRenderer {
 				: (settings.contextLifespanMargin ?? 0);
 
 			if (margin > 0) {
-				// Use only the person's own events (not family or context) for margin range
+				// Window the person's own events (not family or context) by canonical
+				// year so the margin spans true chronology — an ABY context event
+				// just outside a BBY person's life is correctly excluded/included
+				// rather than judged by era-blind digit magnitude (#695).
 				const personYears = entries
 					.filter(e => !e.isContext && !e.isFamilyEvent)
-					.map(e => parseInt(e.year))
-					.filter(y => !isNaN(y));
+					.map(e => e.canonicalYear)
+					.filter((y): y is number => y !== undefined);
 				if (personYears.length > 0) {
-					const minYear = Math.min(...personYears) - margin;
-					const maxYear = Math.max(...personYears) + margin;
-					const filtered = contextEntries.filter(e => {
-						const year = parseInt(e.year);
-						return !isNaN(year) && year >= minYear && year <= maxYear;
-					});
+					const minYear = Math.min(...personYears);
+					const maxYear = Math.max(...personYears);
+					const filtered = contextEntries.filter(e =>
+						isWithinContextMargin(e.canonicalYear, minYear, maxYear, margin)
+					);
 					entries.push(...filtered);
 				} else {
 					entries.push(...contextEntries);
@@ -527,7 +562,7 @@ export class TimelineRenderer {
 		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
 		const sortFn = (a: TimelineEntry, b: TimelineEntry) =>
-			compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService());
+			compareTimelineEntriesByDate(a, b, sortOrder);
 
 		if (layout === 'grouped') {
 			// Partition into personal, family, context — each sorted internally
@@ -829,7 +864,7 @@ export class TimelineRenderer {
 			}
 
 			const sortOrder = (section.sort === 'reverse' ? 'reverse' : 'chronological');
-			sectionEntries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService()));
+			sectionEntries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
 
 			// Render entries
 			for (const entry of sectionEntries) {
@@ -1629,7 +1664,7 @@ export class TimelineRenderer {
 		}
 
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
-		entries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder, this.service.getDateService()));
+		entries.sort((a, b) => compareTimelineEntriesByDate(a, b, sortOrder));
 
 		// Apply limit
 		const limit = config.limit as number | undefined;
