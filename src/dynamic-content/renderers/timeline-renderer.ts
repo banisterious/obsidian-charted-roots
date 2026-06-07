@@ -38,6 +38,63 @@ export function looksLikeFictionalDate(date: string | undefined): boolean {
 }
 
 /**
+ * Gregorian context-note line: optional bullet, a 4-digit start year (with
+ * optional ISO month/day), an optional range end (`–`/`-` then another
+ * 4-digit year), then `: <title>`. Kept verbatim from the original inline
+ * regex so every real-world context note parses exactly as before; fictional
+ * eras are handled by the fallback in `parseContextLine`.
+ */
+const CONTEXT_GREGORIAN_LINE_REGEX = /^(?:[-*]\s+)?(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
+
+/** A context-note line split into its raw date token(s) and title. */
+export interface ParsedContextLine {
+	/** Raw start-date token (e.g. "1914", "1929-10-29", "BBY 32", "32 BBY"). */
+	startRaw: string;
+	/** Raw end-date token for a range, if present. */
+	endRaw?: string;
+	title: string;
+}
+
+/**
+ * Parse a single context-note list line into its date token(s) + title.
+ *
+ * Real-world dates go through the original Gregorian regex unchanged. Lines
+ * that the Gregorian regex rejects get a fictional-era fallback (#693): split
+ * on the first colon into a date region + title, accept the region only when
+ * it looks like a fictional date (an era abbreviation adjacent to a year, in
+ * either order — so prose lines are still skipped), and split an optional
+ * range on an explicit separator (en/em-dash, spaced hyphen, or "to"). The
+ * raw tokens are resolved to years/eras later via DateService, mirroring how
+ * the person's own events are handled. Returns null for non-event lines.
+ */
+export function parseContextLine(line: string): ParsedContextLine | null {
+	const trimmed = line.trim();
+
+	const gMatch = trimmed.match(CONTEXT_GREGORIAN_LINE_REGEX);
+	if (gMatch) {
+		return { startRaw: gMatch[1], endRaw: gMatch[2] || undefined, title: gMatch[3].trim() };
+	}
+
+	// Fictional-era fallback. Split on the FIRST colon so titles may contain
+	// their own colons, matching the Gregorian regex's greedy-title behavior.
+	const noBullet = trimmed.replace(/^[-*]\s+/, '');
+	const colonIdx = noBullet.indexOf(':');
+	if (colonIdx === -1) return null;
+	const dateRegion = noBullet.slice(0, colonIdx).trim();
+	const title = noBullet.slice(colonIdx + 1).trim();
+	if (!title) return null;
+	// Gate on the fictional-date shape so headings / prose ("Note: ...") are
+	// skipped; pure-numeric and ISO dates already matched the Gregorian path.
+	if (!looksLikeFictionalDate(dateRegion)) return null;
+
+	const parts = dateRegion.split(/\s*[–—]\s*|\s+-\s+|\s+to\s+/);
+	const startRaw = parts[0].trim();
+	const endRaw = parts.length > 1 ? parts[parts.length - 1].trim() : undefined;
+	if (!startRaw) return null;
+	return { startRaw, endRaw, title };
+}
+
+/**
  * Timeline entry combining events from EventService with person birth/death
  */
 export interface TimelineEntry {
@@ -510,36 +567,36 @@ export class TimelineRenderer {
 		const content = await app.vault.read(file);
 		const entries: TimelineEntry[] = [];
 
-		// Match lines with date prefix: bullet optional
-		// Formats: "- 1861-1865: Event", "1914: Event", "* 1929-10-29: Event"
-		const lineRegex = /^(?:[-*]\s+)?(\d{4}(?:-\d{2}(?:-\d{2})?)?)\s*(?:[-–]\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?))?:\s*(.+)$/;
-
 		const birthDate = context.person?.birthDate;
 		const universe = context.person?.universe;
 
+		// Supported line formats (bullet optional):
+		//   - 1861-1865: Event   1914: Event   * 1929-10-29: Event
+		//   - BBY 32: Event      32 BBY – 22 BBY: Event   (fictional eras, #693)
 		for (const line of content.split('\n')) {
-			const match = line.trim().match(lineRegex);
-			if (!match) continue;
+			const parsed = parseContextLine(line);
+			if (!parsed) continue;
 
-			const startDate = match[1];
-			const endDate = match[2];
-			const title = match[3].trim();
-			const year = startDate.substring(0, 4);
-			const displayYear = endDate
-				? `${year}–${endDate.substring(0, 4)}`
-				: year;
+			const { startRaw, endRaw, title } = parsed;
+			// `extractYear` strips era prefixes to digits, so it's parseInt-safe
+			// for the sort comparator and matches what person/family events store
+			// in `year`. The raw token stays in `date`/`rawDate` so the era-aware
+			// display (formatYearForDisplay) and backward-era sort tiebreak work.
+			const startYear = this.service.extractYear(startRaw);
+			const endYear = endRaw ? this.service.extractYear(endRaw) : '';
+			const displayYear = endYear ? `${startYear}–${endYear}` : startYear;
 
 			const entry: TimelineEntry = {
-				date: startDate,
+				date: startRaw,
 				year: displayYear,
 				type: 'context',
 				title,
 				isContext: true,
-				rawDate: startDate
+				rawDate: startRaw
 			};
 
 			// Add age annotation for context events too
-			const age = this.computeEventAge(birthDate, startDate, universe);
+			const age = this.computeEventAge(birthDate, startRaw, universe);
 			if (age !== undefined) {
 				entry.age = age;
 			}

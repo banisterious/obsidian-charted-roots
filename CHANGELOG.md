@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Timeline context notes now work with fictional dating systems** ([#693](https://github.com/banisterious/obsidian-charted-roots/issues/693)): A historical-context note added to a Dynamic Timeline Block (via `context: [[…]]`) only displayed its events when the dates were written as four-digit calendar years. Lines dated in a fictional era — `BBY 32`, `32 BBY`, and the like — were silently skipped, so a fictional context note showed nothing while a real-world one worked. Context dates now recognise era abbreviations (in either order) and short years, including ranges, and resolve through the same date system as the person's own events. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 - **Family Chart highlight dimming no longer clips connector lines on Circle cards** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): With Highlight Groups active and the Circle card style, the dim layer on non-matching cards was sized to a bounding box, which overhung the round card and faintly dimmed the connector lines passing near it. The dim layer now matches the card's circle, so the lines stay clean. Follows up the v0.22.63 highlight-dimming fix. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ## [0.22.64] - 2026-06-06
