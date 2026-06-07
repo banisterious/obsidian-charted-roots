@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Large-import warning and projected note count** ([#688](https://github.com/banisterious/obsidian-charted-roots/issues/688)): The import wizard's preview now shows the total number of notes an import will create and warns when that total is large enough to slow Obsidian down (around 10,000+), suggesting you narrow the file — for example to your direct lines plus a few generations — before proceeding. The warning appears before any notes are written, and applies to every import format (GEDCOM, GEDCOM-X, Gramps, CSV). Raised by [@inerlogic](https://github.com/inerlogic).
+
 ### Changed
 
 - **Family Chart focus outline is more visible** ([#689](https://github.com/banisterious/obsidian-charted-roots/issues/689)): The focus (root person) outline added last release is now drawn slightly thicker (4px instead of 3px) so it stands apart from the connector lines, which share the accent colour — at the old width the default purple accent in dark mode could be easy to miss. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
