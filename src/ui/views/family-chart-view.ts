@@ -41,6 +41,7 @@ import {
 } from './family-chart-export';
 
 import { getSpouseLabel } from '../../utils/terminology';
+import { arePersonsSpouses } from './family-chart-kinship';
 import { pluralize } from '../../utils/format-utils';
 import { unwrapWikilinkDisplay } from '../../utils/wikilink-resolver';
 import { ensureVisibleLineColor } from '../../utils/color-contrast';
@@ -3470,6 +3471,21 @@ export class FamilyChartView extends ItemView {
 			const isSpouseLink = linkEl.classList.contains('spouse') ||
 				pathData.includes('L') && !pathData.includes('C'); // Straight lines are typically spouse links
 
+			// f3 connects any two co-parents with a straight line so their
+			// shared child can branch from the midpoint, and the geometry test
+			// above reads that as a spouse link. Only keep the "Spouse" label
+			// when the two endpoints are actually spouses in the data — drop it
+			// for co-parent-only connectors so unmarried parents aren't labelled
+			// spouses (#694). When the endpoints can't be resolved to a person
+			// pair, fall through and label as before so legitimate spouse links
+			// aren't lost.
+			if (isSpouseLink) {
+				const pair = this.getLinkPersonPair(linkEl, cardPositions);
+				if (pair && !arePersonsSpouses(personMap.get(pair.person1Id), personMap.get(pair.person2Id))) {
+					return;
+				}
+			}
+
 			// Create label text
 			const label = createSvg('text');
 			label.setAttribute('class', 'cr-kinship-label');
@@ -4312,12 +4328,16 @@ export class FamilyChartView extends ItemView {
 	 * Determine the spouse number for a link in multi-spouse scenarios (#195)
 	 * Returns 1-based spouse index if this is a multi-spouse link, null otherwise
 	 */
-	private getSpouseNumberForLink(
+	/**
+	 * Resolve a link path's two endpoints to the person IDs whose cards sit at
+	 * each end, by matching card positions within a tolerance. Returns null
+	 * when either endpoint can't be matched to a card. Shared by the
+	 * spouse-number labeler and the co-parent-vs-spouse check (#694).
+	 */
+	private getLinkPersonPair(
 		linkPath: SVGPathElement,
-		cardPositions: Map<string, { x: number; y: number }>,
-		personMap: Map<string, FamilyChartPerson>
-	): number | null {
-		// Get the link endpoints from the path
+		cardPositions: Map<string, { x: number; y: number }>
+	): { person1Id: string; person2Id: string } | null {
 		const endpoints = this.getLinkEndpoints(linkPath);
 		if (!endpoints) return null;
 
@@ -4344,6 +4364,17 @@ export class FamilyChartView extends ItemView {
 		}
 
 		if (!person1Id || !person2Id) return null;
+		return { person1Id, person2Id };
+	}
+
+	private getSpouseNumberForLink(
+		linkPath: SVGPathElement,
+		cardPositions: Map<string, { x: number; y: number }>,
+		personMap: Map<string, FamilyChartPerson>
+	): number | null {
+		const pair = this.getLinkPersonPair(linkPath, cardPositions);
+		if (!pair) return null;
+		const { person1Id, person2Id } = pair;
 
 		// Check if either person has multiple spouses
 		const person1 = personMap.get(person1Id);
