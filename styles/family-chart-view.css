@@ -1407,18 +1407,26 @@
   isolation: isolate;
 }
 
-/* Dim non-matching cards by fading them toward the chart background with an
- * overlay <rect> (.cr-hl-dim-overlay) injected per card in applyHighlightClasses,
- * NOT with CSS `opacity` on `.card_cont`. CSS opacity gives the card group a
- * stacking context that Chromium mis-orders beneath the links layer on Linux and
- * macOS (#670) — present even with hardware acceleration off, so it is a
- * paint-order quirk, not GPU compositing. `fill-opacity` on a plain rect creates
- * no stacking context, so the card group keeps its normal paint order above the
- * connector lines on every platform. */
-.cr-fcv-chart-container .cr-hl-dim-overlay {
-  fill: var(--background-color);
-  fill-opacity: 0.7;
-  pointer-events: none;
+/* Dim non-matching cards by lowering the opacity of the inner `.card` group — a
+ * descendant of `.card_cont` — NOT with an opaque overlay and NOT with opacity
+ * on `.card_cont` itself.
+ *
+ * History: opacity on `.card_cont` gave the card group a stacking context that
+ * Chromium painted beneath the links layer on Linux and macOS (#670) — a
+ * paint-order quirk, present even with hardware acceleration off. v0.22.60-65
+ * worked around it with an overlay <rect>/<circle> (fill-opacity, no stacking
+ * context on the card), but the overlay sat above the card and washed out the
+ * short connector-line stub routing into each dimmed card, so the edge lines
+ * appeared to change colour at every non-matching node (#670 follow-up).
+ *
+ * Scoping the opacity to the descendant `.card` keeps `.card_cont` out of a
+ * stacking context (so it never escapes below the links), and because the
+ * connector lines live in the sibling `links_view` layer — never inside `.card`
+ * — they keep full brightness. `cards_view`'s `isolation: isolate` (above)
+ * contains the `.card` stacking context so the dimmed card still paints above
+ * the lines. */
+.cr-fcv-chart-container .card_cont.cr-hl-dim .card {
+  opacity: 0.3;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {
