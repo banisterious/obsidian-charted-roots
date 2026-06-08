@@ -130,7 +130,7 @@ export class RelationshipsView extends ItemView {
 	}
 
 	// State persistence
-	getState(): RelationshipsViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort

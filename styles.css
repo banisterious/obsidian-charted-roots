@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-07 17:21:59 UTC
+ * - Generated: 2026-06-08 22:29:36 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22,7 +22,7 @@
    COMPONENT: VARIABLES.CSS
    ========================================================================== */
 
-/* Component Size: 79 lines, 2.45 KB */
+/* Component Size: 80 lines, 2.48 KB */
 
 /* Charted Roots CSS Variables */
 
@@ -68,6 +68,7 @@
   --cr-fcv-background-dark: rgb(33, 33, 33);
   --cr-fcv-text-light: #333333;
   --cr-fcv-text-dark: #ffffff;
+  --cr-fcv-focus-outline-width: 4px;
 
   /* Evidence Visualization - customizable via Style Settings plugin */
   --cr-source-primary: #22c55e;
@@ -110,7 +111,7 @@
    COMPONENT: STYLE-SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 281 lines, 6.81 KB */
+/* Component Size: 291 lines, 7.1 KB */
 
 /**
  * Style Settings Integration
@@ -172,6 +173,16 @@ settings:
     type: variable-color
     format: hex
     default: "#ffffff"
+  -
+    id: cr-fcv-focus-outline-width
+    title: Focus outline width
+    description: Thickness of the border around the focused (root) person's card. The colour follows your Obsidian accent colour.
+    type: variable-number-slider
+    default: 4
+    min: 2
+    max: 10
+    step: 1
+    format: px
   -
     id: evidence-heading
     title: Evidence visualization
@@ -17099,7 +17110,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1532 lines, 39.56 KB */
+/* Component Size: 1542 lines, 40.24 KB */
 
 /**
  * Family Chart View Styles
@@ -17422,12 +17433,14 @@ settings:
 
 /* Focus (root person) card outline. Uses the theme accent, not currentColor:
    the outline used to inherit the card text colour, which #672 turned near-black
-   on dark cards and made the focus indicator invisible (#689). Drawn at 4px —
+   on dark cards and made the focus indicator invisible (#689). Default 4px —
    2px thicker than the connector lines (which share the accent colour) so the
-   outline reads as a deliberate border and not just another link (#689). */
+   outline reads as a deliberate border and not just another link (#689). The
+   width is exposed through Style Settings (--cr-fcv-focus-outline-width) so users
+   who find the accent-coloured border easy to miss can thicken it (#689). */
 .cr-fcv-chart-container.f3 .card-main-outline {
   stroke: var(--interactive-accent);
-  stroke-width: 4px;
+  stroke-width: var(--cr-fcv-focus-outline-width, 4px);
 }
 
 /* Card transitions */
@@ -18510,18 +18523,26 @@ settings:
   isolation: isolate;
 }
 
-/* Dim non-matching cards by fading them toward the chart background with an
- * overlay <rect> (.cr-hl-dim-overlay) injected per card in applyHighlightClasses,
- * NOT with CSS `opacity` on `.card_cont`. CSS opacity gives the card group a
- * stacking context that Chromium mis-orders beneath the links layer on Linux and
- * macOS (#670) — present even with hardware acceleration off, so it is a
- * paint-order quirk, not GPU compositing. `fill-opacity` on a plain rect creates
- * no stacking context, so the card group keeps its normal paint order above the
- * connector lines on every platform. */
-.cr-fcv-chart-container .cr-hl-dim-overlay {
-  fill: var(--background-color);
-  fill-opacity: 0.7;
-  pointer-events: none;
+/* Dim non-matching cards by lowering the opacity of the inner `.card` group — a
+ * descendant of `.card_cont` — NOT with an opaque overlay and NOT with opacity
+ * on `.card_cont` itself.
+ *
+ * History: opacity on `.card_cont` gave the card group a stacking context that
+ * Chromium painted beneath the links layer on Linux and macOS (#670) — a
+ * paint-order quirk, present even with hardware acceleration off. v0.22.60-65
+ * worked around it with an overlay <rect>/<circle> (fill-opacity, no stacking
+ * context on the card), but the overlay sat above the card and washed out the
+ * short connector-line stub routing into each dimmed card, so the edge lines
+ * appeared to change colour at every non-matching node (#670 follow-up).
+ *
+ * Scoping the opacity to the descendant `.card` keeps `.card_cont` out of a
+ * stacking context (so it never escapes below the links), and because the
+ * connector lines live in the sibling `links_view` layer — never inside `.card`
+ * — they keep full brightness. `cards_view`'s `isolation: isolate` (above)
+ * contains the `.card` stacking context so the dimmed card still paints above
+ * the lines. */
+.cr-fcv-chart-container .card_cont.cr-hl-dim .card {
+  opacity: 0.3;
 }
 
 .cr-fcv-chart-container .card_cont.cr-hl-match {
@@ -41154,15 +41175,15 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-07 17:22:01 UTC
+ * Build completed: 2026-06-08 22:29:37 UTC
  * Components processed: 50
- * Total lines: 40685
- * Total size: 834.02 KB
- * Build duration: 1.66 seconds
+ * Total lines: 40706
+ * Total size: 835.03 KB
+ * Build duration: 0.31 seconds
  *
  * Component breakdown:
- * - variables.css: 79 lines, 2.45 KB
- * - style-settings.css: 281 lines, 6.81 KB
+ * - variables.css: 80 lines, 2.48 KB
+ * - style-settings.css: 291 lines, 7.1 KB
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
@@ -41180,7 +41201,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1532 lines, 39.56 KB
+ * - family-chart-view.css: 1542 lines, 40.24 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB

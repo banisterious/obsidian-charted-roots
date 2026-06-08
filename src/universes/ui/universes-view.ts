@@ -135,7 +135,7 @@ export class UniversesView extends ItemView {
 	}
 
 	// State persistence
-	getState(): UniversesViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort,

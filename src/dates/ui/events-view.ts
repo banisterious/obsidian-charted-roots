@@ -156,7 +156,7 @@ export class EventsView extends ItemView {
 	}
 
 	// State persistence
-	getState(): EventsViewState {
+	getState(): Record<string, unknown> {
 		return {
 			typeFilter: this.currentTypeFilter,
 			personFilter: this.currentPersonFilter,

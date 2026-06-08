@@ -460,6 +460,14 @@ export async function createPersonNote(
 	if (person.burialPlace) {
 		frontmatter[prop('burial_place')] = person.burialPlace;
 	}
+	// Living-status override (#698). Written on create as well as update so a
+	// person marked living/deceased in the create modal persists. Uses the fixed
+	// `cr_living` key (not prop-aliased), matching updatePersonNote and the reader
+	// in people-tab. Absent => automatic detection, so only write when an explicit
+	// boolean was chosen.
+	if (typeof person.cr_living === 'boolean') {
+		frontmatter['cr_living'] = person.cr_living;
+	}
 	if (person.adoptionDate) {
 		frontmatter[prop('adoption_date')] = person.adoptionDate;
 	}

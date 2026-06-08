@@ -10,9 +10,12 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
 import { getEventType, type EventTypeDefinition } from '../../events/types/event-types';
+import { parseLifeEvents, lifeEventDedupKey } from '../../events/life-events-parser';
+import type { EventType } from '../../maps/types/map-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
+import { qualifyPlaceWithAncestors } from './place-context';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -183,6 +186,57 @@ export function isWithinContextMargin(
 ): boolean {
 	if (entryCanonicalYear === undefined) return false;
 	return entryCanonicalYear >= personMinYear - margin && entryCanonicalYear <= personMaxYear + margin;
+}
+
+/**
+ * Compute the focal person's lifespan window (in era-aware canonical years) used
+ * by the context-margin filter. Returns `null` when there are no dated points at
+ * all, in which case the caller leaves context events unfiltered.
+ *
+ * The lower bound is the person's birth (context just before birth is admitted
+ * by the margin, but an older sibling's earlier birth should not drag the window
+ * back before the person existed). The upper bound reflects the person's full
+ * life, not just their personal milestones (#699 — a long-standing gap from the
+ * personal-events-only window of #332):
+ *
+ * - With a recorded death, the window ends at death: post-death family events
+ *   (e.g. a child marrying years later) must not pull context in.
+ * - With no death but marked living (`cr_living`, eventually surfaced by the
+ *   #698 modal), it extends to `livingHorizon` (the latest context event), so a
+ *   long-lived person with few recorded events still sees context during life.
+ * - Otherwise it extends to the latest recorded life event — personal OR family
+ *   — since children's births and marriages happen during the parent's life.
+ *
+ * Exported for unit testing; drives the margin filter in
+ * `buildTimelineEntriesWithContext`.
+ */
+export function computeContextWindow(
+	birthYear: number | undefined,
+	deathYear: number | undefined,
+	personalYears: number[],
+	familyYears: number[],
+	isLiving: boolean,
+	livingHorizon: number | undefined
+): { minYear: number; maxYear: number } | null {
+	const lifeYears = [
+		...(birthYear !== undefined ? [birthYear] : []),
+		...(deathYear !== undefined ? [deathYear] : []),
+		...personalYears,
+		...familyYears,
+	];
+	if (lifeYears.length === 0) return null;
+
+	const minYear = birthYear ?? Math.min(...lifeYears);
+
+	let maxYear: number;
+	if (deathYear !== undefined) {
+		maxYear = deathYear;
+	} else if (isLiving && livingHorizon !== undefined) {
+		maxYear = Math.max(...lifeYears, livingHorizon);
+	} else {
+		maxYear = Math.max(...lifeYears);
+	}
+	return { minYear, maxYear };
 }
 
 export function compareTimelineEntriesByDate(
@@ -535,19 +589,51 @@ export class TimelineRenderer {
 				: (settings.contextLifespanMargin ?? 0);
 
 			if (margin > 0) {
-				// Window the person's own events (not family or context) by canonical
-				// year so the margin spans true chronology — an ABY context event
-				// just outside a BBY person's life is correctly excluded/included
-				// rather than judged by era-blind digit magnitude (#695).
-				const personYears = entries
+				// Build the lifespan window in era-aware canonical years so the
+				// margin spans true chronology — an ABY context event just outside a
+				// BBY person's life is included/excluded by real distance, not
+				// era-blind digit magnitude (#695). The window now reflects the
+				// person's whole life rather than only their personal milestones
+				// (#699): birth/death anchor it, family events widen it, and a
+				// death-date-less person extends to their latest family event (or,
+				// when marked living, to the latest context event).
+				const dateService = this.service.getDateService();
+				const toYear = (y: number | null): number | undefined =>
+					y === null ? undefined : y;
+				const birthYear = dateService
+					? toYear(dateService.getCanonicalYear(context.person?.birthDate, universe))
+					: undefined;
+				const deathYear = dateService
+					? toYear(dateService.getCanonicalYear(context.person?.deathDate, universe))
+					: undefined;
+				const personalYears = entries
 					.filter(e => !e.isContext && !e.isFamilyEvent)
 					.map(e => e.canonicalYear)
 					.filter((y): y is number => y !== undefined);
-				if (personYears.length > 0) {
-					const minYear = Math.min(...personYears);
-					const maxYear = Math.max(...personYears);
+				const familyYears = entries
+					.filter(e => e.isFamilyEvent)
+					.map(e => e.canonicalYear)
+					.filter((y): y is number => y !== undefined);
+				const contextYears = contextEntries
+					.map(e => e.canonicalYear)
+					.filter((y): y is number => y !== undefined);
+				const livingHorizon = contextYears.length > 0 ? Math.max(...contextYears) : undefined;
+
+				// Living = explicit cr_living override (the #698 hook), or a
+				// real-world person with no death date born within the living-age
+				// threshold. Fictional eras never satisfy the recent-year test, so
+				// fictional people rely on the explicit flag.
+				let isLiving = context.person?.cr_living === true;
+				if (!isLiving && context.person && !context.person.deathDate && birthYear !== undefined) {
+					const threshold = settings.livingPersonAgeThreshold ?? 100;
+					const currentYear = new Date().getFullYear();
+					isLiving = currentYear - birthYear >= 0 && currentYear - birthYear < threshold;
+				}
+
+				const window = computeContextWindow(birthYear, deathYear, personalYears, familyYears, isLiving, livingHorizon);
+				if (window) {
 					const filtered = contextEntries.filter(e =>
-						isWithinContextMargin(e.canonicalYear, minYear, maxYear, margin)
+						isWithinContextMargin(e.canonicalYear, window.minYear, window.maxYear, margin)
 					);
 					entries.push(...filtered);
 				} else {
@@ -557,6 +643,10 @@ export class TimelineRenderer {
 				entries.push(...contextEntries);
 			}
 		}
+
+		// Qualify each entry's place with its parent location (#701) before
+		// layout, so personal, family, and context rows are all handled once.
+		this.applyPlaceContext(entries, config);
 
 		// Apply layout mode
 		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
@@ -599,6 +689,34 @@ export class TimelineRenderer {
 			// chronological — all interleaved
 			entries.sort(sortFn);
 			return entries;
+		}
+	}
+
+	/**
+	 * Append the immediate parent location to each entry's place so a leaf
+	 * like "London" reads "London, England" (#701). The parent is resolved
+	 * through the place graph (parent_place links); entries whose place doesn't
+	 * match a place note, or whose place has no parent, are left untouched.
+	 *
+	 * A per-block `place_context: true | false` overrides the global
+	 * `timelineShowPlaceContext` setting; when neither enables it this is a
+	 * no-op and the place graph is never built.
+	 */
+	private applyPlaceContext(entries: TimelineEntry[], config: DynamicBlockConfig): void {
+		const override = config.place_context;
+		const enabled = typeof override === 'boolean'
+			? override
+			: (this.service.getSettings().timelineShowPlaceContext ?? false);
+		if (!enabled) return;
+
+		const placeGraph = this.service.getPlaceGraphService();
+		for (const entry of entries) {
+			if (!entry.place) continue;
+			const node = placeGraph.getPlaceByName(entry.place);
+			if (!node) continue;
+			const ancestorNames = placeGraph.getAncestors(node.id).map(a => a.name);
+			if (ancestorNames.length === 0) continue;
+			entry.place = qualifyPlaceWithAncestors(entry.place, ancestorNames, 1);
 		}
 	}
 
@@ -1661,6 +1779,46 @@ export class TimelineRenderer {
 				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined,
 				rawDate: person.burialDate
 			});
+		}
+
+		// Inline life events from the person's `events:` frontmatter array (#692).
+		// Maps already surfaces these; the timeline missed them. Parse via the
+		// shared pure parser (same alias resolution as Maps), render each as a
+		// personal row (type label + place, per the agreed display), and dedup
+		// against external event-note rows / dedicated-field events by
+		// type|place|date so an event recorded both inline and as a note shows once.
+		const fm = this.service.getApp().metadataCache.getFileCache(context.file)?.frontmatter;
+		if (fm?.events) {
+			const valueAlias = this.service.getValueAliasService();
+			const lifeEvents = parseLifeEvents(fm.events, {
+				resolveEventType: (raw) => valueAlias.resolve('eventType', raw) as EventType
+			});
+			if (lifeEvents.length > 0) {
+				const customEventTypes = settings.customEventTypes || [];
+				const showBuiltIn = settings.showBuiltInEventTypes !== false;
+				const existingKeys = new Set(
+					entries.map(e => lifeEventDedupKey(e.type, e.place, e.rawDate))
+				);
+				for (const ev of lifeEvents) {
+					if (!shouldInclude(ev.event_type)) continue;
+					const rawDate = ev.date_from !== undefined ? String(ev.date_from) : undefined;
+					const place = ev.place ? this.service.stripWikilink(ev.place) : undefined;
+					const key = lifeEventDedupKey(ev.event_type, place, rawDate);
+					if (existingKeys.has(key)) continue;
+					existingKeys.add(key);
+
+					const def = getEventType(ev.event_type, customEventTypes, showBuiltIn);
+					entries.push({
+						date: rawDate ? this.service.formatDate(rawDate) : '',
+						year: rawDate ? this.service.extractYear(rawDate) : '',
+						type: ev.event_type,
+						title: ev.customLabel || def?.name || ev.event_type,
+						place,
+						description: ev.description,
+						rawDate
+					});
+				}
+			}
 		}
 
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');

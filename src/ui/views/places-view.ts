@@ -134,7 +134,7 @@ export class PlacesView extends ItemView {
 	}
 
 	// State persistence
-	getState(): PlacesViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort,

@@ -200,8 +200,36 @@ export class AddRelationshipModal extends Modal {
 					this.plugin.relationshipHistory,
 					promptOnConflict(this.app)
 				);
-				if (mapping === 'spouse') {
+				if (mapping === 'spouse' && !this.selectedType.builtIn) {
+					// A CUSTOM relationship type mapped to `spouse` keeps its own flat
+					// field so its identity/styling survive — the family graph reads
+					// custom spouse-mapped fields as spouse edges via
+					// spouseRelationshipTypes. Routing it through the built-in spouse
+					// writer wrote the generic `spouse` array and dropped the custom
+					// type (#703, spouse counterpart of the parent fix).
+					await this.writeRelationshipProperties(targetCrId);
+					// A spouse relationship is inherently mutual, so always write the
+					// reciprocal field on the target — matching built-in spouse, which
+					// is bidirectional regardless of any flag. The family graph builds
+					// spouse edges per-side from each note's own field, so without the
+					// reciprocal the couple wouldn't render from the partner's side.
+					// `writeRelationshipProperties` already mirrors symmetric types, so
+					// only force it for non-symmetric ones to avoid a redundant write.
+					if (!this.selectedType.symmetric) {
+						await this.writeReciprocalRelationshipProperties(this.selectedType.id);
+					}
+				} else if (mapping === 'spouse') {
 					await mgr.addSpouseRelationship(this.sourceFile, this.selectedTarget.file, targetCrId);
+				} else if (mapping === 'parent' && !this.selectedType.builtIn) {
+					// A CUSTOM relationship type mapped to `parent` (e.g. "Creator")
+					// must keep its own flat field (`creator`/`creator_id`) so its
+					// identity and styling survive — the family graph reads custom
+					// parent-mapped fields as parent edges via
+					// parseRelationshipsArrayForFamilyGraph + parentRelationshipTypes.
+					// Routing it through the built-in parent writer wrote a generic
+					// `parents` array and dropped the custom type (#703). Built-in
+					// `parent` keeps the gender-aware routing below.
+					await this.writeRelationshipProperties(targetCrId);
 				} else if (mapping === 'parent') {
 					// Route to gender-neutral `parents` array when the setting is on
 					// or when the target's sex isn't male/female (the gendered fallback
@@ -218,11 +246,15 @@ export class AddRelationshipModal extends Modal {
 						const parentType = isFemale ? 'mother' : 'father';
 						wrote = await mgr.addParentRelationship(this.sourceFile, this.selectedTarget.file, parentType, targetCrId);
 					}
+				} else if ((mapping === 'father' || mapping === 'mother') && !this.selectedType.builtIn) {
+					// Same as the custom-`parent` case: a custom type mapped to the
+					// gendered scalar keeps its own flat field rather than being
+					// written as `father`/`mother` (#703).
+					await this.writeRelationshipProperties(targetCrId);
 				} else if (mapping === 'father' || mapping === 'mother') {
-					// Custom relationship whose `Maps to` is the gendered scalar
-					// (Father / Mother). The user explicitly chose the gendered
-					// field, so route directly to addParentRelationship with the
-					// matching type — bypassing the gender-neutral routing the
+					// Built-in relationship whose `Maps to` is the gendered scalar
+					// (Father / Mother). Route directly to addParentRelationship with
+					// the matching type — bypassing the gender-neutral routing the
 					// `'parent'` branch uses. Inherits the v0.22.47 conflict guard
 					// via updateParentField, plus the sex-mismatch warning notice
 					// from addParentRelationship itself (#616).

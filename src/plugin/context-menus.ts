@@ -47,9 +47,11 @@ const logger = getLogger('context-menus');
 
 /**
  * Open ManageOrganizationMembersModal for a person, handling the 0 / 1 /
- * multiple memberships cases (#490). When the person belongs to a single
- * organization the modal opens directly; when they belong to multiple, a
- * fuzzy picker scoped to their orgs lets the user pick which to manage.
+ * multiple memberships cases (#490). When the person has no memberships the
+ * AddMembershipModal opens so they can add their first one (#700); when they
+ * belong to a single organization the modal opens directly; when they belong
+ * to multiple, a fuzzy picker scoped to their orgs lets the user pick which
+ * to manage.
  */
 async function openManageMembershipsForPerson(plugin: CanvasRootsPlugin, file: TFile): Promise<void> {
 	const cache = plugin.app.metadataCache.getFileCache(file);
@@ -71,7 +73,13 @@ async function openManageMembershipsForPerson(plugin: CanvasRootsPlugin, file: T
 		.filter((org): org is OrganizationInfo => !!org);
 
 	if (orgs.length === 0) {
-		new Notice('This person has no organization memberships to manage');
+		// #700: don't dead-end on a person with no memberships — prompt to add
+		// their first one straight from "Manage memberships" (AddMembershipModal
+		// lists available organizations and offers to create one if none exist).
+		const { AddMembershipModal } = await import('../organizations/ui/add-membership-modal');
+		new AddMembershipModal(plugin.app, plugin, file, () => {
+			new Notice('Membership added');
+		}).open();
 		return;
 	}
 

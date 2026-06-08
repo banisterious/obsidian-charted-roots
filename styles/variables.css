@@ -42,6 +42,7 @@
   --cr-fcv-background-dark: rgb(33, 33, 33);
   --cr-fcv-text-light: #333333;
   --cr-fcv-text-dark: #ffffff;
+  --cr-fcv-focus-outline-width: 4px;
 
   /* Evidence Visualization - customizable via Style Settings plugin */
   --cr-source-primary: #22c55e;

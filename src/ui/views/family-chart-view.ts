@@ -4224,7 +4224,9 @@ export class FamilyChartView extends ItemView {
 		// same pop-out-document family as #677/#678).
 		d3.select(this.chartContainerEl).selectAll<Element, { data: { id: string } }>('.card_cont')
 			.each(function(nodeData) {
-				// Strip all previous highlight classes and any dim overlay
+				// Strip all previous highlight classes and any dim overlay left by
+				// an earlier build (the overlay mechanism was retired in the #670
+				// follow-up — see below).
 				this.classList.remove('cr-hl-dim', 'cr-hl-match');
 				for (const c of HIGHLIGHT_COLORS) {
 					this.classList.remove(`cr-hl-match--${c.value}`);
@@ -4243,43 +4245,14 @@ export class FamilyChartView extends ItemView {
 					this.classList.add('cr-hl-match');
 					this.classList.add(`cr-hl-match--${match.color}`);
 				} else {
+					// Dim the card via the `cr-hl-dim` marker class; the CSS lowers
+					// opacity on the inner `.card` group. No overlay is appended —
+					// the overlay (used through v0.22.65) sat above the card and
+					// washed out the connector-line stub routing into each dimmed
+					// card, so the edge lines appeared to change colour at every
+					// non-matching node (#670 follow-up). See the CSS rule for why
+					// the opacity is scoped to `.card`, not `.card_cont`.
 					this.classList.add('cr-hl-dim');
-					// Fade the card with an overlay rect (fill-opacity, no stacking
-					// context) instead of CSS opacity on the card group, which
-					// Chromium paints below the connector lines on Linux/macOS
-					// (#670). Clone the card's body rect so the overlay matches its
-					// exact size and rounded corners — the group's bounding box
-					// includes the open-note button, which protrudes past the card
-					// on the smaller styles and made the overlay overhang.
-					const cardG = this.querySelector('.card');
-					const body = cardG?.querySelector('.card-body-rect');
-					const disc = cardG?.querySelector('.cr-circle-disc');
-					if (body instanceof SVGGraphicsElement) {
-						const overlay = body.cloneNode(false) as SVGElement;
-						overlay.removeAttribute('style');
-						overlay.removeAttribute('fill');
-						overlay.setAttribute('class', 'cr-hl-dim-overlay');
-						body.parentNode?.appendChild(overlay);
-					} else if (disc instanceof SVGGraphicsElement) {
-						// Circle style: clone the gender disc so the dim layer is the
-						// same circle as the visible card. The bounding-box fallback
-						// below overhangs the round card and faintly dims the connector
-						// lines passing near it (#670 follow-up).
-						const overlay = disc.cloneNode(false) as SVGElement;
-						overlay.removeAttribute('style');
-						overlay.removeAttribute('fill');
-						overlay.setAttribute('class', 'cr-hl-dim-overlay');
-						disc.parentNode?.appendChild(overlay);
-					} else if (cardG instanceof SVGGraphicsElement) {
-						// Bodyless fallback: bounding box.
-						const bbox = cardG.getBBox();
-						d3.select(cardG).append('rect')
-							.attr('class', 'cr-hl-dim-overlay')
-							.attr('x', bbox.x)
-							.attr('y', bbox.y)
-							.attr('width', bbox.width)
-							.attr('height', bbox.height);
-					}
 				}
 			});
 	}

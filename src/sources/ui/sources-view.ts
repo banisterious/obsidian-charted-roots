@@ -135,7 +135,7 @@ export class SourcesView extends ItemView {
 	}
 
 	// State persistence
-	getState(): SourcesViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort,
