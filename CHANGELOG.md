@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **"Manage memberships" on a person with none now prompts you to add one** ([#700](https://github.com/banisterious/obsidian-charted-roots/issues/700)): Choosing **Manage memberships** on a person who belongs to no organizations used to dead-end with a "this person has no organization memberships to manage" notice. It now opens the **Add membership** dialog directly, so you can add their first membership from the available organizations without detouring through the Organizations tab of the Control Center (and if no organizations exist yet, it offers to create one). Requested by [@doctorwodka](https://github.com/doctorwodka).
+
 ## [0.22.65] - 2026-06-07
 
 A reporter-driven release focused on timelines, the Family Chart, and import. Dynamic Timeline Blocks now handle fictional calendars properly — context-note events written in eras like BBY/ABY display, and events that mix eras (BBY and ABY) sort and filter by true chronology instead of the bare year number. Event icons appear consistently across timeline rows and are shown by default. The Family Chart no longer labels unmarried co-parents as spouses, and its focus indicator stands out more clearly. Children added from a parent's Edit person modal now link back to the parent automatically, and the import wizard warns before creating a very large vault. **1361 tests passing across 117 suites.**
