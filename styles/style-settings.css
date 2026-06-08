@@ -59,6 +59,16 @@ settings:
     format: hex
     default: "#ffffff"
   -
+    id: cr-fcv-focus-outline-width
+    title: Focus outline width
+    description: Thickness of the border around the focused (root) person's card. The colour follows your Obsidian accent colour.
+    type: variable-number-slider
+    default: 4
+    min: 2
+    max: 10
+    step: 1
+    format: px
+  -
     id: evidence-heading
     title: Evidence visualization
     description: Colors for source quality indicators and research coverage

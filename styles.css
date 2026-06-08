@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-07 22:56:29 UTC
+ * - Generated: 2026-06-07 23:57:13 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -22,7 +22,7 @@
    COMPONENT: VARIABLES.CSS
    ========================================================================== */
 
-/* Component Size: 79 lines, 2.45 KB */
+/* Component Size: 80 lines, 2.48 KB */
 
 /* Charted Roots CSS Variables */
 
@@ -68,6 +68,7 @@
   --cr-fcv-background-dark: rgb(33, 33, 33);
   --cr-fcv-text-light: #333333;
   --cr-fcv-text-dark: #ffffff;
+  --cr-fcv-focus-outline-width: 4px;
 
   /* Evidence Visualization - customizable via Style Settings plugin */
   --cr-source-primary: #22c55e;
@@ -110,7 +111,7 @@
    COMPONENT: STYLE-SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 281 lines, 6.81 KB */
+/* Component Size: 291 lines, 7.1 KB */
 
 /**
  * Style Settings Integration
@@ -172,6 +173,16 @@ settings:
     type: variable-color
     format: hex
     default: "#ffffff"
+  -
+    id: cr-fcv-focus-outline-width
+    title: Focus outline width
+    description: Thickness of the border around the focused (root) person's card. The colour follows your Obsidian accent colour.
+    type: variable-number-slider
+    default: 4
+    min: 2
+    max: 10
+    step: 1
+    format: px
   -
     id: evidence-heading
     title: Evidence visualization
@@ -17099,7 +17110,7 @@ settings:
    COMPONENT: FAMILY-CHART-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 1540 lines, 40.05 KB */
+/* Component Size: 1542 lines, 40.24 KB */
 
 /**
  * Family Chart View Styles
@@ -17422,12 +17433,14 @@ settings:
 
 /* Focus (root person) card outline. Uses the theme accent, not currentColor:
    the outline used to inherit the card text colour, which #672 turned near-black
-   on dark cards and made the focus indicator invisible (#689). Drawn at 4px —
+   on dark cards and made the focus indicator invisible (#689). Default 4px —
    2px thicker than the connector lines (which share the accent colour) so the
-   outline reads as a deliberate border and not just another link (#689). */
+   outline reads as a deliberate border and not just another link (#689). The
+   width is exposed through Style Settings (--cr-fcv-focus-outline-width) so users
+   who find the accent-coloured border easy to miss can thicken it (#689). */
 .cr-fcv-chart-container.f3 .card-main-outline {
   stroke: var(--interactive-accent);
-  stroke-width: 4px;
+  stroke-width: var(--cr-fcv-focus-outline-width, 4px);
 }
 
 /* Card transitions */
@@ -41162,15 +41175,15 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-07 22:56:30 UTC
+ * Build completed: 2026-06-07 23:57:13 UTC
  * Components processed: 50
- * Total lines: 40693
- * Total size: 834.51 KB
- * Build duration: 0.97 seconds
+ * Total lines: 40706
+ * Total size: 835.03 KB
+ * Build duration: 0.63 seconds
  *
  * Component breakdown:
- * - variables.css: 79 lines, 2.45 KB
- * - style-settings.css: 281 lines, 6.81 KB
+ * - variables.css: 80 lines, 2.48 KB
+ * - style-settings.css: 291 lines, 7.1 KB
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 131 lines, 3.53 KB
@@ -41188,7 +41201,7 @@ body.cr-media-linker-active .suggestion-container {
  * - find-on-canvas.css: 275 lines, 5.13 KB
  * - folder-scan.css: 155 lines, 2.6 KB
  * - relationship-calculator.css: 302 lines, 5.27 KB
- * - family-chart-view.css: 1540 lines, 40.05 KB
+ * - family-chart-view.css: 1542 lines, 40.24 KB
  * - family-chart-export.css: 699 lines, 14.78 KB
  * - report-wizard.css: 908 lines, 19.89 KB
  * - book-builder.css: 368 lines, 7.25 KB
