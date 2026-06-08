@@ -153,6 +153,9 @@ Customize colors for the interactive family chart:
 | Chart background (dark theme) | Background color in dark mode | Dark gray (`rgb(33, 33, 33)`) |
 | Card text color (light theme) | Text color in light mode | Dark gray (`#333333`) |
 | Card text color (dark theme) | Text color in dark mode | White (`#ffffff`) |
+| Focus outline width | Width of the outline marking the focus (root) person's card, in pixels (2-10) | `4` |
+
+The focus outline always uses your Obsidian accent colour so it stays visible on every card style; only its width is adjustable here (CSS variable `--cr-fcv-focus-outline-width`).
 
 ### Evidence Visualization
 

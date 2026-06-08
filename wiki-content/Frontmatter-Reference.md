@@ -427,7 +427,7 @@ Person notes can link to media files (photos, portraits, documents) in the vault
 
 ### Life Events
 
-Beyond birth, death, and marriage (which use flat properties above), additional life events can be recorded in an `events` array. These events appear as markers on the Map View.
+Beyond birth, death, and marriage (which use flat properties above), additional life events can be recorded in an `events` array. These events appear as markers on the Map View and, since v0.22.66, as entries on the Dynamic Timeline Block — interleaved chronologically with the person's other events and de-duplicated against any matching event notes.
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|

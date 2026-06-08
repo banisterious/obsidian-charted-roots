@@ -124,7 +124,7 @@ Click the **X** button next to the date field to clear the filter. The selected 
 
 ### Focus Indicator
 
-The focus (root) person's card is marked with an outline so you can pick it out in a large tree. The outline uses your Obsidian accent colour (Settings > Appearance > Accent color) rather than the card's text colour, so it stays clearly visible on every card style and in both light and dark themes, and it carries through to chart exports. To change its colour, change your accent colour.
+The focus (root) person's card is marked with an outline so you can pick it out in a large tree. The outline uses your Obsidian accent colour (Settings > Appearance > Accent color) rather than the card's text colour, so it stays clearly visible on every card style and in both light and dark themes, and it carries through to chart exports. To change its colour, change your accent colour. To adjust its width (2-10px, default 4px), use the [Style Settings plugin](Styling-And-Theming#family-chart-view) and set **Family Chart View → Focus outline width**.
 
 ### Kinship Labels
 

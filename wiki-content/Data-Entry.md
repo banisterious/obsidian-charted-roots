@@ -132,6 +132,18 @@ Children are stored using two array properties:
 - `child` — Display names (wikilinks)
 - `children_id` — cr_id references for robust linking
 
+### Living Status
+
+A **Living status** dropdown sits directly under the death and burial fields, in both the Create Person and Edit Person modals. It controls the `cr_living` property without hand-editing frontmatter:
+
+| Option | Effect |
+|--------|--------|
+| **Automatic** | Living status is inferred from the death date and the living-age threshold (the default; clears any manual override) |
+| **Living** | The person is treated as living and protected in privacy-aware exports (sets `cr_living: true`) |
+| **Deceased** | The person is treated as deceased and not protected (sets `cr_living: false`) |
+
+The control is always available — it no longer requires privacy protection to be enabled. The `cr_living` value it sets is the same one the timeline's context lifespan window reads to extend a living person's range. See [`cr_living`](Frontmatter-Reference#person-properties) and [Privacy & Security](Privacy-And-Security) for details.
+
 ### Nickname Display
 
 The Edit Modal header displays the person's nickname (if set) alongside their formal name, making it easy to identify people with informal names.

@@ -158,6 +158,7 @@ The full member-management modal (the same one reachable from the organization s
 1. Right-click a person note
 2. Select **Charted Roots** → **Manage memberships...**
 3. If the person belongs to a single organization, the modal opens directly scoped to that org. If they belong to multiple, a picker lets you choose which to manage. From there you can add new members, edit existing memberships' role / dates / notes, or remove memberships.
+4. If the person belongs to **no** organizations, **Manage memberships...** opens the **Add membership** dialog directly so you can add their first one, listing the organizations available to join. If no organizations exist yet, it offers to create one.
 
 ## Organizations Tab
 

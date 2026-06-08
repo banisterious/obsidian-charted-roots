@@ -51,6 +51,7 @@ sort: chronological
 
 **What it displays:**
 - Birth and death dates from the person's frontmatter
+- A person's inline `events` array (residence, occupation, immigration, and the like) — the same flat-YAML list that places markers on the Map View, now interleaved chronologically on the timeline and de-duplicated against any matching event notes
 - All event notes linked to this person
 - Age annotations on each event (when birth date is known)
 - Family member events — children's births (biological + adopted), spouse deaths, parent deaths, sibling births (biological + adopted, derived from any shared parent — bio or adoptive — using both `childrenCrIds` and `adoptedChildCrIds` on each parent so adopted siblings surface on bio-side household pages and vice versa). Toggled in Settings > Advanced > [Family events on timelines](Settings-And-Configuration#family-events-on-timelines)
@@ -69,6 +70,7 @@ sort: chronological
 | `title` | string | Custom header text (default: "Timeline") |
 | `context` | `[[Note]]`, `none` | Historical context note to overlay (see below) |
 | `contextMargin` | number | Only show context events within N years of the person's lifespan (overrides global setting) |
+| `place_context` | `true`, `false` | Append each place's parent location, e.g. "London, England" instead of "London" (overrides the global **Show place context** setting). The parent comes from the place note hierarchy (`parent_place`); places that are not place notes, or have no parent, are left unchanged |
 | `familyEvents` | `none` | Suppress family member events on this timeline (overrides global toggles) |
 | `layout` | `chronological`, `grouped`, `personal-first` | How events are arranged (see [Layout modes](#timeline-layout-modes)) |
 | `format` | format string | Custom display format with placeholders (see [Format strings](#timeline-format-strings)) |
@@ -399,7 +401,7 @@ group-by: role
 | Option | Values | Description |
 |--------|--------|-------------|
 | `group-by` | `role`, `none` | Group members by role (default: role) |
-| `sort` | `name`, `date` | Sort order within groups (default: name) |
+| `sort` | `name`, `date` | Sort order within groups (default: name). `date` sorts by each member's membership start date (`from`) — earliest first, undated members last, name as a tiebreak — and fictional BBY/ABY join dates order by true chronology |
 | `show-former` | `true`, `false` | Include former members (default: true) |
 | `show-dates` | `true`, `false` | Show membership date ranges (default: true) |
 | `show-notes` | `true`, `false` | Show membership notes (default: false) |

@@ -43,7 +43,7 @@ Right-click on any markdown file with a `cr_id` frontmatter property:
 | **[Show on calendar](Calendar-View)** | Open the calendar at this person's birth month/year |
 | **[Generate report](Statistics-And-Reports#generating-reports)** | Open the Report Wizard with this person pre-selected |
 | **Calculate relationship...** | Find how this person relates to another |
-| **[Manage memberships...](Organization-Notes#person-memberships)** | Open the organization-member management modal for one of this person's organizations. If they belong to a single organization the modal opens directly; if multiple, a picker lets you choose which organization to manage. |
+| **[Manage memberships...](Organization-Notes#person-memberships)** | Open the organization-member management modal for one of this person's organizations. If they belong to a single organization the modal opens directly; if multiple, a picker lets you choose which organization to manage. If they belong to no organizations, it opens the Add membership dialog directly so you can add their first one. |
 | **Set group name** | Assign a custom name to this person's family group |
 | **Set collection** | Add this person to a collection |
 | **Add source...** | Add a source citation to this person |

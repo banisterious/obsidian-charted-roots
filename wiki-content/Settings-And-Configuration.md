@@ -432,6 +432,7 @@ Settings for the Events & Timelines feature.
 |---------|---------|-------------|
 | **Events folder** | `Charted Roots/Events` | Default folder for new event notes |
 | **Event type display** | Icon with label | How event types appear on timelines, canvas event nodes, and maps: **Icon with label**, **Icon (with tooltip)**, or **Text label** |
+| **Show place context** | Off | Append each place's parent location to timeline entries, so "Born in London" reads "Born in London, England". The parent comes from the place note hierarchy (`parent_place`). Override per block with `place_context: true` / `place_context: false`. |
 | **Show built-in event types** | On | Include 22 built-in event types |
 | **Custom event types** | *(empty)* | User-defined event types |
 
@@ -455,7 +456,7 @@ Custom event types can be added with:
 | Setting | Default | Description |
 |---------|---------|-------------|
 | **Default timeline context** | *(empty)* | Note with historical events to overlay on all timelines (e.g., `[[World History]]`). Can be overridden per block with `context: [[Note]]` or suppressed with `context: none`. See [Dynamic Note Content](Dynamic-Note-Content#historical-context-overlay) for details. |
-| **Context lifespan margin** | `0` | Only show context events within this many years of the person's own lifespan. `0` = show all (default). Uses only the person's own events — family events (sibling births, spouse deaths) do not expand the range. |
+| **Context lifespan margin** | `0` | Only show context events within this many years of the person's lifespan. `0` = show all (default). The lifespan window spans the person's whole life: birth and death anchor it, family events (children's births, spouse deaths, and the like) widen it, a person with no death date extends to their latest family event, and a person marked living extends to their latest context event. |
 | **Default layout** | `chronological` | How events are arranged: `chronological` (interleaved by date), `grouped` (sections for personal/family/context), or `personal-first`. See [Layout modes](Dynamic-Note-Content#timeline-layout-modes). |
 | **Default timeline template** | *(empty)* | Note defining timeline sections with custom sort, include, and format. See [Template notes](Dynamic-Note-Content#timeline-template-notes). |
 

@@ -236,10 +236,15 @@ In addition to Event Notes, the person timeline block (`charted-roots-timeline` 
 | `adoption_date` (on an adoptive parent's adopted child) | Adopted [[Child]] | Yes |
 | `spouse1_marriage_date` (any indexed spouse) | Marriage to [[Spouse]] | Yes |
 | `spouse1_divorce_date` (any indexed spouse) | Divorce from [[Spouse]] | Toggled — see **Show divorces** setting |
+| `events` (array of `{ event_type, place, date_from, ... }`) | One entry per item (e.g. Residence in [[Place]]), labelled by event type | Yes |
+
+A person's inline `events` array — the same flat-YAML list (residence, occupation, immigration, and so on) that places markers on the Map View — now also appears on the Dynamic Timeline Block, interleaved chronologically with the entries above and with any linked event notes. Each entry is labelled by its event type and shows its place; custom event types keep their original label. Entries are de-duplicated against matching event notes (by type, place, and date), so an event recorded both inline and as a note is not shown twice.
 
 Adoption is a shared life event — it renders on both the adoptee's and the adoptive parents' timelines, matching the way marriages render on both spouses.
 
 Burial renders alongside death when `burial_date` is set, so a person's timeline can show both the death entry and a separate burial entry on a later date. The timeline block's `include: [...]` filter honors burial — restrict your timeline to a subset of event types and burial is included or excluded accordingly.
+
+**Place context:** by default a timeline entry shows only the leaf place name (`Born in London`). Enable place context to append the place's parent location from your place note hierarchy (`Born in London, England`), which disambiguates places that share a name. Turn it on globally under Settings > Events & timelines > Event display > **Show place context**, or per block with `place_context: true`. See [Dynamic Note Content → Timeline block](Dynamic-Note-Content#timeline-block) for the block option.
 
 ### Family-member events from frontmatter
 
