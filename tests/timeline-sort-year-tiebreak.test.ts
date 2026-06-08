@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	compareTimelineEntriesByDate,
+	computeContextWindow,
 	isWithinContextMargin,
 	type TimelineEntry,
 } from '../src/dynamic-content/renderers/timeline-renderer';
@@ -190,6 +191,53 @@ describe('isWithinContextMargin — era-aware context margin window (#695)', () 
 		// Person 1850..1910, margin 5 → [1845, 1915].
 		expect(isWithinContextMargin(1861, 1850, 1910, 5)).toBe(true);
 		expect(isWithinContextMargin(1930, 1850, 1910, 5)).toBe(false);
+	});
+});
+
+describe('computeContextWindow — full-lifespan window (#699)', () => {
+	it('returns null when there are no dated points', () => {
+		expect(computeContextWindow(undefined, undefined, [], [], false, undefined)).toBeNull();
+	});
+
+	it('anchors the lower bound on birth even when an older sibling was born earlier', () => {
+		// Birth BBY 56 (-56); an older sibling born BBY 58 (-58) is a family event.
+		// The window must start at birth, not at the earlier sibling birth.
+		const w = computeContextWindow(-56, undefined, [], [-58], false, undefined);
+		expect(w?.minYear).toBe(-56);
+	});
+
+	it('extends the upper bound to the latest family event when there is no death date', () => {
+		// The Kaelorin case: last personal event is the marriage (BBY 33 = -33),
+		// but children's events run to BBY 18 (-18). The window must reach -18 so
+		// context during the person's later life is no longer dropped.
+		const w = computeContextWindow(-56, undefined, [-56, -33], [-54, -32, -18], false, undefined);
+		expect(w).toEqual({ minYear: -56, maxYear: -18 });
+	});
+
+	it('caps the upper bound at the death date, ignoring later family events', () => {
+		// Death BBY 20 (-20); a child marries BBY 10 (-10) after the parent died.
+		// The window must end at death, not follow the post-death family event.
+		const w = computeContextWindow(-60, -20, [-60, -20], [-40, -10], false, undefined);
+		expect(w).toEqual({ minYear: -60, maxYear: -20 });
+	});
+
+	it('extends to the living horizon for a death-date-less person marked living', () => {
+		// The Aan'dyun case: no death, last recorded event is the marriage
+		// (BBY 18 = -18), no family events, but the person is marked living. The
+		// window reaches the latest context event (ABY 4 = +4) so transition-era
+		// context is admitted.
+		const w = computeContextWindow(-54, undefined, [-54, -18], [], true, 4);
+		expect(w).toEqual({ minYear: -54, maxYear: 4 });
+	});
+
+	it('does not extend to the living horizon when the person is not living', () => {
+		const w = computeContextWindow(-54, undefined, [-54, -18], [], false, 4);
+		expect(w).toEqual({ minYear: -54, maxYear: -18 });
+	});
+
+	it('falls back to the min of all years when birth is unknown', () => {
+		const w = computeContextWindow(undefined, undefined, [-40], [-50], false, undefined);
+		expect(w).toEqual({ minYear: -50, maxYear: -40 });
 	});
 });
 

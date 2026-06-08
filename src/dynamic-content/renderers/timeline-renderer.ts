@@ -185,6 +185,57 @@ export function isWithinContextMargin(
 	return entryCanonicalYear >= personMinYear - margin && entryCanonicalYear <= personMaxYear + margin;
 }
 
+/**
+ * Compute the focal person's lifespan window (in era-aware canonical years) used
+ * by the context-margin filter. Returns `null` when there are no dated points at
+ * all, in which case the caller leaves context events unfiltered.
+ *
+ * The lower bound is the person's birth (context just before birth is admitted
+ * by the margin, but an older sibling's earlier birth should not drag the window
+ * back before the person existed). The upper bound reflects the person's full
+ * life, not just their personal milestones (#699 — a long-standing gap from the
+ * personal-events-only window of #332):
+ *
+ * - With a recorded death, the window ends at death: post-death family events
+ *   (e.g. a child marrying years later) must not pull context in.
+ * - With no death but marked living (`cr_living`, eventually surfaced by the
+ *   #698 modal), it extends to `livingHorizon` (the latest context event), so a
+ *   long-lived person with few recorded events still sees context during life.
+ * - Otherwise it extends to the latest recorded life event — personal OR family
+ *   — since children's births and marriages happen during the parent's life.
+ *
+ * Exported for unit testing; drives the margin filter in
+ * `buildTimelineEntriesWithContext`.
+ */
+export function computeContextWindow(
+	birthYear: number | undefined,
+	deathYear: number | undefined,
+	personalYears: number[],
+	familyYears: number[],
+	isLiving: boolean,
+	livingHorizon: number | undefined
+): { minYear: number; maxYear: number } | null {
+	const lifeYears = [
+		...(birthYear !== undefined ? [birthYear] : []),
+		...(deathYear !== undefined ? [deathYear] : []),
+		...personalYears,
+		...familyYears,
+	];
+	if (lifeYears.length === 0) return null;
+
+	const minYear = birthYear ?? Math.min(...lifeYears);
+
+	let maxYear: number;
+	if (deathYear !== undefined) {
+		maxYear = deathYear;
+	} else if (isLiving && livingHorizon !== undefined) {
+		maxYear = Math.max(...lifeYears, livingHorizon);
+	} else {
+		maxYear = Math.max(...lifeYears);
+	}
+	return { minYear, maxYear };
+}
+
 export function compareTimelineEntriesByDate(
 	a: TimelineEntry,
 	b: TimelineEntry,
@@ -535,19 +586,51 @@ export class TimelineRenderer {
 				: (settings.contextLifespanMargin ?? 0);
 
 			if (margin > 0) {
-				// Window the person's own events (not family or context) by canonical
-				// year so the margin spans true chronology — an ABY context event
-				// just outside a BBY person's life is correctly excluded/included
-				// rather than judged by era-blind digit magnitude (#695).
-				const personYears = entries
+				// Build the lifespan window in era-aware canonical years so the
+				// margin spans true chronology — an ABY context event just outside a
+				// BBY person's life is included/excluded by real distance, not
+				// era-blind digit magnitude (#695). The window now reflects the
+				// person's whole life rather than only their personal milestones
+				// (#699): birth/death anchor it, family events widen it, and a
+				// death-date-less person extends to their latest family event (or,
+				// when marked living, to the latest context event).
+				const dateService = this.service.getDateService();
+				const toYear = (y: number | null): number | undefined =>
+					y === null ? undefined : y;
+				const birthYear = dateService
+					? toYear(dateService.getCanonicalYear(context.person?.birthDate, universe))
+					: undefined;
+				const deathYear = dateService
+					? toYear(dateService.getCanonicalYear(context.person?.deathDate, universe))
+					: undefined;
+				const personalYears = entries
 					.filter(e => !e.isContext && !e.isFamilyEvent)
 					.map(e => e.canonicalYear)
 					.filter((y): y is number => y !== undefined);
-				if (personYears.length > 0) {
-					const minYear = Math.min(...personYears);
-					const maxYear = Math.max(...personYears);
+				const familyYears = entries
+					.filter(e => e.isFamilyEvent)
+					.map(e => e.canonicalYear)
+					.filter((y): y is number => y !== undefined);
+				const contextYears = contextEntries
+					.map(e => e.canonicalYear)
+					.filter((y): y is number => y !== undefined);
+				const livingHorizon = contextYears.length > 0 ? Math.max(...contextYears) : undefined;
+
+				// Living = explicit cr_living override (the #698 hook), or a
+				// real-world person with no death date born within the living-age
+				// threshold. Fictional eras never satisfy the recent-year test, so
+				// fictional people rely on the explicit flag.
+				let isLiving = context.person?.cr_living === true;
+				if (!isLiving && context.person && !context.person.deathDate && birthYear !== undefined) {
+					const threshold = settings.livingPersonAgeThreshold ?? 100;
+					const currentYear = new Date().getFullYear();
+					isLiving = currentYear - birthYear >= 0 && currentYear - birthYear < threshold;
+				}
+
+				const window = computeContextWindow(birthYear, deathYear, personalYears, familyYears, isLiving, livingHorizon);
+				if (window) {
 					const filtered = contextEntries.filter(e =>
-						isWithinContextMargin(e.canonicalYear, minYear, maxYear, margin)
+						isWithinContextMargin(e.canonicalYear, window.minYear, window.maxYear, margin)
 					);
 					entries.push(...filtered);
 				} else {
