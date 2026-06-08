@@ -4,6 +4,7 @@ This document records architectural decisions (ADRs) for Charted Roots.
 
 ## Table of Contents
 
+- [Timeline Place Context and Shared Life-Events Parser](#timeline-place-context-and-shared-life-events-parser-2026-06-08)
 - [Vitest Regression-Test Discipline](#vitest-regression-test-discipline-2026-04-21)
 - [PDF Library and Font Strategy](#pdf-library-and-font-strategy-2025-12-19)
 - [Smart Hybrid Collections Architecture](#smart-hybrid-collections-architecture-2025-11-22)
@@ -11,6 +12,24 @@ This document records architectural decisions (ADRs) for Charted Roots.
 - [Switch to family-chart Library](#switch-to-family-chart-library-2025-11-20)
 - [Layout Engine Extraction](#layout-engine-extraction-2025-11-20)
 - [Canvas-Only Mode Removal](#canvas-only-mode-removal-2025-11-20)
+
+---
+
+## Timeline Place Context and Shared Life-Events Parser (2026-06-08)
+
+**Decision:** Render a person's inline `events` array on the Dynamic Timeline Block through the *same* pure parser Map View uses, and add optional parent-location context to timeline places through a single render-time pass gated by a global setting with a per-block override, capped at one ancestor level.
+
+**Context:**
+
+Two reporter requests landed against the timeline in the v0.22.66 cohort. [#692](https://github.com/banisterious/obsidian-charted-roots/issues/692) asked for a person's flat `events` array (residence, occupation, immigration, and the like) to appear on the timeline, where it previously rendered only on Map View. [#701](https://github.com/banisterious/obsidian-charted-roots/issues/701) asked for places to carry their parent location ("Born in London, England") so a bare leaf name isn't ambiguous.
+
+**Decision points:**
+
+- **Shared parser, not a second implementation (#692).** Map View already parsed the `events` array. Rather than re-deriving entries in the timeline renderer, the parsing core was extracted to a neutral pure module (`src/events/life-events-parser.ts`) and *both* surfaces were rewired onto it, so an event renders identically on the map and the timeline and there is one place to fix parsing bugs. De-duplication against linked event notes keys on `type|place|date`.
+- **One render-time pass for place context, not per-entry resolution (#701).** The qualification runs as a single `applyPlaceContext` pass over the fully assembled entry list, just before the layout branch, so personal, family, and context rows are all handled once and the `PlaceGraphService` is built at most once per render (and only when the feature is enabled). The formatting itself is a pure helper (`qualifyPlaceWithAncestors`) so it is unit-testable without the graph.
+- **Depth fixed at leaf + immediate parent.** Deep hierarchies (St Paul's Cathedral → London → England → United Kingdom) would make rows unreadable if the full chain were shown. One ancestor level disambiguates the common case; a configurable N-level depth was considered and declined to keep the option surface simple.
+- **Global setting plus per-block override, default off.** A new `timelineShowPlaceContext` setting sets the default for all timelines; a `place_context: true|false` block key overrides it. Default off so existing timelines are unchanged on upgrade. Timeline-only scope for this issue; Maps/profile/canvas are left to future issues.
+- **Unresolved places pass through untouched.** A place string that does not match a place note, or a place with no parent, is left exactly as-is, so enabling the option never degrades a timeline that lacks a place hierarchy.
 
 ---
 

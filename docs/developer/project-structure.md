@@ -287,6 +287,7 @@ charted-roots/
 |-----------|--------|---------|
 | **Services** | | |
 | `event-service.ts` | ✅ Complete | Event note parsing, CRUD operations, event statistics |
+| `life-events-parser.ts` | ✅ Complete | Shared pure parser for a person's inline `events` array (`parseLifeEvents`), used by both Maps and the Dynamic Timeline Block (#692) |
 | `timeline-markdown-exporter.ts` | ✅ Complete | Export timelines to styled markdown callouts |
 | `timeline-canvas-exporter.ts` | ✅ Complete | Export timelines to Obsidian Canvas |
 | `sort-order-service.ts` | ✅ Complete | Event sort order management |
@@ -490,6 +491,7 @@ charted-roots/
 | `universe-maps-processor.ts` | ✅ Complete | `charted-roots-universe-maps` code block |
 | **Renderers** | | |
 | `timeline-renderer.ts` | ✅ Complete | Timeline content renderer |
+| `place-context.ts` | ✅ Complete | Pure helper qualifying a timeline place with its parent location (`qualifyPlaceWithAncestors`, #701) |
 | `relationships-renderer.ts` | ✅ Complete | Relationships content renderer |
 | `media-renderer.ts` | ✅ Complete | Media gallery renderer |
 | `source-roles-renderer.ts` | ✅ Complete | Person roles table renderer |

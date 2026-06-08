@@ -4,6 +4,7 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.66 Release Cohort](#v02266-release-cohort-2026-06-08)
 - [Version 0.10.x - 0.11.x Summary](#version-010x---011x-summary-2025-12)
 - [Re-Layout Canvas Command](#re-layout-canvas-command-2025-11-21)
 - [Canvas Metadata & Smart Re-layout](#canvas-metadata--smart-re-layout-2025-11-22)
@@ -18,6 +19,32 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.66 Release Cohort (2026-06-08)
+
+> Note: this detailed log skips v0.22.58 through v0.22.65 (those releases are covered in [CHANGELOG.md](../../CHANGELOG.md) and the wiki Release-History round-ups, but were not written up here). This entry resumes the log at v0.22.66.
+
+A reporter-driven cohort focused on timelines, organizations, and the Family Chart. Notable implementation work:
+
+**Inline events on the timeline (#692).** Extracted a shared pure parser `src/events/life-events-parser.ts` (`parseLifeEvents` + `lifeEventDedupKey` + `LIFE_EVENT_TYPES` + `coerceLifeEventDate`). The Dynamic Timeline Block reads `fm.events`, maps each to a personal `TimelineEntry` (type-label + place; custom types keep their original label), and de-duplicates against linked event notes by `type|place|date`. Map View was rewired onto the same parser so the two surfaces stay consistent. `DynamicContentService` gained `getValueAliasService()` so the timeline resolves event-type aliases the way Maps does.
+
+**Timeline place context (#701).** New pure helper `src/dynamic-content/renderers/place-context.ts` (`qualifyPlaceWithAncestors`) appends a place's immediate parent. The timeline renderer runs a single `applyPlaceContext` pass over the assembled entries (before the layout branch, so personal/family/context rows are handled uniformly), resolving each place via `PlaceGraphService.getPlaceByName` → `getAncestors`. `DynamicContentService.getPlaceGraphService()` exposes the graph, built only when the feature is enabled. Controlled by a new global setting `timelineShowPlaceContext` (default off) and a per-block `place_context: true|false` override. Decision: depth fixed at leaf + immediate parent; timeline-only scope.
+
+**Whole-life context margin (#699).** The historical-context lifespan window now spans the person's whole life via a new pure `computeContextWindow`: family events widen the window, a death-date-less person extends to their latest family event (or, when `cr_living`, to their latest context event), and a recorded death caps it.
+
+**Members block `sort: date` (#702).** New pure `compareMembersByJoinDate` in `members-renderer.ts` resolves each member's `from` to an era-aware canonical year (earliest first, undated last, name tiebreak).
+
+**Living-status control (#698).** A "Living status" dropdown moved under the death fields in the create and edit Person modals, ungated. Fixed a gap where `createPersonNote` never wrote `cr_living` (only `updatePersonNote` did), so the create-mode choice was dropped.
+
+**Custom relationship routing (#703).** Custom types mapped to parent/spouse now route through the flat writer so they keep their own field (e.g. `creator`) instead of writing the built-in `parents`/`spouse`; spouse-mapped types always write the reciprocal on the target.
+
+**Family Chart focus outline width (#689)** is now a Style Settings `variable-number-slider` (2-10px, default 4) driving `--cr-fcv-focus-outline-width`. **Highlight dimming (#670)** moved from an overlay rect to `opacity` on the inner card group so connector lines keep full brightness.
+
+**New tests:** `tests/timeline-place-context.test.ts`, `tests/life-events-parser.test.ts`, `tests/members-sort-date.test.ts`. Suite total 1393 across 120 suites.
+
+**Files created:** `src/dynamic-content/renderers/place-context.ts`, `src/events/life-events-parser.ts`.
 
 ---
 

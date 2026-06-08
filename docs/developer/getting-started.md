@@ -27,7 +27,7 @@ npm install
 - `npm run dev` - Start development mode with watch (builds to local main.js)
 - `npm run build` - Production build (fonts + esbuild + CSS; no type check — run `type-check` separately when needed)
 - `npm run type-check` - Standalone `tsc -noEmit -skipLibCheck` pass. Currently surfaces ~149 pre-existing errors that are a separate cleanup backlog; run on-demand rather than on every build.
-- `npm test` - Run the Vitest regression suite once (189 tests covering relationship load / write / migration helpers / sibling walker / event identity / spouse format / date helpers)
+- `npm test` - Run the Vitest regression suite once (1393 tests across 120 suites as of v0.22.66, covering pure helpers for relationships, migrations, the sibling walker, event identity, date handling, and a large set of issue-specific regression suites)
 - `npm run test:watch` - Vitest in watch mode for iterative development
 - `npm run lint` - Check TypeScript code for linting errors
 - `npm run lint:fix` - Auto-fix TypeScript linting errors
