@@ -135,7 +135,7 @@ export class DataQualityView extends ItemView {
 	}
 
 	// State persistence
-	getState(): DataQualityViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			search: this.currentSearch

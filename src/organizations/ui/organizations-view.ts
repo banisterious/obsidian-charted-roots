@@ -135,7 +135,7 @@ export class OrganizationsView extends ItemView {
 	}
 
 	// State persistence
-	getState(): OrganizationsViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort,

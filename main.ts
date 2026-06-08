@@ -91,7 +91,7 @@ import { registerCommandsAndEvents as _registerCommandsAndEvents } from './src/p
 const logger = getLogger('CanvasRootsPlugin');
 
 export default class CanvasRootsPlugin extends Plugin {
-	settings: CanvasRootsSettings;
+	declare settings: CanvasRootsSettings;
 	private fileModifyEventRef: EventRef | null = null;
 	private fileDeleteEventRef: EventRef | null = null;
 	private universeRenameEventRef: EventRef | null = null;
@@ -457,7 +457,7 @@ export default class CanvasRootsPlugin extends Plugin {
 		// right after the vault opens) are accepted as missed — they don't
 		// happen in real usage.
 		this.app.workspace.onLayoutReady(() => {
-			this.eventService.setupVaultListeners(this);
+			this.eventService?.setupVaultListeners(this);
 			this.webClipperService?.startWatching();
 			this.registerFileModificationHandler();
 			this.registerFileDeleteHandler();

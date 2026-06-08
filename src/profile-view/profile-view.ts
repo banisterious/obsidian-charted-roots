@@ -143,7 +143,7 @@ export class ProfileView extends ItemView {
 
 	// ── State persistence ───────────────────────────────────
 
-	getState(): ProfileViewState {
+	getState(): Record<string, unknown> {
 		return {
 			pinned: this.pinned,
 			pinnedEntityCrId: this.pinned ? (this.currentEntityCrId ?? undefined) : undefined,

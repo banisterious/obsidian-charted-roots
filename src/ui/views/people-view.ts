@@ -134,7 +134,7 @@ export class PeopleView extends ItemView {
 	}
 
 	// State persistence
-	getState(): PeopleViewState {
+	getState(): Record<string, unknown> {
 		return {
 			filter: this.currentFilter,
 			sort: this.currentSort,

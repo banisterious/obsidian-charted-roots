@@ -131,7 +131,7 @@ export class CollectionsView extends ItemView {
 	}
 
 	// State persistence
-	getState(): CollectionsViewState {
+	getState(): Record<string, unknown> {
 		return {
 			mode: this.currentMode,
 			search: this.currentSearch
