@@ -12,13 +12,33 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.66] - 2026-06-08
+
+A reporter-driven release centred on timelines, organizations, and the Family Chart. Timelines gain two new display options — a person's inline `events` list now appears alongside births, deaths, and family events, and rows can show a place's parent location ("Born in London, England") so a bare leaf name isn't ambiguous — while historical-context events are now windowed by a person's whole life rather than only their personal milestones. The Edit person modal gains an always-available living-status control, organization member lists honour `sort: date`, custom relationships mapped to parent or spouse keep their own type, and the Family Chart's highlight dimming no longer washes out the connector lines. **1393 tests passing across 120 suites.**
+
 ### Added
+
+- **Personal events now appear on timelines** ([#692](https://github.com/banisterious/obsidian-charted-roots/issues/692)): A person's inline `events` list (residence, occupation, immigration, and the like) showed on Maps but never on the Dynamic Timeline Block. Those events now appear on the timeline too, interleaved with birth, death, and family events in chronological order — era-aware for fictional calendars — and labelled by event type with their place. Reported by [@doctorwodka](https://github.com/doctorwodka).
+
+- **Living-status control in the person modal** ([#698](https://github.com/banisterious/obsidian-charted-roots/issues/698)): Marking a person living or deceased previously meant hand-editing the `cr_living` property, or turning on privacy protection to reveal a hidden override. A **Living status** dropdown (Automatic / Living / Deceased) now sits directly under the death fields in both the create and edit person modals, always available. Reported by [@doctorwodka](https://github.com/doctorwodka).
 
 - **Timelines can show place context** ([#701](https://github.com/banisterious/obsidian-charted-roots/issues/701)): Dynamic Timeline Block rows can now append a place's parent location, so an event reads "Born in London, England" instead of the ambiguous "Born in London" (there are dozens of places named London). The parent comes from the place note hierarchy (`parent_place`), and entries whose place isn't a place note, or has no parent, are left unchanged. It's off by default; enable **Show place context** under Settings → Timeline → Event display, or override per block with `place_context: true` / `place_context: false`. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Changed
 
+- **Family Chart focus outline width is adjustable** ([#689](https://github.com/banisterious/obsidian-charted-roots/issues/689)): The focus (root person) outline shares the connector-line accent colour, so at a fixed width it could still be easy to miss. Its width is now adjustable from 2 to 10 pixels (default 4) through the Style Settings plugin, under Family Chart View. Follows up the v0.22.64/v0.22.65 focus-indicator changes. Raised by [@tenephor](https://github.com/tenephor) and [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 - **"Manage memberships" on a person with none now prompts you to add one** ([#700](https://github.com/banisterious/obsidian-charted-roots/issues/700)): Choosing **Manage memberships** on a person who belongs to no organizations used to dead-end with a "this person has no organization memberships to manage" notice. It now opens the **Add membership** dialog directly, so you can add their first membership from the available organizations without detouring through the Organizations tab of the Control Center (and if no organizations exist yet, it offers to create one). Requested by [@doctorwodka](https://github.com/doctorwodka).
+
+### Fixed
+
+- **Highlight dimming no longer washes out connector lines** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): With Highlight Groups active, the layer that dims non-matching cards also fell across the connector lines routing into those cards, greying them. Dimming is now applied to the card content alone, so the connector lines keep their full colour next to dimmed cards. Follows up the v0.22.63/v0.22.64 highlight-dimming fixes. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Timeline context events now span a person's whole life** ([#699](https://github.com/banisterious/obsidian-charted-roots/issues/699)): The historical-context lifespan margin was measured only against a person's own milestones, so context during a period dominated by family events — or the later life of someone with no recorded death — could be dropped. The margin window now reflects the whole life: family events widen it, a person with no death date extends to their latest family event (or, when marked living, to their latest historical-context event), and a recorded death caps it. Follows up [#695](https://github.com/banisterious/obsidian-charted-roots/issues/695).
+
+- **Organization member lists honour `sort: date`** ([#702](https://github.com/banisterious/obsidian-charted-roots/issues/702)): The `charted-roots-members` block accepted `sort: date` but always fell back to sorting by name. Members now sort by the start date of their membership (`from`) — earliest first, undated members last, name as a tiebreak — and fictional BBY/ABY join dates order by true chronology. Reported by [@doctorwodka](https://github.com/doctorwodka).
+
+- **Custom relationships mapped to parent or spouse keep their own type** ([#703](https://github.com/banisterious/obsidian-charted-roots/issues/703)): A custom relationship type mapped to "parent" or "spouse" was written using the built-in `parents`/`spouse` properties, discarding the custom type name. The custom field is now preserved (a "Creator" relationship writes `creator`, for example), and the Family Chart still reads it as a parent or spouse edge. Spouse-mapped types now always write the reciprocal link on both people. Reported by [@doctorwodka](https://github.com/doctorwodka).
 
 ## [0.22.65] - 2026-06-07
 
