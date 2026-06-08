@@ -547,6 +547,28 @@ export class CreatePersonModal extends Modal {
 					this.personData.burialDate = value || undefined;
 				}));
 
+		// Living status (#698). Overrides the automatic living/deceased detection
+		// so a person can be marked without hand-editing the `cr_living`
+		// frontmatter. Sits directly under the death/burial fields and shows in
+		// both create and edit mode.
+		new Setting(form)
+			.setName('Living status')
+			.setDesc('Mark whether this person is living or deceased, overriding automatic detection (also used for privacy protection in exports)')
+			.addDropdown(dropdown => {
+				dropdown
+					.addOption('', '(Automatic)')
+					.addOption('true', 'Living (protected)')
+					.addOption('false', 'Deceased (not protected)')
+					.setValue(this.personData.cr_living === undefined ? '' : String(this.personData.cr_living))
+					.onChange(value => {
+						if (value === '') {
+							this.personData.cr_living = undefined;
+						} else {
+							this.personData.cr_living = value === 'true';
+						}
+					});
+			});
+
 		// === DNA INFORMATION (inline expansion, only when DNA tracking enabled) ===
 		if (this.plugin?.settings.enableDnaTracking) {
 			this.renderDnaSection(form);
@@ -566,27 +588,6 @@ export class CreatePersonModal extends Modal {
 						.setValue(this.personData.researchLevel?.toString() || '')
 						.onChange(value => {
 							this.personData.researchLevel = value ? parseInt(value) as ResearchLevel : undefined;
-						});
-				});
-		}
-
-		// Living status override (only in edit mode, when privacy protection is enabled)
-		if (this.editMode && this.settings?.enablePrivacyProtection) {
-			new Setting(form)
-				.setName('Living status override')
-				.setDesc('Override automatic living/deceased detection for privacy protection in exports')
-				.addDropdown(dropdown => {
-					dropdown
-						.addOption('', '(Automatic)')
-						.addOption('true', 'Living (protected)')
-						.addOption('false', 'Deceased (not protected)')
-						.setValue(this.personData.cr_living === undefined ? '' : String(this.personData.cr_living))
-						.onChange(value => {
-							if (value === '') {
-								this.personData.cr_living = undefined;
-							} else {
-								this.personData.cr_living = value === 'true';
-							}
 						});
 				});
 		}
