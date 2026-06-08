@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Timelines can show place context** ([#701](https://github.com/banisterious/obsidian-charted-roots/issues/701)): Dynamic Timeline Block rows can now append a place's parent location, so an event reads "Born in London, England" instead of the ambiguous "Born in London" (there are dozens of places named London). The parent comes from the place note hierarchy (`parent_place`), and entries whose place isn't a place note, or has no parent, are left unchanged. It's off by default; enable **Show place context** under Settings → Timeline → Event display, or override per block with `place_context: true` / `place_context: false`. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Changed
 
 - **"Manage memberships" on a person with none now prompts you to add one** ([#700](https://github.com/banisterious/obsidian-charted-roots/issues/700)): Choosing **Manage memberships** on a person who belongs to no organizations used to dead-end with a "this person has no organization memberships to manage" notice. It now opens the **Add membership** dialog directly, so you can add their first membership from the available organizations without detouring through the Organizations tab of the Control Center (and if no organizations exist yet, it offers to create one). Requested by [@doctorwodka](https://github.com/doctorwodka).

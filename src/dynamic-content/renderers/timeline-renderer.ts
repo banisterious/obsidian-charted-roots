@@ -15,6 +15,7 @@ import type { EventType } from '../../maps/types/map-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
+import { qualifyPlaceWithAncestors } from './place-context';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -643,6 +644,10 @@ export class TimelineRenderer {
 			}
 		}
 
+		// Qualify each entry's place with its parent location (#701) before
+		// layout, so personal, family, and context rows are all handled once.
+		this.applyPlaceContext(entries, config);
+
 		// Apply layout mode
 		const layout = (config.layout as string) || settings.timelineLayout || 'chronological';
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');
@@ -684,6 +689,34 @@ export class TimelineRenderer {
 			// chronological — all interleaved
 			entries.sort(sortFn);
 			return entries;
+		}
+	}
+
+	/**
+	 * Append the immediate parent location to each entry's place so a leaf
+	 * like "London" reads "London, England" (#701). The parent is resolved
+	 * through the place graph (parent_place links); entries whose place doesn't
+	 * match a place note, or whose place has no parent, are left untouched.
+	 *
+	 * A per-block `place_context: true | false` overrides the global
+	 * `timelineShowPlaceContext` setting; when neither enables it this is a
+	 * no-op and the place graph is never built.
+	 */
+	private applyPlaceContext(entries: TimelineEntry[], config: DynamicBlockConfig): void {
+		const override = config.place_context;
+		const enabled = typeof override === 'boolean'
+			? override
+			: (this.service.getSettings().timelineShowPlaceContext ?? false);
+		if (!enabled) return;
+
+		const placeGraph = this.service.getPlaceGraphService();
+		for (const entry of entries) {
+			if (!entry.place) continue;
+			const node = placeGraph.getPlaceByName(entry.place);
+			if (!node) continue;
+			const ancestorNames = placeGraph.getAncestors(node.id).map(a => a.name);
+			if (ancestorNames.length === 0) continue;
+			entry.place = qualifyPlaceWithAncestors(entry.place, ancestorNames, 1);
 		}
 	}
 

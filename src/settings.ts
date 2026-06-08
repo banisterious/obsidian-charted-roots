@@ -440,6 +440,8 @@ export interface CanvasRootsSettings {
 	contextLifespanMargin: number;
 	/** Timeline layout mode: chronological, grouped, or personal-first */
 	timelineLayout: 'chronological' | 'grouped' | 'personal-first';
+	/** Append the immediate parent location to timeline places ("London, England"); per-block place_context overrides */
+	timelineShowPlaceContext: boolean;
 	/** Default timeline template note (wikilink path) */
 	defaultTimelineTemplate: string;
 	// Timeline label customization
@@ -929,6 +931,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	defaultTimelineContext: '',                // No default context note
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
 	timelineLayout: 'chronological',          // Default: all events interleaved by date
+	timelineShowPlaceContext: false,          // Off by default (don't change existing timeline output)
 	defaultTimelineTemplate: '',              // No default template
 	timelineBirthLabel: 'Born',
 	timelineDeathLabel: 'Died',
@@ -1640,6 +1643,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.eventIconMode)
 				.onChange(async (value) => {
 					this.plugin.settings.eventIconMode = value as EventIconMode;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Show place context')
+			.setDesc('Append the immediate parent location to timeline places, so "London" reads "London, England". The parent comes from the place note hierarchy (parent_place). Override per block with place_context: true / false.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.timelineShowPlaceContext)
+				.onChange(async (value) => {
+					this.plugin.settings.timelineShowPlaceContext = value;
 					await this.plugin.saveSettings();
 				}));
 
