@@ -38,6 +38,7 @@ export type EventType =
 	| 'military'
 	| 'immigration'
 	| 'baptism'
+	| 'burial'
 	| 'confirmation'
 	| 'ordination'
 	| 'custom';

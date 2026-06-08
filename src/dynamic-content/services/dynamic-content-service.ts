@@ -13,6 +13,7 @@ import type { FamilyGraphService, PersonNode } from '../../core/family-graph';
 import type { EventService } from '../../events/services/event-service';
 import type { EventNote } from '../../events/types/event-types';
 import { RelationshipService } from '../../relationships/services/relationship-service';
+import { ValueAliasService } from '../../core/value-alias-service';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { splitAndTrim } from '../../utils/format-utils';
 import { getLogger } from '../../core/logging';
@@ -84,6 +85,16 @@ export class DynamicContentService {
 	 */
 	createRelationshipService(): RelationshipService {
 		return new RelationshipService(this.plugin);
+	}
+
+	/**
+	 * Construct a ValueAliasService for resolving user value aliases (e.g.
+	 * mapping a custom `event_type` string to a canonical type). Used by the
+	 * timeline's inline-events parse so it resolves aliases identically to Maps
+	 * (#692).
+	 */
+	getValueAliasService(): ValueAliasService {
+		return new ValueAliasService(this.plugin);
 	}
 
 	/**

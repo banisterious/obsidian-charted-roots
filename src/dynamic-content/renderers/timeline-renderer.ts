@@ -10,6 +10,8 @@ import type { DynamicBlockContext, DynamicBlockConfig } from '../services/dynami
 import type { DynamicContentService } from '../services/dynamic-content-service';
 import type { PersonNode, FamilyGraphService } from '../../core/family-graph';
 import { getEventType, type EventTypeDefinition } from '../../events/types/event-types';
+import { parseLifeEvents, lifeEventDedupKey } from '../../events/life-events-parser';
+import type { EventType } from '../../maps/types/map-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
@@ -1744,6 +1746,46 @@ export class TimelineRenderer {
 				place: person.burialPlace ? this.service.stripWikilink(person.burialPlace) : undefined,
 				rawDate: person.burialDate
 			});
+		}
+
+		// Inline life events from the person's `events:` frontmatter array (#692).
+		// Maps already surfaces these; the timeline missed them. Parse via the
+		// shared pure parser (same alias resolution as Maps), render each as a
+		// personal row (type label + place, per the agreed display), and dedup
+		// against external event-note rows / dedicated-field events by
+		// type|place|date so an event recorded both inline and as a note shows once.
+		const fm = this.service.getApp().metadataCache.getFileCache(context.file)?.frontmatter;
+		if (fm?.events) {
+			const valueAlias = this.service.getValueAliasService();
+			const lifeEvents = parseLifeEvents(fm.events, {
+				resolveEventType: (raw) => valueAlias.resolve('eventType', raw) as EventType
+			});
+			if (lifeEvents.length > 0) {
+				const customEventTypes = settings.customEventTypes || [];
+				const showBuiltIn = settings.showBuiltInEventTypes !== false;
+				const existingKeys = new Set(
+					entries.map(e => lifeEventDedupKey(e.type, e.place, e.rawDate))
+				);
+				for (const ev of lifeEvents) {
+					if (!shouldInclude(ev.event_type)) continue;
+					const rawDate = ev.date_from !== undefined ? String(ev.date_from) : undefined;
+					const place = ev.place ? this.service.stripWikilink(ev.place) : undefined;
+					const key = lifeEventDedupKey(ev.event_type, place, rawDate);
+					if (existingKeys.has(key)) continue;
+					existingKeys.add(key);
+
+					const def = getEventType(ev.event_type, customEventTypes, showBuiltIn);
+					entries.push({
+						date: rawDate ? this.service.formatDate(rawDate) : '',
+						year: rawDate ? this.service.extractYear(rawDate) : '',
+						type: ev.event_type,
+						title: ev.customLabel || def?.name || ev.event_type,
+						place,
+						description: ev.description,
+						rawDate
+					});
+				}
+			}
 		}
 
 		const sortOrder = (config.sort as string === 'reverse' ? 'reverse' : 'chronological');

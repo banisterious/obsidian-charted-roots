@@ -27,6 +27,7 @@ import type {
 } from './types/map-types';
 import { journeyWaypointDedupKey } from './types/map-types';
 import { isPlaceNote, isPersonNote } from '../utils/note-type-detection';
+import { parseLifeEvents, LIFE_EVENT_TYPES } from '../events/life-events-parser';
 
 const logger = getLogger('MapDataService');
 
@@ -389,45 +390,17 @@ export class MapDataService {
 	 * frontmatter fields on the person note (born, died, marriage_date)
 	 * and adding them again would create duplicate waypoints.
 	 */
-	private static readonly LIFE_EVENT_TYPES: ReadonlyArray<EventType> = [
-		'residence', 'occupation', 'education', 'military',
-		'immigration', 'baptism', 'burial', 'confirmation', 'ordination', 'custom'
-	];
-
 	/**
-	 * Parse the inline events array from a person's frontmatter.
+	 * Parse the inline events array from a person's frontmatter. Delegates to the
+	 * shared pure `parseLifeEvents` (#692) so Maps and the Dynamic Timeline Block
+	 * read the inline array identically; binds alias resolution to this plugin's
+	 * ValueAliasService.
 	 */
 	private parseEventsArray(events: unknown): LifeEvent[] | undefined {
-		if (!Array.isArray(events)) return undefined;
-
-		const parsed: LifeEvent[] = [];
 		const valueAliasService = new ValueAliasService(this.plugin);
-
-		for (const event of events) {
-			if (typeof event !== 'object' || event === null) continue;
-
-			const eventObj = event as Record<string, unknown>;
-			const rawEventType = eventObj.event_type as string;
-			const place = eventObj.place as string;
-
-			// Must have event_type and place
-			if (!rawEventType || !place) continue;
-
-			// Resolve event type using value aliases (unknown types become 'custom')
-			const resolvedEventType = valueAliasService.resolve('eventType', rawEventType) as EventType;
-
-			if (!MapDataService.LIFE_EVENT_TYPES.includes(resolvedEventType)) continue;
-
-			parsed.push({
-				event_type: resolvedEventType,
-				place: place,
-				date_from: this.coerceDateValue(eventObj.date_from),
-				date_to: this.coerceDateValue(eventObj.date_to),
-				description: eventObj.description as string | undefined,
-				customLabel: resolvedEventType === 'custom' && rawEventType ? rawEventType : undefined
-			});
-		}
-
+		const parsed = parseLifeEvents(events, {
+			resolveEventType: (rawType) => valueAliasService.resolve('eventType', rawType) as EventType
+		});
 		return parsed.length > 0 ? parsed : undefined;
 	}
 
@@ -457,7 +430,7 @@ export class MapDataService {
 			if (!event.place || !event.eventType) continue;
 
 			const resolvedEventType = valueAliasService.resolve('eventType', event.eventType) as EventType;
-			if (!MapDataService.LIFE_EVENT_TYPES.includes(resolvedEventType)) continue;
+			if (!LIFE_EVENT_TYPES.includes(resolvedEventType)) continue;
 
 			result.push({
 				event_type: resolvedEventType,
