@@ -22,6 +22,35 @@ interface MemberEntry {
 	dateRange?: string;
 	notes?: string;
 	isCurrent: boolean;
+	/**
+	 * Era-aware canonical year of the membership start date (`from`), resolved
+	 * via DateService under the organization's universe, for `sort: date`.
+	 * Undefined when there is no start date or it can't be parsed (#702).
+	 */
+	fromYear?: number;
+}
+
+/**
+ * Compare two member entries by membership start date for `sort: date` (#702).
+ * Orders by the era-aware canonical year of `from` (earliest membership first),
+ * so fictional eras like BBY/ABY sort by true chronology rather than the digit
+ * or lexical order a naive string compare would give. Members with no resolved
+ * start date sort after dated ones, then ties fall back to name.
+ *
+ * Exported for unit testing; drives the `date` branch of `buildMemberEntries`.
+ */
+export function compareMembersByJoinDate(
+	a: { fromYear?: number; name: string },
+	b: { fromYear?: number; name: string }
+): number {
+	if (a.fromYear !== undefined && b.fromYear !== undefined) {
+		if (a.fromYear !== b.fromYear) return a.fromYear - b.fromYear;
+	} else if (a.fromYear !== undefined) {
+		return -1;
+	} else if (b.fromYear !== undefined) {
+		return 1;
+	}
+	return a.name.localeCompare(b.name);
 }
 
 /**
@@ -64,7 +93,7 @@ export class MembersRenderer {
 		const container = el.createDiv({ cls: 'cr-dynamic-block cr-members' });
 
 		// Build member entries
-		const entries = this.buildMemberEntries(context.members, config);
+		const entries = this.buildMemberEntries(context.members, config, context.organization.universe);
 
 		// Store for freeze functionality
 		this.currentEntries = entries;
@@ -130,12 +159,15 @@ export class MembersRenderer {
 	 */
 	private buildMemberEntries(
 		members: PersonMembership[],
-		config: DynamicBlockConfig
+		config: DynamicBlockConfig,
+		universe?: string
 	): MemberEntry[] {
 		const showFormer = config['show-former'] !== false;
 		const showDates = config['show-dates'] !== false;
 		const showNotes = config['show-notes'] === true;
 		const sortBy = config.sort as string ?? 'name';
+
+		const dateService = this.service.getDateService();
 
 		const entries: MemberEntry[] = [];
 
@@ -151,6 +183,15 @@ export class MembersRenderer {
 				role: member.role || '',
 				isCurrent: member.isCurrent
 			};
+
+			// Resolve the membership start date to an era-aware canonical year so
+			// `sort: date` orders by true chronology, including fictional eras (#702).
+			if (member.from && dateService) {
+				const year = dateService.getCanonicalYear(member.from, universe);
+				if (year !== null) {
+					entry.fromYear = year;
+				}
+			}
 
 			// Membership notes
 			if (showNotes && member.notes) {
@@ -174,15 +215,11 @@ export class MembersRenderer {
 		}
 
 		// Sort entries
-		entries.sort((a, b) => {
-			if (sortBy === 'date') {
-				// Current members first, then by name
-				if (a.isCurrent !== b.isCurrent) {
-					return a.isCurrent ? -1 : 1;
-				}
-			}
-			return a.name.localeCompare(b.name);
-		});
+		if (sortBy === 'date') {
+			entries.sort(compareMembersByJoinDate);
+		} else {
+			entries.sort((a, b) => a.name.localeCompare(b.name));
+		}
 
 		return entries;
 	}
