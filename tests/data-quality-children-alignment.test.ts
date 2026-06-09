@@ -13,7 +13,6 @@ import type { PersonNode } from '../src/core/family-graph';
 
 function person(overrides: Partial<PersonNode> & { crId: string; basename: string }): PersonNode {
 	return {
-		crId: overrides.crId,
 		name: overrides.name ?? overrides.basename,
 		file: { path: `${overrides.basename}.md`, basename: overrides.basename } as unknown as PersonNode['file'],
 		stepfatherCrIds: [],

@@ -49,6 +49,7 @@ describe('FictionalDateParser — custom system preferred over built-in (#650)',
 
 	it('resolves a slug-form universe value', () => {
 		const result = makeParser().parse('BBY 19', 'star-wars');
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Calendar (Custom)');
 	});
 

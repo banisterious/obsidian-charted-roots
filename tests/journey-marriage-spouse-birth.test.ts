@@ -46,7 +46,6 @@ function seedPlace(service: MapDataService, place: { crId: string; name: string;
 const filters: MapFilters = {
 	collection: undefined,
 	universe: undefined,
-	timeRange: undefined,
 };
 
 describe('MapDataService.buildJourneyPaths — partner birth date threading (#504)', () => {

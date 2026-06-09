@@ -165,7 +165,7 @@ export class Vault {
 	}
 
 	offref(ref: EventRef): void {
-		this.listeners.get(ref.event)?.delete(ref);
+		this.listeners.get(ref.event as VaultEventName)?.delete(ref);
 	}
 
 	// Wire up the metadata cache so that processFrontMatter can keep it in sync.

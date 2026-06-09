@@ -47,6 +47,11 @@ declare module 'obsidian' {
 		_registeredEventCount(): number;
 	}
 
+	interface Notice {
+		/** Mock seam: the message passed to the Notice constructor. */
+		message: string;
+	}
+
 	/**
 	 * Mock factory: build a TFile. Real Obsidian's `TFile` constructor takes no
 	 * arguments, so tests construct via this factory (runtime impl in
