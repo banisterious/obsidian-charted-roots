@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { App } from 'obsidian';
 import { GedcomImporterV2 } from '../src/gedcom/gedcom-importer-v2';
-import type { CanvasRootsPlugin } from '../src/types';
+import type { CanvasRootsPlugin } from '../src/settings';
 import type { GedcomImportOptionsV2 } from '../src/gedcom/gedcom-types';
 
 /**

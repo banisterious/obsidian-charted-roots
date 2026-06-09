@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { createSmartWikilink } from '../src/organizations/services/organization-service';
 
 /**
@@ -24,7 +24,7 @@ function seedOrganization(
 	app: App,
 	args: { path: string; basename: string; name: string; crId: string }
 ): TFile {
-	const file = new TFile({ path: args.path, basename: args.basename, extension: 'md' });
+	const file = makeTFile({ path: args.path, basename: args.basename, extension: 'md' });
 	app.vault._addFile(file);
 	app.metadataCache._setFrontmatter(file, {
 		cr_type: 'organization',
@@ -56,7 +56,7 @@ const seedUniqueVault = (app: App): void => {
 /** Vault with a duplicate-basename file outside the CR structure. */
 const seedAmbiguousVault = (app: App): void => {
 	seedUniqueVault(app);
-	const duplicate = new TFile({
+	const duplicate = makeTFile({
 		path: 'Lore/Jedi Order.md',
 		basename: 'Jedi Order',
 		extension: 'md',

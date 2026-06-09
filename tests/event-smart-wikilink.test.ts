@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { createSmartWikilink } from '../src/events/services/event-service';
 
 /**
@@ -21,7 +21,7 @@ import { createSmartWikilink } from '../src/events/services/event-service';
  */
 
 function seedFile(app: App, args: { path: string; basename: string; crId?: string }): TFile {
-	const file = new TFile({ path: args.path, basename: args.basename, extension: 'md' });
+	const file = makeTFile({ path: args.path, basename: args.basename, extension: 'md' });
 	app.vault._addFile(file);
 	if (args.crId) {
 		app.metadataCache._setFrontmatter(file, { cr_id: args.crId });

@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import type { PersonNode } from '../src/core/family-graph';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 
 /**
  * #458 — Marriage stats had a hardcoded upper age cap of 80, bypassing the

@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import { createDateService, type DateService } from '../src/dates/services/date-service';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 
 /**
  * #560 — Decade bucketing for Longevity Analysis and Timeline Density used

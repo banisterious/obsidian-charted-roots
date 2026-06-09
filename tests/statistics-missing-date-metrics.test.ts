@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import type { PersonNode } from '../src/core/family-graph';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 
 /**
  * #676 — the Statistics Dashboard "issues notice" reported missing births even

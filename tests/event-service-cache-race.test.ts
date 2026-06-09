@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, Plugin, TFile } from 'obsidian';
+import { App, Plugin, TFile, makeTFile } from 'obsidian';
 import { EventService } from '../src/events/services/event-service';
 import type { CanvasRootsSettings } from '../src/settings';
 
@@ -41,7 +41,7 @@ function seedExistingEvent(
 	app: App,
 	args: { path: string; basename: string; crId: string; title: string }
 ): TFile {
-	const file = new TFile({ path: args.path, basename: args.basename, extension: 'md' });
+	const file = makeTFile({ path: args.path, basename: args.basename, extension: 'md' });
 	app.vault._addFile(file);
 	app.metadataCache._setFrontmatter(file, {
 		cr_type: 'event',
@@ -156,7 +156,7 @@ describe('EventService — metadata-cache race after createEvent (#519)', () => 
 		expect(service.getAllEvents()).toHaveLength(1);
 
 		// A person note changes — should not affect the event cache.
-		const personFile = new TFile({
+		const personFile = makeTFile({
 			path: 'People/Luke Skywalker.md',
 			basename: 'Luke Skywalker',
 			extension: 'md',

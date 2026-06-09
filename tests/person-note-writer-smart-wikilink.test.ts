@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { createSmartWikilink } from '../src/core/person-note-writer';
 
 /**
@@ -22,7 +22,7 @@ function seedPerson(
 	app: App,
 	args: { path: string; basename: string; name: string; crId: string }
 ): TFile {
-	const file = new TFile({
+	const file = makeTFile({
 		path: args.path,
 		basename: args.basename,
 		extension: 'md',
@@ -383,7 +383,7 @@ describe('createSmartWikilink — basename ambiguity disambiguation (#540)', () 
 			crId: 'person-plo-koon',
 		});
 		// Unrelated note outside CR sharing the same basename.
-		const otherFile = new TFile({
+		const otherFile = makeTFile({
 			path: 'Story Arcs/Plo Koon.md',
 			basename: 'Plo Koon',
 			extension: 'md',
@@ -423,7 +423,7 @@ describe('createSmartWikilink — basename ambiguity disambiguation (#540)', () 
 			name: 'Mildred Barrow',
 			crId: 'person-mildred',
 		});
-		const otherFile = new TFile({
+		const otherFile = makeTFile({
 			path: 'Notes/mildred-barrow.md',
 			basename: 'mildred-barrow',
 			extension: 'md',
@@ -444,7 +444,7 @@ describe('createSmartWikilink — basename ambiguity disambiguation (#540)', () 
 			name: 'Plo Koon',
 			crId: 'person-plo-koon',
 		});
-		const otherFile = new TFile({
+		const otherFile = makeTFile({
 			path: 'Story Arcs/Plo Koon.md',
 			basename: 'Plo Koon',
 			extension: 'md',
@@ -518,7 +518,7 @@ describe('createSmartWikilink — property-based input-shape coverage', () => {
 	/** Vault with a duplicate-basename file outside the CR structure. */
 	const seedAmbiguousVault = (app: App): void => {
 		seedUniqueVault(app);
-		const duplicate = new TFile({
+		const duplicate = makeTFile({
 			path: 'Story Arcs/Errol Naberrie.md',
 			basename: 'Errol Naberrie',
 			extension: 'md',

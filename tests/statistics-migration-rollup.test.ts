@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import type { PersonNode } from '../src/core/family-graph';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 
 /**
  * #643 (part b) — sub-place destination roll-up, exercised end-to-end through a
@@ -24,7 +24,7 @@ interface MockEvent {
 }
 
 function addPlace(app: App, name: string, crId: string, parent?: string): void {
-	const file = new TFile({ path: `Places/${name}.md`, basename: name, extension: 'md' });
+	const file = makeTFile({ path: `Places/${name}.md`, basename: name, extension: 'md' });
 	app.vault.files.set(file.path, file);
 	const fm: Record<string, unknown> = { cr_type: 'place', cr_id: crId, title: name };
 	if (parent) fm.parent_place = `[[${parent}]]`;
@@ -33,7 +33,7 @@ function addPlace(app: App, name: string, crId: string, parent?: string): void {
 
 function person(name: string, birthPlace: string): PersonNode {
 	return {
-		file: new TFile({ path: `People/${name}.md`, basename: name, extension: 'md' }),
+		file: makeTFile({ path: `People/${name}.md`, basename: name, extension: 'md' }),
 		birthPlace,
 	} as unknown as PersonNode;
 }

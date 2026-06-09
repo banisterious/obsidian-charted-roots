@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, Plugin, TFile } from 'obsidian';
+import { App, Plugin, TFile, makeTFile } from 'obsidian';
 import { SourceService } from '../src/sources/services/source-service';
 import type { CanvasRootsSettings } from '../src/settings';
 
@@ -32,7 +32,7 @@ function seedExistingSource(
 	app: App,
 	args: { path: string; basename: string; crId: string; title: string }
 ): TFile {
-	const file = new TFile({ path: args.path, basename: args.basename, extension: 'md' });
+	const file = makeTFile({ path: args.path, basename: args.basename, extension: 'md' });
 	app.vault._addFile(file);
 	app.metadataCache._setFrontmatter(file, {
 		cr_type: 'source',
@@ -126,7 +126,7 @@ describe('SourceService — metadata-cache race after createSource (#519 mirror)
 
 		expect(service.getAllSources()).toHaveLength(1);
 
-		const eventFile = new TFile({
+		const eventFile = makeTFile({
 			path: 'Charted Roots/Events/Some Event.md',
 			basename: 'Some Event',
 			extension: 'md',

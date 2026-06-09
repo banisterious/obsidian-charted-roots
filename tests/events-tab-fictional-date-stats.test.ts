@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { TFile } from 'obsidian';
+import { TFile, makeTFile } from 'obsidian';
 import { createDateService, DateService } from '../src/dates/services/date-service';
 import { calculateDateStatistics } from '../src/dates/services/date-statistics';
 import { TimelineMarkdownExporter } from '../src/events/services/timeline-markdown-exporter';
@@ -49,7 +49,7 @@ interface MockNote {
 
 function makePlugin(notes: MockNote[], dateService: DateService | null) {
 	const files = notes.map(
-		n => new TFile({ path: n.path, basename: n.path.replace(/\.md$/, ''), extension: 'md' })
+		n => makeTFile({ path: n.path, basename: n.path.replace(/\.md$/, ''), extension: 'md' })
 	);
 	const cacheByPath = new Map(
 		notes.map(n => [n.path, { frontmatter: n.frontmatter }])

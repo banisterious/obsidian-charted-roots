@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import { createDateService } from '../src/dates/services/date-service';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 import type { FictionalDateSystem } from '../src/dates/types/date-types';
 import type { PersonNode } from '../src/core/family-graph';
 

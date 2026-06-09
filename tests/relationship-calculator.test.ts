@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { RelationshipCalculator } from '../src/core/relationship-calculator';
 import type { PersonNode } from '../src/core/family-graph';
 
@@ -22,7 +22,7 @@ interface PrivateGraph {
 }
 
 function makeFile(crId: string, name: string): TFile {
-	return new TFile({
+	return makeTFile({
 		path: `people/${name}.md`,
 		basename: name,
 		extension: 'md'

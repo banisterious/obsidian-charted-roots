@@ -46,6 +46,27 @@ declare module 'obsidian' {
 		/** Mock seam: count events registered via `registerEvent`. */
 		_registeredEventCount(): number;
 	}
+
+	/**
+	 * Mock factory: build a TFile. Real Obsidian's `TFile` constructor takes no
+	 * arguments, so tests construct via this factory (runtime impl in
+	 * `tests/mocks/obsidian.ts`). Typed to return a real `TFile` so the result
+	 * stays assignable wherever production code expects one.
+	 */
+	export function makeTFile(args: {
+		path: string;
+		basename: string;
+		extension: string;
+		stat?: { mtime: number; ctime: number; size: number };
+		parent?: TFolder | null;
+	}): TFile;
+
+	/** Mock factory: build a TFolder. See {@link makeTFile}. */
+	export function makeTFolder(args: {
+		path: string;
+		name: string;
+		children?: Array<TFile | TFolder>;
+	}): TFolder;
 }
 
 declare global {
