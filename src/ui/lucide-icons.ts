@@ -198,7 +198,16 @@ export type LucideIconName =
 	| 'cr-hourglass-tree' // Hourglass tree icon
 	| 'cr-fan-chart' // Fan chart icon
 	// Unified wizard
-	| 'layout-dashboard'; // Canvas output format
+	| 'layout-dashboard' // Canvas output format
+	// Additional action / entity icons
+	| 'save'
+	| 'pencil'
+	| 'book'
+	| 'wand'
+	| 'terminal'
+	| 'git-merge'
+	| 'clipboard-list'
+	| 'arrow-right-left';
 
 /**
  * Navigation group identifiers

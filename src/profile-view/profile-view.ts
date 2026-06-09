@@ -261,10 +261,10 @@ export class ProfileView extends ItemView {
 		const fm = cache?.frontmatter;
 		if (!fm) return null;
 
-		let noteType = detectNoteType(fm, cache, this.plugin.settings);
+		let noteType = detectNoteType(fm, cache, this.plugin.settings.noteTypeDetection);
 
 		// Fallback: person notes may not have explicit type
-		if (!noteType && isPersonNote(fm, cache, this.plugin.settings)) {
+		if (!noteType && isPersonNote(fm, cache, this.plugin.settings.noteTypeDetection)) {
 			noteType = 'person';
 		}
 

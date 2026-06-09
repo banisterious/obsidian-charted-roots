@@ -528,6 +528,15 @@ export class Plugin {
 }
 
 /**
+ * Factory for a mock Plugin. Real Obsidian's `Plugin` is abstract, so
+ * `new Plugin(app)` does not type-check; tests build one through this factory,
+ * typed by the augment file as returning a real `Plugin` (#704).
+ */
+export function makePlugin(app: App): Plugin {
+	return new Plugin(app);
+}
+
+/**
  * Normalize a path: collapse repeated slashes, strip leading/trailing slashes.
  * Mirrors the production behavior closely enough for path construction tests;
  * real Obsidian also handles platform-specific separators which we don't need

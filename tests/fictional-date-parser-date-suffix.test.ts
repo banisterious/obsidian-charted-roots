@@ -18,7 +18,7 @@ const EARTHFALL_SYSTEM: FictionalDateSystem = {
 	name: 'Earthfall',
 	universe: 'Earthfall',
 	eras: [
-		{ name: 'Descent Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
+		{ id: 'descent-era', name: 'Descent Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
 	],
 };
 
@@ -26,8 +26,8 @@ const STAR_WARS_SYSTEM: FictionalDateSystem = {
 	id: 'star-wars',
 	name: 'Star Wars',
 	eras: [
-		{ name: 'Before Battle of Yavin', abbrev: 'BBY', epoch: 0, direction: 'backward' },
-		{ name: 'After Battle of Yavin', abbrev: 'ABY', epoch: 0, direction: 'forward' },
+		{ id: 'before-battle-of-yavin', name: 'Before Battle of Yavin', abbrev: 'BBY', epoch: 0, direction: 'backward' },
+		{ id: 'after-battle-of-yavin', name: 'After Battle of Yavin', abbrev: 'ABY', epoch: 0, direction: 'forward' },
 	],
 };
 

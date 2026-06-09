@@ -26,8 +26,8 @@ const REPORTER_SYSTEM: FictionalDateSystem = {
 	id: 'reporter-system',
 	name: 'Reporter multi-era system',
 	eras: [
-		{ name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
-		{ name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
+		{ id: 'era-of-forging', name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
+		{ id: 'dawn-era', name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
 	],
 };
 

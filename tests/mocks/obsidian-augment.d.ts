@@ -67,6 +67,12 @@ declare module 'obsidian' {
 		name: string;
 		children?: Array<TFile | TFolder>;
 	}): TFolder;
+
+	/**
+	 * Mock factory: build a Plugin. Real Obsidian's `Plugin` is abstract, so
+	 * tests construct one through this factory (runtime impl in the mock).
+	 */
+	export function makePlugin(app: App): Plugin;
 }
 
 declare global {

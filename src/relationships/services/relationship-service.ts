@@ -55,7 +55,7 @@ export class RelationshipService {
 		for (const type of builtIn) {
 			// Filter out types that require a setting that isn't enabled
 			if (type.requiresSetting) {
-				const settingValue = (this.plugin.settings as Record<string, unknown>)[type.requiresSetting];
+				const settingValue = (this.plugin.settings as unknown as Record<string, unknown>)[type.requiresSetting];
 				if (!settingValue) continue;
 			}
 			typeMap.set(type.id, type);

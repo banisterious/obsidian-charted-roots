@@ -1712,9 +1712,9 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.setDesc(label.desc || `Use {name} for the person's name`)
 				.addText(text => text
 					.setPlaceholder(label.placeholder)
-					.setValue(this.plugin.settings[label.key] as string)
+					.setValue((this.plugin.settings as unknown as Record<string, unknown>)[label.key] as string)
 					.onChange(async (value) => {
-						(this.plugin.settings as Record<string, unknown>)[label.key] = value || label.placeholder;
+						(this.plugin.settings as unknown as Record<string, unknown>)[label.key] = value || label.placeholder;
 						await this.plugin.saveSettings();
 					}));
 		}

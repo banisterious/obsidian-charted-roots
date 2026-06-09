@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, Plugin, TFile, makeTFile } from 'obsidian';
+import { App, Plugin, TFile, makeTFile, makePlugin } from 'obsidian';
 import { SourceService } from '../src/sources/services/source-service';
 import type { CanvasRootsSettings } from '../src/settings';
 
@@ -17,7 +17,7 @@ function makeServiceWithListeners(): {
 	plugin: Plugin;
 } {
 	const app = new App();
-	const plugin = new Plugin(app);
+	const plugin = makePlugin(app);
 	const settings = {
 		sourcesFolder: 'Charted Roots/Sources',
 		propertyAliases: {},

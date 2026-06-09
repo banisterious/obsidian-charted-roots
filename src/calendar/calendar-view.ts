@@ -98,7 +98,7 @@ export class CalendarView extends ItemView {
 		}
 		// Persist immediately on close
 		const state = this.getState();
-		const settings = this.plugin.settings as Record<string, unknown>;
+		const settings = this.plugin.settings as unknown as Record<string, unknown>;
 		settings.calendarViewState = state;
 		void this.plugin.saveSettings();
 
@@ -115,14 +115,14 @@ export class CalendarView extends ItemView {
 		if (this.persistTimeout) window.clearTimeout(this.persistTimeout);
 		this.persistTimeout = window.setTimeout(() => {
 			const state = this.getState();
-			const settings = this.plugin.settings as Record<string, unknown>;
+			const settings = this.plugin.settings as unknown as Record<string, unknown>;
 			settings.calendarViewState = state;
 			void this.plugin.saveSettings();
 		}, 500);
 	}
 
 	private restorePersistedState(): void {
-		const settings = this.plugin.settings as Record<string, unknown>;
+		const settings = this.plugin.settings as unknown as Record<string, unknown>;
 		const state = settings.calendarViewState as Partial<CalendarViewState> | undefined;
 		if (state) {
 			if (state.month !== undefined) this.currentMonth = state.month;

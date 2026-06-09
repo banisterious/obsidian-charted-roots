@@ -126,6 +126,8 @@ export interface GrampsPerson {
 	childof: string[];   // Handle links to families where this person is a child
 	parentin: string[];  // Handle links to families where this person is a parent
 	mediaRefs: string[]; // Handle links to media objects
+	/** Crop regions keyed by media handle (corner coordinates, 0-100) */
+	mediaRegions: Map<string, { corner1_x: number; corner1_y: number; corner2_x: number; corner2_y: number }>;
 	attributes: GrampsAttribute[];  // Custom person attributes
 	noteRefs: string[];  // Handle links to notes
 	tagRefs: string[];   // Handle links to tags
