@@ -12,7 +12,7 @@
  * so the suite type-checks against the same surface it runs against. They are
  * test-only hygiene; production code does not use the `_`-prefixed seams.
  */
-import type { App } from 'obsidian';
+import type { App, TFile, TFolder } from 'obsidian';
 
 declare module 'obsidian' {
 	interface Vault {
