@@ -3024,7 +3024,7 @@ function buildMapContextMenu(
 					.setTitle(`Open "${mapName}" in map view`)
 					.setIcon('map')
 					.onClick(async () => {
-						await plugin.activateMapView(mapId);
+						await plugin.activateMapView(mapId as string);
 					});
 			});
 
@@ -3083,7 +3083,7 @@ function buildMapContextMenu(
 				.setTitle(`Charted Roots: Open "${mapName}" in map view`)
 				.setIcon('map')
 				.onClick(async () => {
-					await plugin.activateMapView(mapId);
+					await plugin.activateMapView(mapId as string);
 				});
 		});
 

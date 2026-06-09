@@ -45,7 +45,7 @@ export class RoleSuggest extends AbstractInputSuggest<string> {
 		if (this.textComponent) {
 			this.textComponent.setValue(role);
 		} else {
-			(this.inputEl as HTMLInputElement).value = role;
+			(this.textInputEl as HTMLInputElement).value = role;
 		}
 		this.onSelectValue(role);
 		this.close();

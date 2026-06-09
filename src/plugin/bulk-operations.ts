@@ -239,7 +239,7 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			deathPlaceId: fm.death_place_id,
 			deathPlaceName: extractName(fm.death_place),
 			occupation: fm.occupation,
-			researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
+			researchLevel: typeof fm.research_level === 'number' ? (fm.research_level as ResearchLevel) : undefined,
 			fatherId: fatherId,
 			fatherName: fatherName,
 			motherId: motherId,

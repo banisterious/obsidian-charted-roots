@@ -1656,7 +1656,7 @@ function renderPersonTableRow(
 				deathPlaceId: fm.death_place_id,
 				deathPlaceName: person.deathPlace?.placeName,
 				occupation: fm.occupation,
-				researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
+				researchLevel: typeof fm.research_level === 'number' ? (fm.research_level as ResearchLevel) : undefined,
 				fatherId: typeof fatherId === 'string' ? fatherId : undefined,
 				fatherName: fatherName,
 				motherId: typeof motherId === 'string' ? motherId : undefined,

@@ -61,7 +61,7 @@ export class ResearchReportExportGenerator {
 		const { frontmatter, body } = this.parseNote(rawContent);
 
 		// Determine title
-		const noteTitle = options.customTitle || frontmatter.title || file.basename;
+		const noteTitle = (options.customTitle || frontmatter.title || file.basename) as string;
 
 		// Process the body
 		// Strip wikilinks to plain text
