@@ -24,7 +24,7 @@ export class UniversesView extends ItemView {
 	private currentFilter: UniverseListFilter = 'all';
 	private currentSort: UniverseListSort = 'name-asc';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

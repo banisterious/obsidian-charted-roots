@@ -22,7 +22,7 @@ export class DataQualityView extends ItemView {
 	plugin: CanvasRootsPlugin;
 	private currentFilter: DataQualityFilter = 'all';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

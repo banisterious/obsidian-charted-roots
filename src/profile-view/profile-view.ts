@@ -66,8 +66,8 @@ export class ProfileView extends ItemView {
 	private selfModified = false;
 
 	// Debounce timers
-	private syncDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private syncDebounceTimeout: number | null = null;
+	private refreshTimeout: number | null = null;
 
 	// DOM references
 	private headerEl: HTMLElement | null = null;

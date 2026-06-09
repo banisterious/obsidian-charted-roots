@@ -50,8 +50,8 @@ export class CalendarView extends ItemView {
 	private impreciseEl: HTMLElement | null = null;
 
 	// Auto-refresh
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
-	private persistTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
+	private persistTimeout: number | null = null;
 	private initialRender = true;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {

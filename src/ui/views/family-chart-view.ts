@@ -5486,7 +5486,7 @@ export class FamilyChartView extends ItemView {
 		);
 	}
 
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	/**
 	 * Check if the chart container is visible and has valid dimensions

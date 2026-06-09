@@ -80,7 +80,7 @@ export class StatisticsService {
 	private settings: CanvasRootsSettings;
 	private plugin?: CanvasRootsPlugin;
 	private cache: StatisticsCache;
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	// Lazy-initialized services
 	private vaultStatsService: VaultStatsService | null = null;

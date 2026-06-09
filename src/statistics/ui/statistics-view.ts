@@ -46,7 +46,7 @@ export class StatisticsView extends ItemView {
 	]);
 	/** Tracks which drill-down rows are expanded (key: "type:name") */
 	private expandedDrilldowns: Set<string> = new Set();
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

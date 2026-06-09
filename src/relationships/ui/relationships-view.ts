@@ -21,7 +21,7 @@ export class RelationshipsView extends ItemView {
 	plugin: CanvasRootsPlugin;
 	private currentFilter: RelationshipFilter = 'all';
 	private currentSort: RelationshipSort = 'from_asc';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

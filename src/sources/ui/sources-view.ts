@@ -24,7 +24,7 @@ export class SourcesView extends ItemView {
 	private currentFilter: SourceListFilter = 'all';
 	private currentSort: SourceListSort = 'title_asc';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

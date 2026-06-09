@@ -31,7 +31,7 @@ export class EventsView extends ItemView {
 	private currentDateFrom: number | null = null;
 	private currentDateTo: number | null = null;
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
