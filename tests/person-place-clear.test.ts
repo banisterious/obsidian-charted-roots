@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access -- Obsidian API returns any-typed surfaces (frontmatter, file caches); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { updatePersonNote, type PersonData } from '../src/core/person-note-writer';
 
 /**
@@ -13,7 +13,7 @@ import { updatePersonNote, type PersonData } from '../src/core/person-note-write
  */
 
 function seedPerson(app: App, frontmatter: Record<string, unknown>): TFile {
-	const file = new TFile({ path: 'People/Anakin Skywalker.md', basename: 'Anakin Skywalker', extension: 'md' });
+	const file = makeTFile({ path: 'People/Anakin Skywalker.md', basename: 'Anakin Skywalker', extension: 'md' });
 	app.vault._addFile(file);
 	app.metadataCache._setFrontmatter(file, frontmatter);
 	return file;

@@ -12,6 +12,20 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.67] - 2026-06-09
+
+A small reporter-driven patch alongside a codebase-wide type-checking pass. Family Chart highlight dimming no longer lets the connector lines show through dimmed cards, and the relationships filter now labels user-created relationship categories instead of leaving them blank. Under the hood, the TypeScript codebase is now fully type-checked with zero errors and the type-check gates CI — a sweep that also turned up and fixed two latent bugs in the "Find related research" command and the GEDCOM-X export's reported count. **1397 tests passing across 121 suites.**
+
+### Fixed
+
+- **Highlight dimming no longer shows connector lines through dimmed cards** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): The previous fix dimmed non-matching cards by making them translucent, so the full-brightness connector lines behind them showed through. Dimmed cards now stay fully opaque (dimmed with a filter rather than reduced opacity), so the links behind them are hidden again. Follows up the v0.22.66 highlight-dimming change. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Custom relationship categories are labelled in the relationships filter** ([#707](https://github.com/banisterious/obsidian-charted-roots/issues/707)): In the relationships filter's "By category" dropdown, a relationship category you created yourself appeared as a blank entry — clickable and functional, but with no name — because the label came from the built-in category list only. Custom category names now resolve correctly, in both the Relationships pane and the Control Center Relationships tab. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **"Find related research" recognizes the open person note** ([#704](https://github.com/banisterious/obsidian-charted-roots/issues/704)): Running the **Find related research** command while viewing a person note didn't detect the note as a person, so it always fell through to the person-picker prompt instead of using the note you were already on. It now uses the active note when it is a person.
+
+- **GEDCOM-X export reports the correct exported count** ([#704](https://github.com/banisterious/obsidian-charted-roots/issues/704)): The completion notice for a GEDCOM-X export always read "0 people exported" (and zero relationships) because it counted from the wrong object; the exported file itself was complete and correct. The notice now reports the actual number of people and relationships written.
+
 ## [0.22.66] - 2026-06-08
 
 A reporter-driven release centred on timelines, organizations, and the Family Chart. Timelines gain two new display options — a person's inline `events` list now appears alongside births, deaths, and family events, and rows can show a place's parent location ("Born in London, England") so a bare leaf name isn't ambiguous — while historical-context events are now windowed by a person's whole life rather than only their personal milestones. The Edit person modal gains an always-available living-status control, organization member lists honour `sort: date`, custom relationships mapped to parent or spouse keep their own type, and the Family Chart's highlight dimming no longer washes out the connector lines. **1393 tests passing across 120 suites.**

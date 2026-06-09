@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { resolveUniverseFilterValue } from '../src/maps/resolve-universe-filter';
 
 /**
@@ -19,7 +19,7 @@ import { resolveUniverseFilterValue } from '../src/maps/resolve-universe-filter'
  */
 
 function makeFile(path: string, basename: string): TFile {
-	return new TFile({ path, basename, extension: 'md' });
+	return makeTFile({ path, basename, extension: 'md' });
 }
 
 function seedUniverse(app: App, args: { path: string; basename: string; name: string; crId: string }): TFile {

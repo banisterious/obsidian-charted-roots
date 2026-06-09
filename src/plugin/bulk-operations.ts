@@ -7,6 +7,7 @@
  */
 
 import { Notice, TFile, Menu, Modal } from 'obsidian';
+import type { ResearchLevel } from '../types/frontmatter';
 import type CanvasRootsPlugin from '../../main';
 import { PersonPickerModal } from '../ui/person-picker';
 import { MediaPickerModal } from '../core/ui/media-picker-modal';
@@ -239,7 +240,7 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			deathPlaceId: fm.death_place_id,
 			deathPlaceName: extractName(fm.death_place),
 			occupation: fm.occupation,
-			researchLevel: typeof fm.research_level === 'number' ? fm.research_level : undefined,
+			researchLevel: typeof fm.research_level === 'number' ? (fm.research_level as ResearchLevel) : undefined,
 			fatherId: fatherId,
 			fatherName: fatherName,
 			motherId: motherId,

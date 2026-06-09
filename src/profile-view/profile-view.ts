@@ -66,8 +66,8 @@ export class ProfileView extends ItemView {
 	private selfModified = false;
 
 	// Debounce timers
-	private syncDebounceTimeout: ReturnType<typeof setTimeout> | null = null;
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private syncDebounceTimeout: number | null = null;
+	private refreshTimeout: number | null = null;
 
 	// DOM references
 	private headerEl: HTMLElement | null = null;
@@ -261,10 +261,10 @@ export class ProfileView extends ItemView {
 		const fm = cache?.frontmatter;
 		if (!fm) return null;
 
-		let noteType = detectNoteType(fm, cache, this.plugin.settings);
+		let noteType = detectNoteType(fm, cache, this.plugin.settings.noteTypeDetection);
 
 		// Fallback: person notes may not have explicit type
-		if (!noteType && isPersonNote(fm, cache, this.plugin.settings)) {
+		if (!noteType && isPersonNote(fm, cache, this.plugin.settings.noteTypeDetection)) {
 			noteType = 'person';
 		}
 
@@ -294,7 +294,7 @@ export class ProfileView extends ItemView {
 		}
 
 		// Update display text
-		this.leaf.updateHeader();
+		(this.leaf as unknown as { updateHeader(): void }).updateHeader();
 
 		// Load data
 		const data = this.dataLoader.loadEntity(file, entityType);

@@ -23,7 +23,7 @@ export class PlacesView extends ItemView {
 	private currentFilter: PlaceListFilter = 'all';
 	private currentSort: PlaceListSort = 'name_asc';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

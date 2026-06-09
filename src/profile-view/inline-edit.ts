@@ -124,7 +124,7 @@ function enterEditMode(
 		saving = false;
 	}
 
-	inputEl.addEventListener('keydown', (e) => {
+	inputEl.addEventListener('keydown', (e: KeyboardEvent) => {
 		if (e.key === 'Enter') {
 			e.preventDefault();
 			void doSave();

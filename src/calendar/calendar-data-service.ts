@@ -7,7 +7,7 @@
  */
 
 import type { App } from 'obsidian';
-import type { CanvasRootsSettings } from '../../main';
+import type { CanvasRootsSettings } from '../settings';
 import type { CalendarEvent, CalendarFilter } from './types/calendar-types';
 import { DEFAULT_EVENT_TYPES } from './types/calendar-types';
 import { FamilyGraphService } from '../core/family-graph';

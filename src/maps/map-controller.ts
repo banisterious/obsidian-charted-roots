@@ -180,7 +180,8 @@ export class MapController {
 		paths: true,
 		journeys: false,
 		heatMap: false,
-		places: false
+		places: false,
+		childMaps: false
 	};
 
 	// Callback for when active map changes
@@ -228,12 +229,12 @@ export class MapController {
 		// (Obsidian's Electron sends app:// referrer which OSM rejects)
 		const TileLayerNoRef = L.TileLayer.extend({
 			createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
-				const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+				const tile = (L.TileLayer.prototype as unknown as { createTile(c: unknown, d: unknown): HTMLImageElement }).createTile.call(this, coords, done) as HTMLImageElement;
 				tile.referrerPolicy = 'no-referrer';
 				return tile;
 			}
 		});
-		this.tileLayer = new TileLayerNoRef(OSM_TILE_URL, {
+		this.tileLayer = new (TileLayerNoRef as unknown as typeof L.TileLayer)(OSM_TILE_URL, {
 			attribution: OSM_ATTRIBUTION,
 			maxZoom: 19
 		}).addTo(this.map);
@@ -374,12 +375,12 @@ export class MapController {
 
 		const MiniTileLayer = L.TileLayer.extend({
 			createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
-				const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+				const tile = (L.TileLayer.prototype as unknown as { createTile(c: unknown, d: unknown): HTMLImageElement }).createTile.call(this, coords, done) as HTMLImageElement;
 				tile.referrerPolicy = 'no-referrer';
 				return tile;
 			}
 		});
-		const miniMapTiles = new MiniTileLayer(OSM_TILE_URL, {
+		const miniMapTiles = new (MiniTileLayer as unknown as typeof L.TileLayer)(OSM_TILE_URL, {
 			attribution: '',
 			maxZoom: 13
 		});
@@ -950,7 +951,7 @@ export class MapController {
 
 		const eventType = getEventType(
 			data.type,
-			this.settings.customEventTypes || [],
+			(this.settings.customEventTypes || []) as unknown as Parameters<typeof getEventType>[1],
 			this.settings.showBuiltInEventTypes !== false
 		);
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { waitForCacheRefresh } from '../src/utils/cache-utils';
 
 /**
@@ -12,7 +12,7 @@ import { waitForCacheRefresh } from '../src/utils/cache-utils';
  */
 describe('waitForCacheRefresh — #547', () => {
 	function makeFile(path: string): TFile {
-		return new TFile({ path, basename: path.split('/').pop()!.replace('.md', ''), extension: 'md' });
+		return makeTFile({ path, basename: path.split('/').pop()!.replace('.md', ''), extension: 'md' });
 	}
 
 	it('resolves when metadataCache.changed fires for the target file', async () => {

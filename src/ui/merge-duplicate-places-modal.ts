@@ -219,7 +219,7 @@ export class MergeDuplicatePlacesModal extends Modal {
 		searchInput.value = this.searchQuery;
 
 		// Debounce search to avoid excessive re-renders
-		let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+		let searchTimeout: number | null = null;
 		searchInput.addEventListener('input', () => {
 			if (searchTimeout) window.clearTimeout(searchTimeout);
 			searchTimeout = window.setTimeout(() => {

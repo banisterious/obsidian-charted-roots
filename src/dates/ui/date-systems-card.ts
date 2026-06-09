@@ -210,7 +210,7 @@ export function renderDateSystemsSettings(
 			for (const system of customSystems) {
 				new Setting(conditionalContainer)
 					.setName(system.name)
-					.setDesc(`Prefix: ${system.eras?.[0]?.prefix || '(none)'} · ${system.eras?.length || 0} era(s)`)
+					.setDesc(`Prefix: ${system.eras?.[0]?.abbrev || '(none)'} · ${system.eras?.length || 0} era(s)`)
 					.addButton(btn => btn
 						.setButtonText('Edit')
 						.onClick(() => {

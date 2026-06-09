@@ -95,7 +95,7 @@ export default class CanvasRootsPlugin extends Plugin {
 	private fileModifyEventRef: EventRef | null = null;
 	private fileDeleteEventRef: EventRef | null = null;
 	private universeRenameEventRef: EventRef | null = null;
-	private bidirectionalSnapshotTimer: ReturnType<typeof setTimeout> | null = null;
+	private bidirectionalSnapshotTimer: number | null = null;
 	public bidirectionalLinker: BidirectionalLinker | null = null;
 	public mobileClassManager: MobileClassManager = new MobileClassManager();
 	private relationshipHistory: RelationshipHistoryService | null = null;

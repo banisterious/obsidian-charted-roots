@@ -44,6 +44,9 @@ jobs:
       - name: Lint (stylelint)
         run: npm run lint:css
 
+      - name: Type-check
+        run: npm run type-check
+
       - name: Test
         run: npm test
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API + plugin stubs are any-typed surfaces; project policy accepts these in tests. */
 import { describe, it, expect } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { EventService } from '../src/events/services/event-service';
 import type { EventNote } from '../src/events/types/event-types';
 import { DEFAULT_NOTE_TYPE_DETECTION_SETTINGS } from '../src/utils/note-type-detection';
@@ -77,7 +77,7 @@ describe('EventService.getEventsForOrganization (#659)', () => {
 describe('EventService.parseEventNote — organizations (#659)', () => {
 	function parse(frontmatter: Record<string, unknown>): EventNote | null {
 		const app = new App();
-		const file = new TFile({ path: 'Event.md', basename: 'Event', extension: 'md' });
+		const file = makeTFile({ path: 'Event.md', basename: 'Event', extension: 'md' });
 		app.vault._addFile(file);
 		app.metadataCache._setFrontmatter(file, frontmatter);
 		const service = new EventService(app as never, makeSettings());

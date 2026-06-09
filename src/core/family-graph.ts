@@ -2253,6 +2253,8 @@ export class FamilyGraphService {
 		childrenCrIds: string[];
 		stepchildrenCrIds: string[];
 		adoptedChildCrIds: string[];
+		adoptiveMotherCrId?: string;
+		adoptiveFatherCrId?: string;
 		/** Maps parent cr_id to custom relationship type ID for styling */
 		parentRelationshipTypes: Map<string, string>;
 		/** Maps spouse cr_id to custom relationship type ID for styling */
@@ -2267,6 +2269,8 @@ export class FamilyGraphService {
 			childrenCrIds: [] as string[],
 			stepchildrenCrIds: [] as string[],
 			adoptedChildCrIds: [] as string[],
+			adoptiveMotherCrId: undefined as string | undefined,
+			adoptiveFatherCrId: undefined as string | undefined,
 			parentRelationshipTypes: new Map<string, string>(),
 			spouseRelationshipTypes: new Map<string, string>()
 		};
@@ -2335,6 +2339,8 @@ export class FamilyGraphService {
 			childrenCrIds: string[];
 			stepchildrenCrIds: string[];
 			adoptedChildCrIds: string[];
+			adoptiveMotherCrId?: string;
+			adoptiveFatherCrId?: string;
 			parentRelationshipTypes: Map<string, string>;
 			spouseRelationshipTypes: Map<string, string>;
 		},

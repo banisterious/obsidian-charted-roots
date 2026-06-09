@@ -582,7 +582,7 @@ function buildCanvasContextMenu(
 					.setTitle('Split canvas wizard')
 					.setIcon('layers')
 					.onClick(() => {
-						new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
+						new SplitWizardModal(plugin.app, plugin.settings, plugin.getFolderFilter() ?? undefined).open();
 					});
 			});
 
@@ -694,7 +694,7 @@ function buildCanvasContextMenu(
 				.setTitle('Charted Roots: Split canvas wizard')
 				.setIcon('layers')
 				.onClick(() => {
-					new SplitWizardModal(plugin.app, plugin.settings, plugin.folderFilter ?? undefined).open();
+					new SplitWizardModal(plugin.app, plugin.settings, plugin.getFolderFilter() ?? undefined).open();
 				});
 		});
 	}
@@ -854,7 +854,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 									await relationshipMgr.addParentRelationship(
 										file,
 										selectedPerson.file,
@@ -893,7 +893,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 									await relationshipMgr.addParentRelationship(
 										file,
 										selectedPerson.file,
@@ -941,7 +941,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 									await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
 								})();
 							}, {
@@ -975,7 +975,7 @@ function buildPersonContextMenu(
 
 							const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 								void (async () => {
-									const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+									const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 									await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
 								})();
 							}, {
@@ -1022,8 +1022,9 @@ function buildPersonContextMenu(
 						.setIcon('shield-check')
 						.onClick(async () => {
 							const validator = new RelationshipValidator(plugin.app);
-							if (plugin.folderFilter) {
-								validator.setFolderFilter(plugin.folderFilter);
+							const folderFilter = plugin.getFolderFilter();
+							if (folderFilter) {
+								validator.setFolderFilter(folderFilter);
 							}
 							if (plugin.personIndex) {
 								validator.setPersonIndex(plugin.personIndex);
@@ -1501,7 +1502,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 							const parentType = await promptParentType(plugin);
 							if (parentType) {
 								await relationshipMgr.addParentRelationship(
@@ -1524,7 +1525,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 							await relationshipMgr.addSpouseRelationship(file, selectedPerson.file, selectedPerson.crId);
 						})();
 					});
@@ -1539,7 +1540,7 @@ function buildPersonContextMenu(
 				.onClick(() => {
 					const picker = new PersonPickerModal(plugin.app, (selectedPerson) => {
 						void (async () => {
-							const relationshipMgr = new RelationshipManager(plugin.app, plugin.relationshipHistory, promptOnConflict(plugin.app));
+							const relationshipMgr = new RelationshipManager(plugin.app, plugin.getRelationshipHistory(), promptOnConflict(plugin.app));
 							await relationshipMgr.addChildRelationship(file, selectedPerson.file, selectedPerson.crId);
 						})();
 					});
@@ -1553,8 +1554,9 @@ function buildPersonContextMenu(
 				.setIcon('shield-check')
 				.onClick(async () => {
 					const validator = new RelationshipValidator(plugin.app);
-					if (plugin.folderFilter) {
-						validator.setFolderFilter(plugin.folderFilter);
+					const folderFilter = plugin.getFolderFilter();
+					if (folderFilter) {
+						validator.setFolderFilter(folderFilter);
 					}
 					if (plugin.personIndex) {
 						validator.setPersonIndex(plugin.personIndex);
@@ -3022,7 +3024,7 @@ function buildMapContextMenu(
 					.setTitle(`Open "${mapName}" in map view`)
 					.setIcon('map')
 					.onClick(async () => {
-						await plugin.activateMapView(mapId);
+						await plugin.activateMapView(mapId as string);
 					});
 			});
 
@@ -3081,7 +3083,7 @@ function buildMapContextMenu(
 				.setTitle(`Charted Roots: Open "${mapName}" in map view`)
 				.setIcon('map')
 				.onClick(async () => {
-					await plugin.activateMapView(mapId);
+					await plugin.activateMapView(mapId as string);
 				});
 		});
 

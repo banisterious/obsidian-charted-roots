@@ -23,7 +23,7 @@ export class PeopleView extends ItemView {
 	private currentFilter: PersonListFilter = 'all';
 	private currentSort: PersonListSort = 'name-asc';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

@@ -13,6 +13,7 @@ import { App, AbstractInputSuggest, type TextComponent } from 'obsidian';
  */
 export class RoleSuggest extends AbstractInputSuggest<string> {
 	private roles: string[];
+	private inputEl: HTMLInputElement;
 	private textComponent: TextComponent | null;
 	private onSelectValue: (value: string) => void;
 
@@ -24,6 +25,7 @@ export class RoleSuggest extends AbstractInputSuggest<string> {
 		textComponent?: TextComponent
 	) {
 		super(app, inputEl);
+		this.inputEl = inputEl;
 		this.roles = roles;
 		this.textComponent = textComponent ?? null;
 		this.onSelectValue = onSelectValue;
@@ -45,7 +47,7 @@ export class RoleSuggest extends AbstractInputSuggest<string> {
 		if (this.textComponent) {
 			this.textComponent.setValue(role);
 		} else {
-			(this.inputEl as HTMLInputElement).value = role;
+			this.inputEl.value = role;
 		}
 		this.onSelectValue(role);
 		this.close();

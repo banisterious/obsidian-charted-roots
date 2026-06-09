@@ -43,6 +43,31 @@ export class TFolder {
 	}
 }
 
+/**
+ * Factory for a mock TFile. Real Obsidian's `TFile` constructor takes no
+ * arguments, so `new TFile({ ... })` does not type-check against the real
+ * `.d.ts`; tests build files through this factory instead, which the augment
+ * file (`obsidian-augment.d.ts`) types as returning a real `TFile` (#704).
+ */
+export function makeTFile(args: {
+	path: string;
+	basename: string;
+	extension: string;
+	stat?: { mtime: number; ctime: number; size: number };
+	parent?: TFolder | null;
+}): TFile {
+	return new TFile(args);
+}
+
+/** Factory for a mock TFolder; see {@link makeTFile}. */
+export function makeTFolder(args: {
+	path: string;
+	name: string;
+	children?: (TFile | TFolder)[];
+}): TFolder {
+	return new TFolder(args);
+}
+
 export interface CachedMetadata {
 	frontmatter?: Record<string, unknown>;
 	frontmatterPosition?: { start: unknown; end: unknown };
@@ -140,7 +165,7 @@ export class Vault {
 	}
 
 	offref(ref: EventRef): void {
-		this.listeners.get(ref.event)?.delete(ref);
+		this.listeners.get(ref.event as VaultEventName)?.delete(ref);
 	}
 
 	// Wire up the metadata cache so that processFrontMatter can keep it in sync.
@@ -500,6 +525,15 @@ export class Plugin {
 	_registeredEventCount(): number {
 		return this.registeredEvents.length;
 	}
+}
+
+/**
+ * Factory for a mock Plugin. Real Obsidian's `Plugin` is abstract, so
+ * `new Plugin(app)` does not type-check; tests build one through this factory,
+ * typed by the augment file as returning a real `Plugin` (#704).
+ */
+export function makePlugin(app: App): Plugin {
+	return new Plugin(app);
 }
 
 /**

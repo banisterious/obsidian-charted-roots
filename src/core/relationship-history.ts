@@ -430,10 +430,12 @@ export class RelationshipHistoryService {
 		const changesByType: Record<RelationshipChangeType, number> = {
 			add_father: 0,
 			add_mother: 0,
+			add_parent: 0,
 			add_spouse: 0,
 			add_child: 0,
 			remove_father: 0,
 			remove_mother: 0,
+			remove_parent: 0,
 			remove_spouse: 0,
 			remove_child: 0,
 			update_father: 0,

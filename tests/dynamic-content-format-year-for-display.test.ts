@@ -20,10 +20,10 @@ const FANTASY_SYSTEM: FictionalDateSystem = {
 	id: 'fantasy',
 	name: 'Fantasy with BBY/ABY-style eras',
 	eras: [
-		{ name: 'Before Battle of Yavin', abbrev: 'BBY', epoch: 0, direction: 'backward' },
-		{ name: 'After Battle of Yavin', abbrev: 'ABY', epoch: 0, direction: 'forward' },
-		{ name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
-		{ name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
+		{ id: 'before-battle-of-yavin', name: 'Before Battle of Yavin', abbrev: 'BBY', epoch: 0, direction: 'backward' },
+		{ id: 'after-battle-of-yavin', name: 'After Battle of Yavin', abbrev: 'ABY', epoch: 0, direction: 'forward' },
+		{ id: 'era-of-forging', name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
+		{ id: 'dawn-era', name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
 	],
 };
 

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { FamilyGraphService } from '../src/core/family-graph';
 import { PlaceGraphService } from '../src/core/place-graph';
 import { OrganizationService } from '../src/organizations/services/organization-service';
@@ -20,7 +20,7 @@ import { UniverseService } from '../src/universes/services/universe-service';
  */
 
 function makeFile(path: string): TFile {
-	return new TFile({
+	return makeTFile({
 		path,
 		basename: path.split('/').pop()!.replace(/\.md$/, ''),
 		extension: 'md'

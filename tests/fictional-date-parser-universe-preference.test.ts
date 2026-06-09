@@ -36,17 +36,20 @@ describe('FictionalDateParser — custom system preferred over built-in (#650)',
 	it('attributes a BBY date to the custom system when the universe matches', () => {
 		const result = makeParser().parse('BBY 100', 'Star Wars');
 		expect(result.success).toBe(true);
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Calendar (Custom)');
 	});
 
 	it('resolves a wikilink-wrapped universe value', () => {
 		const result = makeParser().parse('ABY 34', '[[Star Wars]]');
 		expect(result.success).toBe(true);
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Calendar (Custom)');
 	});
 
 	it('resolves a slug-form universe value', () => {
 		const result = makeParser().parse('BBY 19', 'star-wars');
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Calendar (Custom)');
 	});
 
@@ -54,6 +57,7 @@ describe('FictionalDateParser — custom system preferred over built-in (#650)',
 		// Only the built-in is present; the built-in must still resolve.
 		const result = new FictionalDateParser([STAR_WARS_CALENDAR]).parse('BBY 100', 'Star Wars');
 		expect(result.success).toBe(true);
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Standard Calendar');
 	});
 
@@ -64,6 +68,7 @@ describe('FictionalDateParser — custom system preferred over built-in (#650)',
 		// universe links it (the #650 design: universe is the disambiguator).
 		const result = makeParser().parse('BBY 100');
 		expect(result.success).toBe(true);
+		if (!result.success) return;
 		expect(result.date?.system.name).toBe('Galactic Standard Calendar');
 	});
 });

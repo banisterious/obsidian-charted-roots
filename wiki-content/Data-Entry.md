@@ -9,6 +9,7 @@ This page covers how to create person notes with relationship data that Charted 
 ## Table of Contents
 
 - [Create Person Modal](#create-person-modal)
+- [Name Fields](#name-fields)
 - [Family Creation Wizard](#family-creation-wizard)
 - [Edit Modal Enhancements](#edit-modal-enhancements)
 - [Quick Start: Adding Properties via Context Menu](#quick-start-adding-properties-via-context-menu)
@@ -53,6 +54,42 @@ After creating a person, you have two options:
 | **Create & Add Another** | Creates the person and resets the form to create another in the same folder |
 
 The "Add Another" flow is useful when entering multiple family members in sequence.
+
+---
+
+## Name Fields
+
+The `name` property is the person's **display name** — it is what appears on Family Chart cards and in the links between notes, and it defaults to the note's title. It is treated as free text, so there is no required "First Last" format. Write it however you want it to read — `Aegon V Targaryen`, `Hans von Duisburg`, or `Dr. John Smith Jr.` are all fine as the `name` value.
+
+### Optional Name Parts
+
+For genealogical precision and accurate GEDCOM export, Charted Roots can also store the individual pieces of a name in their own optional properties. These do not change what is displayed — they add structure that export and search can use:
+
+| Property | Purpose | Example |
+|----------|---------|---------|
+| `name_prefix` | Title or honorific (GEDCOM NPFX) | `Dr.`, `Rev.`, `Dame` |
+| `name_suffix` | Generational suffix (GEDCOM NSFX) | `Jr.`, `III`, `V` |
+| `surname_prefix` | Surname particle (GEDCOM SPFX) | `von`, `de la` |
+| `given_name` | First/given name(s) | `María José` |
+| `surnames` | Family name(s), one or more | `García, López` |
+| `maiden_name` | Birth surname | `Johnson` |
+| `nickname` | Informal name or alias | `Bobby` |
+| `alt_name` | Alternate name for multilingual display | `张三` |
+
+A typical record fills the display name plus whichever parts you care about:
+
+```yaml
+name: Dr. John Smith Jr.
+name_prefix: Dr.
+name_suffix: Jr.
+```
+
+None of the parts are required — `name` on its own is enough for a complete person note.
+
+### Notes
+
+- **GEDCOM import** fills these fields automatically. The generational suffix is also folded into the display name (so `John Smith` plus `III` becomes `John Smith III`), which keeps same-named relatives distinct. When entering people by hand, there is no need to repeat the suffix in both `name` and `name_suffix` unless you want it shown.
+- The Create and Edit Person form currently offers Name, Nickname, Given name, Surname(s), and — in edit mode — Maiden and Married names. The prefix and suffix fields are set in the note's properties directly, or arrive through import.
 
 ---
 

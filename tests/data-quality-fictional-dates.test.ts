@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest';
-import { TFile } from 'obsidian';
+import { TFile, makeTFile } from 'obsidian';
 import { DataQualityService, type DataQualityIssue } from '../src/core/data-quality';
 import { PersonNode } from '../src/core/family-graph';
 import { createDateService, DateService } from '../src/dates/services/date-service';
@@ -15,7 +15,7 @@ import { createDateService, DateService } from '../src/dates/services/date-servi
  */
 
 function makePerson(overrides: Partial<PersonNode>): PersonNode {
-	const file = new TFile({ path: 'p.md', basename: 'p', extension: 'md' });
+	const file = makeTFile({ path: 'p.md', basename: 'p', extension: 'md' });
 	return {
 		crId: 'p:any',
 		name: 'Anonymous',

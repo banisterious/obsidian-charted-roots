@@ -26,7 +26,7 @@ npm install
 
 - `npm run dev` - Start development mode with watch (builds to local main.js)
 - `npm run build` - Production build (fonts + esbuild + CSS; no type check — run `type-check` separately when needed)
-- `npm run type-check` - Standalone `tsc -noEmit -skipLibCheck` pass. Currently surfaces ~149 pre-existing errors that are a separate cleanup backlog; run on-demand rather than on every build.
+- `npm run type-check` - Standalone `tsc -noEmit -skipLibCheck` pass. Clean (zero errors) and gated in CI as of #704; run before pushing a tag.
 - `npm test` - Run the Vitest regression suite once (1393 tests across 120 suites as of v0.22.66, covering pure helpers for relationships, migrations, the sibling walker, event identity, date handling, and a large set of issue-specific regression suites)
 - `npm run test:watch` - Vitest in watch mode for iterative development
 - `npm run lint` - Check TypeScript code for linting errors
@@ -38,7 +38,7 @@ npm install
 **Before committing code**, always run linting and the test suite:
 
 ```bash
-npm run lint && npm run lint:css && npm test
+npm run lint && npm run lint:css && npm run type-check && npm test
 ```
 
 Bug fixes that touch volatile code paths (relationship handling, migrations, cross-note writes, date parsing) should land with regression tests — see the existing `tests/` files for the pure-helper extraction pattern.
@@ -136,13 +136,13 @@ Look for:
 
 ### TypeScript Errors
 
-The build command includes type checking:
+The esbuild build does not type-check. Run the standalone type-checker:
 
 ```bash
-npm run build
+npm run type-check
 ```
 
-This will show any TypeScript errors before building.
+This runs `tsc -noEmit` and reports any TypeScript errors. It is clean (zero errors) and gated in CI as of #704.
 
 ---
 

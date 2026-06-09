@@ -15,7 +15,6 @@ import type { LucideIconName } from '../../ui/lucide-icons';
 import { getContrastColor } from '../../ui/create-person-types';
 import { RelationshipService } from '../services/relationship-service';
 import {
-	RELATIONSHIP_CATEGORY_NAMES,
 	type RelationshipCategory,
 	type ParsedRelationship
 } from '../types/relationship-types';
@@ -197,7 +196,7 @@ export function renderRelationshipsList(options: RelationshipsListOptions): void
 				for (const cat of usedCategories) {
 					catGroup.createEl('option', {
 						value: `category_${cat}`,
-						text: RELATIONSHIP_CATEGORY_NAMES[cat]
+						text: service.getCategoryName(cat)
 					});
 				}
 			}
@@ -580,7 +579,7 @@ function renderRelationshipStatsCard(
 				if (count > 0) {
 					const item = catList.createDiv({ cls: 'crc-stats-item' });
 					item.createSpan({
-						text: RELATIONSHIP_CATEGORY_NAMES[cat as RelationshipCategory],
+						text: service.getCategoryName(cat as RelationshipCategory),
 						cls: 'crc-stats-label'
 					});
 					item.createSpan({ text: count.toString(), cls: 'crc-stats-value' });

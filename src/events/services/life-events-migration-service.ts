@@ -140,6 +140,7 @@ const EVENT_TYPE_NAMES: Record<EventType, string> = {
 	baptism: 'Baptism',
 	confirmation: 'Confirmation',
 	ordination: 'Ordination',
+	burial: 'Burial',
 	custom: 'Event'
 };
 

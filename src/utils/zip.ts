@@ -13,7 +13,7 @@
  * 2. Centralising the library boundary means a future swap (or fflate
  *    version bump) is a one-file change.
  */
-import { strToU8, unzip, zip } from 'fflate';
+import { strToU8, unzip, zip, type AsyncZippable } from 'fflate';
 
 export type ZipCompression = 'STORE' | 'DEFLATE';
 
@@ -53,7 +53,7 @@ export class ZipBuilder {
 		}
 
 		return new Promise((resolve, reject) => {
-			zip(input, (err, result) => {
+			zip(input as AsyncZippable, (err, result) => {
 				if (err) {
 					reject(err);
 					return;

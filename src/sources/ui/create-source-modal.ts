@@ -316,7 +316,7 @@ export class CreateSourceModal extends Modal {
 
 				this.personRoles.push({
 					crId: personCrId,
-					name: personName,
+					name: personName ?? '',
 					role: prop,
 					details
 				});

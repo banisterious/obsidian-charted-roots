@@ -606,7 +606,7 @@ export class BidirectionalLinker {
 			// canonical (#556). The snapshot field stays named `spouse` so the
 			// deletion-detection comparison reads from a single slot regardless
 			// of which canonical the user authored.
-			spouse: frontmatter.spouse ?? frontmatter.partners,
+			spouse: (frontmatter.spouse ?? frontmatter.partners) as string | string[] | undefined,
 			children: frontmatter.children,
 			child: childSnapshot,  // Capture child array for deletion detection
 			dna_match: dnaMatchSnapshot  // Capture DNA matches for deletion detection
@@ -617,7 +617,7 @@ export class BidirectionalLinker {
 			const key = `spouse${i}` as keyof RelationshipSnapshot;
 			const value = frontmatter[key];
 			if (value && typeof value === 'string') {
-				snapshot[key] = value;
+				(snapshot as Record<string, unknown>)[key] = value;
 			}
 		}
 
@@ -928,7 +928,7 @@ export class BidirectionalLinker {
 		for (const key of Object.keys(targetFm)) {
 			const match = key.match(/^spouse(\d+)$/);
 			if (!match) continue;
-			const linkText = typeof targetFm[key] === 'string' ? targetFm[key] : String(targetFm[key]);
+			const linkText = String(targetFm[key]);
 			if (linkText.includes(personName) || linkText.includes(personBasename)) {
 				return parseInt(match[1]);
 			}

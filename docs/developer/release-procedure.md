@@ -10,7 +10,7 @@ Mechanical checklist for cutting a Charted Roots patch or minor release. Pairs w
 2. **Commit the version bump as its own commit** (six files: `manifest.json`, `versions.json`, `package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`)
 3. **Tag against the bump commit** (not against `main` HEAD if anything else has landed since)
 4. Push branch and tag — the tag push triggers `.github/workflows/release.yml`
-5. CI runs the gate set (lint + lint:css + test + build), attests provenance on the build artifacts, and creates a **draft** GitHub Release with `main.js` / `manifest.json` / `styles.css` attached
+5. CI runs the gate set (lint + lint:css + type-check + test + build), attests provenance on the build artifacts, and creates a **draft** GitHub Release with `main.js` / `manifest.json` / `styles.css` attached
 6. Paste the audited release description into the draft on the web UI and click Publish
 7. Apply post-release labels (`next-release` → `released-testing`)
 8. Wiki sync if any wiki-content edits are pending
@@ -25,7 +25,7 @@ Before staging any version files:
 
 - [ ] `npm run build` — clean, no errors
 - [ ] `npm test -- --run` — all tests pass
-- [ ] `npm run type-check` — no *new* errors (project carries a known TS-cleanup backlog)
+- [ ] `npm run type-check` — clean (zero errors; CI gates this as of #704)
 - [ ] All fixes intended for the release are committed on `main`
 - [ ] `[Unreleased]` section in CHANGELOG has all the entries the release should cover
 - [ ] Manual verification on dev vault for any user-facing UI changes (capture screenshots if appropriate)
@@ -137,7 +137,7 @@ Alternatively: tag locally with `git tag X.Y.Z`, push the tag (`git push origin 
 The tag push triggers `.github/workflows/release.yml`. The workflow:
 
 1. Checks out the tag and sets up Node (version pinned by `.nvmrc`).
-2. Runs `npm ci`, then the four gates in order: `lint`, `lint:css`, `test`, `build`. Any failure aborts before assets are produced.
+2. Runs `npm ci`, then the five gates in order: `lint`, `lint:css`, `type-check`, `test`, `build`. Any failure aborts before assets are produced.
 3. Calls `actions/attest-build-provenance@v2` against `main.js`, `manifest.json`, `styles.css` — generates a verifiable provenance attestation tied to the workflow run.
 4. Runs `gh release create` with `--draft` and `--notes ""`, attaching the three build artifacts. Pre-release tags (matching `*.*.*-*`) add `--prerelease`. Title is set to `Charted Roots v<tag>` per project convention.
 
@@ -160,7 +160,7 @@ Expected output: `✓ Verification succeeded!`. The attestation links the asset 
 
 ### CI failure handling
 
-If a gate fails (lint, lint:css, test, or build), the workflow aborts before creating the release. The tag is still pushed to origin — clean up before retrying:
+If a gate fails (lint, lint:css, type-check, test, or build), the workflow aborts before creating the release. The tag is still pushed to origin — clean up before retrying:
 
 ```sh
 # Delete the tag locally and on origin

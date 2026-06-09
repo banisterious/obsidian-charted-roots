@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { StatisticsService } from '../src/statistics/services/statistics-service';
 import { createDateService } from '../src/dates/services/date-service';
-import type { CanvasRootsSettings } from '../src/types';
+import type { CanvasRootsSettings } from '../src/settings';
 import type { FictionalDateSystem } from '../src/dates/types/date-types';
 import type { PersonNode } from '../src/core/family-graph';
 
@@ -26,8 +26,8 @@ const REPORTER_SYSTEM: FictionalDateSystem = {
 	id: 'reporter-system',
 	name: 'Reporter multi-era system',
 	eras: [
-		{ name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
-		{ name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
+		{ id: 'era-of-forging', name: 'Era of Forging', abbrev: 'EF', epoch: -100, direction: 'forward' },
+		{ id: 'dawn-era', name: 'Dawn Era', abbrev: 'DE', epoch: 0, direction: 'forward' },
 	],
 };
 

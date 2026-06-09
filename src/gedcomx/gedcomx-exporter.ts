@@ -277,8 +277,8 @@ export class GedcomXExporter {
 
 			// Serialize to JSON
 			result.jsonContent = JSON.stringify(document, null, 2);
-			result.personsExported = activeDocument.persons?.length || 0;
-			result.relationshipsExported = activeDocument.relationships?.length || 0;
+			result.personsExported = document.persons?.length || 0;
+			result.relationshipsExported = document.relationships?.length || 0;
 			result.success = true;
 
 			new Notice(`Export complete: ${result.personsExported} people exported`);

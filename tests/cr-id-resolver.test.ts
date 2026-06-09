@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { findCrNoteByCrId } from '../src/utils/cr-id-resolver';
 
 /**
@@ -19,7 +19,7 @@ import { findCrNoteByCrId } from '../src/utils/cr-id-resolver';
 
 describe('findCrNoteByCrId — #559', () => {
 	function makeFile(path: string): TFile {
-		return new TFile({ path, basename: path.split('/').pop()!.replace('.md', ''), extension: 'md' });
+		return makeTFile({ path, basename: path.split('/').pop()!.replace('.md', ''), extension: 'md' });
 	}
 
 	it('returns the file matching both cr_id and expected cr_type', () => {

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { getCanonicalLinktext } from '../src/utils/wikilink-resolver';
 
 /**
@@ -19,7 +19,7 @@ import { getCanonicalLinktext } from '../src/utils/wikilink-resolver';
  */
 
 function makeFile(path: string, basename: string): TFile {
-	return new TFile({ path, basename, extension: 'md' });
+	return makeTFile({ path, basename, extension: 'md' });
 }
 
 describe('getCanonicalLinktext', () => {

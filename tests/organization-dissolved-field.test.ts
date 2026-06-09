@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { OrganizationService } from '../src/organizations/services/organization-service';
 
 /**
@@ -30,7 +30,7 @@ function makeService(app: App): OrgServiceLike {
 }
 
 function seedOrg(app: App, path: string, frontmatter: Record<string, unknown>): TFile {
-	const file = new TFile({
+	const file = makeTFile({
 		path,
 		basename: path.split('/').pop()!.replace(/\.md$/, ''),
 		extension: 'md',

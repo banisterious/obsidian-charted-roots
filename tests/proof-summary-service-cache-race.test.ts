@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, Plugin, TFile } from 'obsidian';
+import { App, Plugin, TFile, makeTFile, makePlugin } from 'obsidian';
 import { ProofSummaryService } from '../src/sources/services/proof-summary-service';
 import type { CanvasRootsSettings } from '../src/settings';
 
@@ -17,7 +17,7 @@ function makeServiceWithListeners(): {
 	plugin: Plugin;
 } {
 	const app = new App();
-	const plugin = new Plugin(app);
+	const plugin = makePlugin(app);
 	const settings = {
 		sourcesFolder: 'Charted Roots/Sources',
 		propertyAliases: {},
@@ -32,7 +32,7 @@ function seedExistingProof(
 	app: App,
 	args: { path: string; basename: string; crId: string; title: string }
 ): TFile {
-	const file = new TFile({ path: args.path, basename: args.basename, extension: 'md' });
+	const file = makeTFile({ path: args.path, basename: args.basename, extension: 'md' });
 	app.vault._addFile(file);
 	app.metadataCache._setFrontmatter(file, {
 		cr_type: 'proof_summary',
@@ -138,7 +138,7 @@ describe('ProofSummaryService — metadata-cache race after createProof (#519 mi
 
 		expect(service.getAllProofs()).toHaveLength(1);
 
-		const sourceFile = new TFile({
+		const sourceFile = makeTFile({
 			path: 'Charted Roots/Sources/Some Census.md',
 			basename: 'Some Census',
 			extension: 'md',

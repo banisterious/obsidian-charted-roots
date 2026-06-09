@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call -- Obsidian API returns any-typed surfaces (frontmatter, file caches, plugin state); project policy accepts these. */
 import { describe, expect, it } from 'vitest';
-import { App, TFile } from 'obsidian';
+import { App, TFile, makeTFile } from 'obsidian';
 import { FamilyGraphService } from '../src/core/family-graph';
 import type { PersonNode } from '../src/core/family-graph';
 
@@ -28,7 +28,7 @@ interface PrivateAccess {
 }
 
 function makeFile(path: string, basename: string): TFile {
-	return new TFile({ path, basename, extension: 'md' });
+	return makeTFile({ path, basename, extension: 'md' });
 }
 
 describe('FamilyGraphService — step_child / adopted_child relationship-array mapping (#525/#526 follow-up)', () => {

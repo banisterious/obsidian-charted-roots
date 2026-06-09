@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { MediaService } from '../src/core/media-service';
 import type { App } from 'obsidian';
-import type { CanvasRootsSettings } from '../src/core/settings';
+import type { CanvasRootsSettings } from '../src/settings';
 
 /**
  * Coverage for `parseMediaCaptions` (#523). Captions live in a flat

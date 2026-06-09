@@ -46,7 +46,7 @@ export class StatisticsView extends ItemView {
 	]);
 	/** Tracks which drill-down rows are expanded (key: "type:name") */
 	private expandedDrilldowns: Set<string> = new Set();
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);
@@ -854,9 +854,9 @@ export class StatisticsView extends ItemView {
 		}
 
 		// Expandable person lists per category — load data upfront
-		let data: ReturnType<typeof this.service.getPeopleBySexCategory> | null = null;
+		let data: ReturnType<NonNullable<typeof this.service>['getPeopleBySexCategory']> | null = null;
 		try {
-			data = this.service.getPeopleBySexCategory();
+			data = this.service!.getPeopleBySexCategory();
 		} catch {
 			// Skip expandable lists if data loading fails
 		}
@@ -1379,7 +1379,7 @@ export class StatisticsView extends ItemView {
 	private buildCitationStatsContent(): HTMLElement {
 		const container = createDiv({ cls: 'cr-sv-section-content' });
 
-		const stats = this.service.getCitationStatistics();
+		const stats = this.service!.getCitationStatistics();
 
 		if (stats.totalCitations === 0) {
 			container.createDiv({

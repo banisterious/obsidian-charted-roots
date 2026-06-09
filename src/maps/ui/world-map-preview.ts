@@ -60,12 +60,12 @@ export function renderWorldMapPreview(
 	// Use OpenStreetMap tiles with no-referrer to avoid blocking in Electron (#333)
 	const TileLayerNoRef = L.TileLayer.extend({
 		createTile(coords: unknown, done: (err: Error | null, tile: HTMLImageElement) => void): HTMLImageElement {
-			const tile = L.TileLayer.prototype.createTile.call(this, coords, done) as HTMLImageElement;
+			const tile = (L.TileLayer.prototype as unknown as { createTile(c: unknown, d: unknown): HTMLImageElement }).createTile.call(this, coords, done) as HTMLImageElement;
 			tile.referrerPolicy = 'no-referrer';
 			return tile;
 		}
 	});
-	new TileLayerNoRef('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	new (TileLayerNoRef as unknown as typeof L.TileLayer)('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 		noWrap: true,
 		bounds: L.latLngBounds(L.latLng(-85, -180), L.latLng(85, 180))
 	}).addTo(map);

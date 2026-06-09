@@ -431,7 +431,7 @@ export type GedcomProgressCallback = (progress: GedcomImportProgress) => void;
  * Progress state for GEDCOM import
  */
 export interface GedcomImportProgress {
-	phase: 'validating' | 'parsing' | 'places' | 'sources' | 'people' | 'relationships' | 'events' | 'complete';
+	phase: 'validating' | 'parsing' | 'places' | 'sources' | 'people' | 'relationships' | 'events' | 'citations' | 'complete';
 	current: number;
 	total: number;
 	message?: string;

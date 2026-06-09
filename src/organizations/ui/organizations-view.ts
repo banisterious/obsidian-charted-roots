@@ -24,7 +24,7 @@ export class OrganizationsView extends ItemView {
 	private currentFilter: OrgListFilter = 'all';
 	private currentSort: OrgListSort = 'name_asc';
 	private currentSearch = '';
-	private refreshTimeout: ReturnType<typeof setTimeout> | null = null;
+	private refreshTimeout: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: CanvasRootsPlugin) {
 		super(leaf);

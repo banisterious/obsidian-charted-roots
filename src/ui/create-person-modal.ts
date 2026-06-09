@@ -217,7 +217,7 @@ export class CreatePersonModal extends Modal {
 			// (#629). The alias service maps both built-in synonyms (`male`
 			// -> `M`, `nonbinary` -> `X`, etc.) and any user-defined
 			// aliases, so existing data of either shape converts on load.
-			const sexAliasService = createValueAliasService(this.plugin);
+			const sexAliasService = createValueAliasService(this.plugin!);
 			const loadedSex = ep.sex || ep.gender;
 			this.personData = {
 				name: ep.name,
@@ -2482,8 +2482,6 @@ export class CreatePersonModal extends Modal {
 								locationInput.value = extractDisplayLabel(place.name);
 							},
 							{
-								title: 'Select marriage location',
-								subtitle: 'Select a place or type a location',
 								plugin: this.plugin
 							}
 						);

@@ -158,7 +158,7 @@ erDiagram
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
-| `name` | `string` | Display name of the person | `"John Robert Smith"` |
+| `name` | `string` | Display name of the person. Free text shown on cards and in links; defaults to the note title. Write it however it should read — structured parts (prefix, suffix, given name, and so on) have their own optional fields under [Name Components](#name-components). | `"John Robert Smith"`, `"Dr. John Smith Jr."` |
 | `nickname` | `string` | Informal name, pet name, or alternate identity | `"Jack"`, `"The Colonel"` |
 | `alt_name` | `string` | Alternate name for multilingual display (shown as second line on Family Chart cards) | `"张三"`, `"Johann Müller"` |
 | `born` | `string` | Birth date (YYYY, YYYY-MM, YYYY-MM-DD, with optional ISO 8601 time `YYYY-MM-DDTHH:MM` for twin / triplet birth-order tiebreaks, or with GEDCOM qualifiers like `ABT`, `BEF`, `AFT`) | `"1888-05-15"`, `"1985-04-12T03:42"`, `"ABT 1888"` |
@@ -180,7 +180,7 @@ erDiagram
 
 ### Name Components
 
-Additional name fields for GEDCOM compatibility. These are populated during GEDCOM import and used for accurate GEDCOM export.
+Additional, optional name fields for genealogical precision and GEDCOM compatibility. They are populated automatically during GEDCOM import and used for accurate GEDCOM export, and can also be set by hand in a note's properties. They do not change the display name — `name` controls that.
 
 | Property | Type | Description | Example |
 |----------|------|-------------|---------|
