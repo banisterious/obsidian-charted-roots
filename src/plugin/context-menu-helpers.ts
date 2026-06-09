@@ -368,23 +368,23 @@ export function addSourceToPersonNote(plugin: CanvasRootsPlugin, file: TFile): v
 }
 
 export function openManageMediaModal(plugin: CanvasRootsPlugin, file: TFile, entityType: string, entityName: string): void {
-	if (!plugin.mediaService) {
+	const mediaService = plugin.getMediaService();
+	if (!mediaService) {
 		new Notice('Media service not available');
 		return;
 	}
 
 	// Get existing media from frontmatter
 	const cache = plugin.app.metadataCache.getFileCache(file);
-	const existingMedia = plugin.mediaService.parseMediaProperty(cache?.frontmatter || {});
+	const existingMedia = mediaService.parseMediaProperty(cache?.frontmatter || {});
 
 	new MediaManageModal(
 		plugin.app,
-		plugin.mediaService,
+		mediaService,
 		file,
 		existingMedia,
 		async (updatedMediaRefs) => {
-			if (!plugin.mediaService) return;
-			await plugin.mediaService.updateMediaProperty(file, updatedMediaRefs);
+			await mediaService.updateMediaProperty(file, updatedMediaRefs);
 		},
 		() => {
 			// Re-open the link media modal when "Add media" is clicked

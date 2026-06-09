@@ -197,7 +197,7 @@ export class AddRelationshipModal extends Modal {
 			if (mapping) {
 				const mgr = new RelationshipManager(
 					this.app,
-					this.plugin.relationshipHistory,
+					this.plugin.getRelationshipHistory(),
 					promptOnConflict(this.app)
 				);
 				if (mapping === 'spouse' && !this.selectedType.builtIn) {
