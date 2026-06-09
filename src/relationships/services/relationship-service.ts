@@ -8,7 +8,7 @@
 import { TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { getLogger } from '../../core/logging';
-import { DEFAULT_RELATIONSHIP_TYPES } from '../constants/default-relationship-types';
+import { DEFAULT_RELATIONSHIP_TYPES, getRelationshipCategoryName } from '../constants/default-relationship-types';
 import type {
 	RelationshipTypeDefinition,
 	RawRelationship,
@@ -20,8 +20,7 @@ import type {
 import {
 	extractWikilinkName,
 	extractWikilinkPath,
-	isWikilink,
-	RELATIONSHIP_CATEGORY_NAMES
+	isWikilink
 } from '../types/relationship-types';
 
 const logger = getLogger('RelationshipService');
@@ -651,10 +650,16 @@ export class RelationshipService {
 	}
 
 	/**
-	 * Get human-readable category name
+	 * Get human-readable category name. Resolves built-in categories, renamed
+	 * built-ins, and user-created custom categories (which aren't in the
+	 * built-in name map, so a bare lookup returned a blank label — #707).
 	 */
 	getCategoryName(category: RelationshipCategory): string {
-		return RELATIONSHIP_CATEGORY_NAMES[category] || category;
+		return getRelationshipCategoryName(
+			category,
+			this.plugin.settings.customRelationshipCategories ?? [],
+			this.plugin.settings.relationshipCategoryCustomizations ?? {}
+		);
 	}
 }
 

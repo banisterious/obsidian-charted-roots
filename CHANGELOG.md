@@ -14,6 +14,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 - Family Chart highlight groups: connector lines no longer bleed through dimmed (non-matching) cards. Dimmed cards now stay opaque so the links behind them are fully occluded (#670).
+- Relationships filter: user-created custom relationship categories now show their name in the "By category" dropdown (and statistics list) instead of a blank entry, in both the Relationships pane and the Control Center Relationships tab (#707).
 
 ## [0.22.66] - 2026-06-08
 
