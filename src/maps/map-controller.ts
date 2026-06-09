@@ -951,7 +951,7 @@ export class MapController {
 
 		const eventType = getEventType(
 			data.type,
-			this.settings.customEventTypes || [],
+			(this.settings.customEventTypes || []) as unknown as Parameters<typeof getEventType>[1],
 			this.settings.showBuiltInEventTypes !== false
 		);
 

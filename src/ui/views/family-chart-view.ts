@@ -1270,7 +1270,7 @@ export class FamilyChartView extends ItemView {
 
 			// Create the chart with normal transition time
 			logger.debug('init-chart', 'Creating chart with spacing', { nodeSpacing: this.nodeSpacing, levelSpacing: this.levelSpacing, effectiveNodeSpacing, effectiveLevelSpacing });
-			this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData)
+			this.f3Chart = f3.createChart(this.chartContainerEl, this.chartData as Parameters<typeof f3.createChart>[1])
 				.setTransitionTime(800)
 				.setCardXSpacing(effectiveNodeSpacing)
 				.setCardYSpacing(effectiveLevelSpacing)
@@ -3786,8 +3786,8 @@ export class FamilyChartView extends ItemView {
 
 			arcEntries.forEach((entry, index) => {
 				const { rel, type } = entry;
-				const sourcePos = cardPositions.get(rel.sourceCrId);
-				const targetPos = cardPositions.get(rel.targetCrId);
+				const sourcePos = cardPositions.get((rel.sourceCrId ?? ''));
+				const targetPos = cardPositions.get((rel.targetCrId ?? ''));
 				if (!sourcePos || !targetPos) return;
 
 				// Sort the two endpoints into an "upper" → "lower" chord
@@ -3956,7 +3956,7 @@ export class FamilyChartView extends ItemView {
 		// a colored line heading to an off-layout position, not the visible
 		// counterpart. Skip the restyle in that case and let the caller fall
 		// through to arc rendering, which anchors on the primary card positions.
-		if (this.countCardsForCrId(rel.sourceCrId) > 1 || this.countCardsForCrId(rel.targetCrId) > 1) {
+		if (this.countCardsForCrId((rel.sourceCrId ?? '')) > 1 || this.countCardsForCrId((rel.targetCrId ?? '')) > 1) {
 			return false;
 		}
 
@@ -3980,8 +3980,8 @@ export class FamilyChartView extends ItemView {
 			const targetIds = extractIds(datum?.target);
 			if (sourceIds.length === 0 || targetIds.length === 0) continue;
 			const matches =
-				(sourceIds.includes(rel.sourceCrId) && targetIds.includes(rel.targetCrId)) ||
-				(sourceIds.includes(rel.targetCrId) && targetIds.includes(rel.sourceCrId));
+				(sourceIds.includes((rel.sourceCrId ?? '')) && targetIds.includes((rel.targetCrId ?? ''))) ||
+				(sourceIds.includes((rel.targetCrId ?? '')) && targetIds.includes((rel.sourceCrId ?? '')));
 			if (!matches) continue;
 
 			linkEl.classList.add('cr-structural-link-overlay');
@@ -4098,7 +4098,7 @@ export class FamilyChartView extends ItemView {
 				const type = overlayTypes.get(rel.type.id);
 				if (!type) continue;
 				// Require both endpoints to be in the current visible tree
-				if (!cardPositions.has(rel.sourceCrId) || !cardPositions.has(rel.targetCrId)) continue;
+				if (!cardPositions.has((rel.sourceCrId ?? '')) || !cardPositions.has((rel.targetCrId ?? ''))) continue;
 				// As-of date filter: skip relationships whose from/to range excludes the selected date
 				if (!this.relationshipActiveAtAsOfDate(rel)) continue;
 				// Dedupe: canonicalize by sorted crId pair + canonical type id.

@@ -8,6 +8,7 @@
  */
 
 import { App, ButtonComponent, Menu, Notice, Setting, TFile, setIcon } from 'obsidian';
+import type { ResearchLevel } from '../types/frontmatter';
 import type CanvasRootsPlugin from '../../main';
 import { openManageMediaModal } from '../plugin/context-menu-helpers';
 import type { LucideIconName } from './lucide-icons';

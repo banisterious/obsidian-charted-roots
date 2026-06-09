@@ -1798,7 +1798,7 @@ export class MapView extends ItemView {
 			window.setTimeout(() => {
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
-					.setLatLng(target)
+					.setLatLng(target!)
 					.setContent(popupContent)
 					.openOn(map);
 			}, JOURNEY_FLY_MS);
@@ -2694,7 +2694,7 @@ export class MapView extends ItemView {
 			customMapsFolder: this.plugin.settings.mapsFolder || 'Charted Roots/Places/Maps',
 			// Event display settings (from main plugin settings)
 			eventIconMode: this.plugin.settings.eventIconMode,
-			customEventTypes: this.plugin.settings.customEventTypes,
+			customEventTypes: this.plugin.settings.customEventTypes as unknown as { type: string; name: string; icon: string; color: string; category?: string }[],
 			showBuiltInEventTypes: this.plugin.settings.showBuiltInEventTypes
 		};
 	}

@@ -564,8 +564,8 @@ export function registerCommandsAndEvents(plugin: CanvasRootsPlugin): void {
 		callback: async () => {
 			const { FindRelatedResearchModal } = await import('../ui/find-related-research-modal');
 			const activeFile = plugin.app.workspace.getActiveFile();
-			if (activeFile && isPersonNote(plugin.app, activeFile)) {
-				const cache = plugin.app.metadataCache.getFileCache(activeFile);
+			const cache = activeFile ? plugin.app.metadataCache.getFileCache(activeFile) : null;
+			if (activeFile && isPersonNote(cache?.frontmatter, cache)) {
 				const name = (cache?.frontmatter?.name as string) || activeFile.basename;
 				new FindRelatedResearchModal(plugin.app, name, activeFile.basename).open();
 			} else {

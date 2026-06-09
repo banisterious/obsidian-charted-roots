@@ -7,6 +7,7 @@
  */
 
 import { Notice, TFile, Menu, Modal } from 'obsidian';
+import type { ResearchLevel } from '../types/frontmatter';
 import type CanvasRootsPlugin from '../../main';
 import { PersonPickerModal } from '../ui/person-picker';
 import { MediaPickerModal } from '../core/ui/media-picker-modal';

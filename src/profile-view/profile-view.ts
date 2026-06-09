@@ -294,7 +294,7 @@ export class ProfileView extends ItemView {
 		}
 
 		// Update display text
-		this.leaf.updateHeader();
+		(this.leaf as unknown as { updateHeader(): void }).updateHeader();
 
 		// Load data
 		const data = this.dataLoader.loadEntity(file, entityType);
