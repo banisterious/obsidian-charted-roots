@@ -12,6 +12,9 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+- Family Chart highlight groups: connector lines no longer bleed through dimmed (non-matching) cards. Dimmed cards now stay opaque so the links behind them are fully occluded (#670).
+
 ## [0.22.66] - 2026-06-08
 
 A reporter-driven release centred on timelines, organizations, and the Family Chart. Timelines gain two new display options — a person's inline `events` list now appears alongside births, deaths, and family events, and rows can show a place's parent location ("Born in London, England") so a bare leaf name isn't ambiguous — while historical-context events are now windowed by a person's whole life rather than only their personal milestones. The Edit person modal gains an always-available living-status control, organization member lists honour `sort: date`, custom relationships mapped to parent or spouse keep their own type, and the Family Chart's highlight dimming no longer washes out the connector lines. **1393 tests passing across 120 suites.**

@@ -4245,13 +4245,14 @@ export class FamilyChartView extends ItemView {
 					this.classList.add('cr-hl-match');
 					this.classList.add(`cr-hl-match--${match.color}`);
 				} else {
-					// Dim the card via the `cr-hl-dim` marker class; the CSS lowers
-					// opacity on the inner `.card` group. No overlay is appended —
-					// the overlay (used through v0.22.65) sat above the card and
-					// washed out the connector-line stub routing into each dimmed
-					// card, so the edge lines appeared to change colour at every
-					// non-matching node (#670 follow-up). See the CSS rule for why
-					// the opacity is scoped to `.card`, not `.card_cont`.
+					// Dim the card via the `cr-hl-dim` marker class; the CSS applies
+					// a grayscale+brightness `filter` to the inner `.card` group. No
+					// overlay is appended — the overlay (used through v0.22.65) washed
+					// out the connector-line stub routing into each dimmed card, and
+					// the opacity-on-`.card` approach that replaced it (v0.22.66) made
+					// the card translucent so the line behind bled through it. A filter
+					// recolours without lowering alpha, so the card still occludes the
+					// lines. See the CSS rule for the full history.
 					this.classList.add('cr-hl-dim');
 				}
 			});
