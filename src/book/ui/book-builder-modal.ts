@@ -12,7 +12,7 @@
 
 import { App, Modal, Notice, TFile, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
-import { createLucideIcon } from '../../ui/lucide-icons';
+import { createLucideIcon, type LucideIconName } from '../../ui/lucide-icons';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
 import { REPORT_METADATA, getReportsByCategory } from '../../reports/types/report-types';
 import type { ReportType, ReportCategory } from '../../reports/types/report-types';
@@ -313,7 +313,7 @@ export class BookBuilderModal extends Modal {
 			const card = grid.createDiv({ cls: 'cr-book-template-card' });
 
 			const iconEl = card.createDiv({ cls: 'cr-book-template-icon' });
-			iconEl.appendChild(createLucideIcon(template.icon, 24));
+			iconEl.appendChild(createLucideIcon(template.icon as LucideIconName, 24));
 
 			card.createDiv({ cls: 'cr-book-template-label', text: template.label });
 			card.createDiv({ cls: 'cr-book-template-desc', text: template.description });
@@ -706,7 +706,7 @@ export class BookBuilderModal extends Modal {
 			case 'report': {
 				const config = chapter.config as ReportChapterConfig;
 				const reportMeta = REPORT_METADATA[config.reportType];
-				const label = reportMeta?.label || config.reportType;
+				const label = reportMeta?.name || config.reportType;
 				return config.subjectName ? `${label} — ${config.subjectName}` : label;
 			}
 			case 'visual-tree': {
@@ -747,7 +747,7 @@ export class BookBuilderModal extends Modal {
 
 		for (const opt of options) {
 			const item = menu.createDiv({ cls: 'cr-book-add-menu__item' });
-			item.appendChild(createLucideIcon(opt.icon, 16));
+			item.appendChild(createLucideIcon(opt.icon as LucideIconName, 16));
 			item.createSpan({ text: opt.label });
 			item.addEventListener('click', () => {
 				menu.remove();
@@ -1052,7 +1052,7 @@ export class BookBuilderModal extends Modal {
 		for (const [type, count] of typeCounts) {
 			const meta = CHAPTER_TYPE_META[type];
 			const item = breakdown.createDiv({ cls: 'cr-book-breakdown-item' });
-			item.appendChild(createLucideIcon(meta.icon, 14));
+			item.appendChild(createLucideIcon(meta.icon as LucideIconName, 14));
 			item.createSpan({ text: `${count} ${meta.label.toLowerCase()}${count > 1 ? 's' : ''}` });
 		}
 
@@ -1182,7 +1182,7 @@ export class BookBuilderModal extends Modal {
 			} else {
 				const errorMsg = result.errors.join('\n');
 				new Notice(`Book generation failed: ${errorMsg}`);
-				logger.error('Book generation failed', result.errors);
+				logger.error('generate-book', 'Book generation failed', result.errors);
 			}
 		} catch (error) {
 			logger.error('Book generation error', error);
@@ -1412,7 +1412,7 @@ class ChapterConfigModal extends Modal {
 			const optgroup = select.createEl('optgroup');
 			optgroup.label = cat.charAt(0).toUpperCase() + cat.slice(1);
 			for (const report of reports) {
-				const opt = optgroup.createEl('option', { value: report.type, text: report.label });
+				const opt = optgroup.createEl('option', { value: report.type, text: report.name });
 				if (report.type === this.reportType) opt.selected = true;
 			}
 		}
@@ -1421,7 +1421,7 @@ class ChapterConfigModal extends Modal {
 			this.reportType = select.value as ReportType;
 			if (!this.title) {
 				const meta = REPORT_METADATA[this.reportType];
-				this.title = meta?.label || this.reportType;
+				this.title = meta?.name || this.reportType;
 			}
 		});
 

@@ -894,5 +894,6 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
 	paths: true,
 	journeys: false,  // Off by default (can be visually busy with many people)
 	heatMap: false,
-	places: false     // Off by default (shows all places regardless of person events)
+	places: false,    // Off by default (shows all places regardless of person events)
+	childMaps: false  // Off by default (child-map markers)
 };
