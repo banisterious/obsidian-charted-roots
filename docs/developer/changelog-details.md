@@ -4,6 +4,8 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.68 Release Cohort](#v02268-release-cohort-2026-06-10)
+- [v0.22.67 Release Cohort](#v02267-release-cohort-2026-06-09)
 - [v0.22.66 Release Cohort](#v02266-release-cohort-2026-06-08)
 - [Version 0.10.x - 0.11.x Summary](#version-010x---011x-summary-2025-12)
 - [Re-Layout Canvas Command](#re-layout-canvas-command-2025-11-21)
@@ -19,6 +21,41 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.68 Release Cohort (2026-06-10)
+
+A feature cohort centred on Organizations, with a timeline enhancement and an Obsidian 1.13.1 fix alongside. Notable implementation work:
+
+**Configurable timeline place-context depth (#705).** The v0.22.66 place-context helper appended only the immediate parent; it now walks up the place hierarchy a configurable number of levels. The per-row depth is an integer where a positive number counts ancestor levels and `0` means "full hierarchy" up to the root place, resolved to the actual ancestor count at render time so it never collides with the formatter's own depth-0 contract (a bare leaf with no ancestors). Driven by a new global setting `timelinePlaceContextDepth` (default 1) and a per-block `place_context: <number>` / `place_context: full` override. Long place strings wrap to the next line so deep hierarchies don't overflow the block.
+
+**Inline organization creation (#710).** The organization dropdown in the Add membership modal gains a **+ New organization** option that creates the organization on the spot, mirroring the existing "+ New" options in the place and person modals. Continues the membership-flow work from #700.
+
+**Person name-part fields (#709).** The Add / Edit Person modal gains optional **Name prefix**, **Name suffix**, and **Surname prefix** inputs mapping to the `name_prefix` / `name_suffix` / `surname_prefix` properties used for GEDCOM round-trip — previously settable only by hand or via import.
+
+**Orphan-organization adoption (#708).** The Organizations tab now lists organization names that are referenced but have no note under **Orphan organizations**, each with a **Create note** button (plus **Create all**), mirroring the Orphan universe values feature. New pure helpers live in `src/organizations/orphan-organizations.ts`. Because org references are wikilinks resolved by basename, creating the note relinks every existing reference automatically; adoption additionally backfills `membership_org_ids` onto the person notes that referenced the organization.
+
+**Settings tab blank on Obsidian 1.13.1 (fix).** The settings tab hosts its interface through a `getSettingDefinitions` render callback that relied on an undocumented second container argument Obsidian 1.13.1 stopped passing, so the tab came up empty. It now renders into the documented `setting.settingEl`. The classic `display()` path (Obsidian 1.13.0 and earlier) is unchanged.
+
+**Files created:** `src/organizations/orphan-organizations.ts`. Suite total 1420 across 122 suites.
+
+---
+
+## v0.22.67 Release Cohort (2026-06-09)
+
+A small reporter-driven patch alongside a codebase-wide type-checking pass. Notable implementation work:
+
+**Highlight dimming opacity fix (#670).** The v0.22.66 highlight change dimmed non-matching cards by lowering their opacity, which let the full-brightness connector lines behind them show through. Dimmed cards now stay fully opaque and are dimmed with a filter instead, so the links behind them are hidden again.
+
+**Custom relationship category labels (#707).** In the relationships filter's "By category" dropdown, a user-created relationship category rendered as a blank (but functional) entry because the label came only from the built-in category list. Custom category names now resolve in both the Relationships pane and the Control Center Relationships tab.
+
+**Type-check pass and CI gate.** The TypeScript codebase is now fully type-checked with zero errors, and `npm run type-check` (`tsc -noEmit -skipLibCheck`) gates CI as of #704. The sweep surfaced and fixed two latent bugs:
+
+- **"Find related research" recognizes the open person note (#704).** The command ran from a person note didn't detect the active note as a person, so it always fell through to the person-picker prompt; it now uses the active note when it is a person.
+- **GEDCOM-X export count (#704).** The completion notice always read "0 people exported" because it counted from the wrong object; the exported file was already complete. The notice now reports the actual people and relationships written.
+
+Suite total 1397 across 121 suites.
 
 ---
 

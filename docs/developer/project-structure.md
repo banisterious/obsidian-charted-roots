@@ -350,6 +350,8 @@ charted-roots/
 | `add-membership-modal.ts` | ✅ Complete | Modal for adding memberships to people |
 | `organization-type-editor-modal.ts` | ✅ Complete | Modal for editing organization types |
 | `organization-type-manager-card.ts` | ✅ Complete | Organization type management card |
+| **Helpers** | | |
+| `orphan-organizations.ts` | ✅ Complete | Pure helpers for orphan-organization detection and adoption (referenced names with no note; #708) |
 
 ### Relationships Module (src/relationships/)
 

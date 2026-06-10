@@ -4,6 +4,9 @@ This document records architectural decisions (ADRs) for Charted Roots.
 
 ## Table of Contents
 
+- [Settings Tab Render Host on Obsidian 1.13.1](#settings-tab-render-host-on-obsidian-1131-2026-06-10)
+- [Place-Context Depth Sentinel](#place-context-depth-sentinel-2026-06-10)
+- [Orphan-Organization Adoption](#orphan-organization-adoption-2026-06-10)
 - [Timeline Place Context and Shared Life-Events Parser](#timeline-place-context-and-shared-life-events-parser-2026-06-08)
 - [Vitest Regression-Test Discipline](#vitest-regression-test-discipline-2026-04-21)
 - [PDF Library and Font Strategy](#pdf-library-and-font-strategy-2025-12-19)
@@ -12,6 +15,52 @@ This document records architectural decisions (ADRs) for Charted Roots.
 - [Switch to family-chart Library](#switch-to-family-chart-library-2025-11-20)
 - [Layout Engine Extraction](#layout-engine-extraction-2025-11-20)
 - [Canvas-Only Mode Removal](#canvas-only-mode-removal-2025-11-20)
+
+---
+
+## Settings Tab Render Host on Obsidian 1.13.1 (2026-06-10)
+
+**Decision:** When hosting the settings interface from inside a `getSettingDefinitions` render callback, mount into the documented `setting.settingEl`, not the second container argument that older Obsidian versions passed.
+
+**Context:**
+
+The settings tab renders its interface through the declarative `getSettingDefinitions` API (Obsidian 1.13.0+), with the classic `display()` override retained for earlier versions. The render callback had been hosting the tab content via an undocumented second argument (the setting group's `listEl`). Obsidian 1.13.1 stopped passing that argument, so the callback received `undefined` and the entire settings tab came up blank on that version.
+
+**Decision points:**
+
+- **Mount into the documented `setting.settingEl`.** The render callback's `setting` argument exposes `settingEl`, which is the documented, stable host element. Switching the mount target there restores the tab on 1.13.1 and does not depend on undocumented behaviour.
+- **Leave the classic path alone.** The `display()` path used by Obsidian 1.13.0 and earlier is unchanged; only the `getSettingDefinitions` render host moved.
+
+---
+
+## Place-Context Depth Sentinel (2026-06-10)
+
+**Decision:** Represent timeline place-context depth as an integer where a positive value counts ancestor levels and `0` means "full hierarchy," resolving `0` to the actual ancestor count at render time so it never collides with the place formatter's own depth-0 contract.
+
+**Context:**
+
+[#705](https://github.com/banisterious/obsidian-charted-roots/issues/705) extended the v0.22.66 place-context feature, which appended only the immediate parent, to a configurable number of ancestor levels — including an option to show the full chain up to the root place.
+
+**Decision points:**
+
+- **One integer field, with `0` as a "full" sentinel.** Rather than a separate boolean for "full," the depth is a single integer: 1 (default) appends the immediate parent, N appends N levels, and `0` (or the `place_context: full` block alias) means the complete hierarchy. Keeps the setting and per-block override to one value.
+- **Resolve the sentinel before formatting, not inside the formatter.** The place formatter (`qualifyPlaceWithAncestors`) already assigns its own meaning to a depth of 0 — a bare leaf with no ancestors appended. To avoid that collision, the `0`-means-full sentinel is resolved to the place's actual ancestor count at render time, then the concrete count is handed to the formatter. The formatter's depth-0 contract is left untouched.
+
+---
+
+## Orphan-Organization Adoption (2026-06-10)
+
+**Decision:** Mirror the orphan-universe adoption pattern for organizations, but resolve references by wikilink basename and additionally backfill `membership_org_ids` onto referencing person notes when a note is created.
+
+**Context:**
+
+[#708](https://github.com/banisterious/obsidian-charted-roots/issues/708) asked for organization names that are referenced (for example typed into an event's Organizations field) but have no note to surface in the Organizations tab with a one-click "Create note," matching the existing Orphan universe values feature.
+
+**Decision points:**
+
+- **Reuse the orphan-universe shape.** Detection and adoption follow the same pattern: a pure module (`src/organizations/orphan-organizations.ts`) enumerates referenced-but-noteless names, and the Organizations tab renders them with **Create note** / **Create all** buttons.
+- **References are wikilinks resolved by basename.** Unlike universe values, organization references are wikilinks. Because Obsidian resolves a wikilink by basename, simply creating the note at the referenced name relinks every existing reference automatically — no rewrite pass over the referencing notes is needed for the links themselves.
+- **Backfill `membership_org_ids` on adoption.** Adoption does one thing the link resolution does not: it writes the new organization's id into `membership_org_ids` on the person notes that referenced it, so membership data is consistent with the freshly created organization rather than only the textual link.
 
 ---
 
