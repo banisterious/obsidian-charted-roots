@@ -215,8 +215,12 @@ export function renderPlaceTimelineCard(
 
 	// Handle calendar filter selection
 	if (calendarSelect) {
-		calendarSelect.addEventListener('change', () => {
-			selectedCalendar = calendarSelect!.value || null;
+		// Capture the narrowed (non-null) select so the change-handler closure
+		// stays type-safe without a non-null assertion (a `let` loses its
+		// narrowing across the closure boundary).
+		const sel = calendarSelect;
+		sel.addEventListener('change', () => {
+			selectedCalendar = sel.value || null;
 			updateTimeline();
 		});
 	}

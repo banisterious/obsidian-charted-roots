@@ -12,6 +12,9 @@ import { OrganizationService } from '../services/organization-service';
 import { MembershipService } from '../services/membership-service';
 import { RoleSuggest } from './role-suggest';
 
+/** Sentinel dropdown value for the "create a new organization" option (#710). */
+const NEW_ORGANIZATION_VALUE = '__new_organization__';
+
 /**
  * Modal for adding a membership to a person
  */
@@ -67,16 +70,7 @@ export class AddMembershipModal extends Modal {
 			cancelBtn.addEventListener('click', () => this.close());
 
 			const createBtn = buttonContainer.createEl('button', { text: 'Create organization', cls: 'mod-cta' });
-			createBtn.addEventListener('click', () => {
-				this.close();
-				void (async () => {
-					const { CreateOrganizationModal } = await import('./create-organization-modal');
-					new CreateOrganizationModal(this.app, this.plugin, () => {
-						// Re-open this modal after creating org
-						new AddMembershipModal(this.app, this.plugin, this.personFile, this.onSuccess).open();
-					}).open();
-				})();
-			});
+			createBtn.addEventListener('click', () => this.openCreateOrganization());
 
 			return;
 		}
@@ -89,7 +83,14 @@ export class AddMembershipModal extends Modal {
 				for (const org of orgs.sort((a, b) => a.name.localeCompare(b.name))) {
 					dropdown.addOption(org.crId, org.name);
 				}
+				// Inline org creation without leaving the modal (#710), matching the
+				// "+ New" options in the place / person modals.
+				dropdown.addOption(NEW_ORGANIZATION_VALUE, '+ New organization');
 				dropdown.onChange(value => {
+					if (value === NEW_ORGANIZATION_VALUE) {
+						this.openCreateOrganization();
+						return;
+					}
 					this.selectedOrg = orgs.find(o => o.crId === value) || null;
 					// Attach role suggest with the selected org's roles
 					if (roleTextComponent && this.selectedOrg) {
@@ -159,6 +160,22 @@ export class AddMembershipModal extends Modal {
 	onClose() {
 		const { contentEl } = this;
 		contentEl.empty();
+	}
+
+	/**
+	 * Close this modal, open the Create organization modal, and re-open the
+	 * membership modal once the org is created so it appears in the dropdown
+	 * (#710). Shared by the empty-state button and the "+ New organization"
+	 * dropdown option.
+	 */
+	private openCreateOrganization(): void {
+		this.close();
+		void (async () => {
+			const { CreateOrganizationModal } = await import('./create-organization-modal');
+			new CreateOrganizationModal(this.app, this.plugin, () => {
+				new AddMembershipModal(this.app, this.plugin, this.personFile, this.onSuccess).open();
+			}).open();
+		})();
 	}
 
 	private async addMembership(): Promise<void> {

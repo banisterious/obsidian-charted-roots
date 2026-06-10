@@ -1,5 +1,5 @@
 import { App, Notice, normalizePath, PluginSettingTab, Setting, TFolder, TextComponent, AbstractInputSuggest, setIcon } from 'obsidian';
-import type { SettingDefinitionItem, SettingDefinitionRender, SettingGroup } from 'obsidian';
+import type { SettingDefinitionItem, SettingDefinitionRender } from 'obsidian';
 import CanvasRootsPlugin from '../main';
 import type { LogLevel } from './core/logging';
 import type { RelationshipTypeDefinition } from './relationships';
@@ -442,6 +442,8 @@ export interface CanvasRootsSettings {
 	timelineLayout: 'chronological' | 'grouped' | 'personal-first';
 	/** Append the immediate parent location to timeline places ("London, England"); per-block place_context overrides */
 	timelineShowPlaceContext: boolean;
+	/** How many ancestor levels to append when place context is shown (1 = immediate parent; 0 = full hierarchy); per-block place_context can override */
+	timelinePlaceContextDepth: number;
 	/** Default timeline template note (wikilink path) */
 	defaultTimelineTemplate: string;
 	// Timeline label customization
@@ -932,6 +934,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	contextLifespanMargin: 0,                 // 0 = no filtering (show all context events)
 	timelineLayout: 'chronological',          // Default: all events interleaved by date
 	timelineShowPlaceContext: false,          // Off by default (don't change existing timeline output)
+	timelinePlaceContextDepth: 1,             // Immediate parent only (0 = full hierarchy)
 	defaultTimelineTemplate: '',              // No default template
 	timelineBirthLabel: 'Born',
 	timelineDeathLabel: 'Died',
@@ -1002,23 +1005,30 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const hosted: SettingDefinitionRender = {
 			name: '',
 			searchable: false,
-			render: (_setting: Setting, group: SettingGroup) => {
-				// SettingGroup.listEl is a 1.11.0+ API; this callback only runs on
-				// 1.13.0+ (where getSettingDefinitions() is consulted), so the access
-				// is always safe — the cast keeps the version-aware linter quiet.
-				const listEl = (group as { listEl: HTMLElement }).listEl;
+			render: (setting: Setting) => {
+				// Host the imperative collapsible/searchable tab inside this render
+				// def's row. Obsidian 1.13.0 also passed a SettingGroup with a
+				// `.listEl` as a second arg and we rendered into that, but 1.13.1 no
+				// longer provides it for a top-level render def — the access threw
+				// (swallowed by the framework) and the whole tab rendered blank.
+				// Use only the documented `setting` param: strip the default
+				// `.setting-item` row chrome and host our UI in its element.
+				const rowEl = setting.settingEl;
+				rowEl.removeClass('setting-item');
+				rowEl.addClass('cr-settings-host-row');
+				rowEl.empty();
 				// The framework re-runs render defs on every settings change to
 				// re-evaluate predicates. Our hosted UI manages its own refreshes
 				// (refreshSettings), so on a framework re-render reuse the already
 				// built host — moving the live node preserves open sections, scroll,
 				// and focus instead of tearing the whole tab down on each interaction.
 				if (this.hostEl && this.hostEl.childElementCount > 0) {
-					listEl.appendChild(this.hostEl);
+					rowEl.appendChild(this.hostEl);
 					return;
 				}
 				// Render into a dedicated child so refreshSettings() can clear only
 				// our content, never the framework's own scaffolding.
-				const host = listEl.createDiv({ cls: 'cr-settings-host' });
+				const host = rowEl.createDiv({ cls: 'cr-settings-host' });
 				this.hostEl = host;
 				this.rerender(host);
 			},
@@ -1648,11 +1658,24 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 
 		new Setting(timelineContent)
 			.setName('Show place context')
-			.setDesc('Append the immediate parent location to timeline places, so "London" reads "London, England". The parent comes from the place note hierarchy (parent_place). Override per block with place_context: true / false.')
+			.setDesc('Append parent locations to timeline places, so "London" reads "London, England". Parents come from the place note hierarchy (parent_place). Override per block with place_context: true / false / a number / full.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings.timelineShowPlaceContext)
 				.onChange(async (value) => {
 					this.plugin.settings.timelineShowPlaceContext = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(timelineContent)
+			.setName('Place context depth')
+			.setDesc('How many parent levels to append when place context is on. 1 = immediate parent only; 0 = full hierarchy up to the root place. Override per block with place_context: <number> or place_context: full.')
+			.addText(text => text
+				.setPlaceholder('1')
+				.setValue(String(this.plugin.settings.timelinePlaceContextDepth ?? 1))
+				.onChange(async (value) => {
+					const parsed = parseInt(value, 10);
+					// 0 = full; clamp invalid/negative input back to the default depth of 1.
+					this.plugin.settings.timelinePlaceContextDepth = Number.isFinite(parsed) && parsed >= 0 ? parsed : 1;
 					await this.plugin.saveSettings();
 				}));
 

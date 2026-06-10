@@ -12,6 +12,24 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.68] - 2026-06-10
+
+A feature release centred on Organizations, with a timeline enhancement and an Obsidian 1.13.1 fix alongside. You can now create an organization inline from the Manage memberships modal and adopt orphaned organizations — names referenced by events or people that never got a note — from the Control Center, bringing Organizations to parity with Universes. The Person modal gains optional name-prefix, name-suffix, and surname-particle fields, and the Dynamic Timeline Block's place context becomes depth-configurable, up to the full location hierarchy. The settings tab, which rendered blank on Obsidian 1.13.1, is also restored. **1420 tests passing across 122 suites.**
+
+### Added
+
+- **Timeline place context can show the full location hierarchy** ([#705](https://github.com/banisterious/obsidian-charted-roots/issues/705)): The place-context feature (v0.22.66) appended only the immediate parent, so "London, England" still left "Essex, Essex Co." ambiguous. You can now choose how many parent levels to append — set **Place context depth** under Settings → Timeline → Event display (1 = immediate parent, the default; 0 = full hierarchy up to the root place), or override per block with `place_context: <number>` or `place_context: full`. Long places wrap to the next line so deep hierarchies don't overflow the block. Requested by [@tenephor](https://github.com/tenephor), with the depth-selector and line-wrap suggestions from [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Create an organization from the Manage memberships modal** ([#710](https://github.com/banisterious/obsidian-charted-roots/issues/710)): The organization dropdown in the Add membership modal now offers a **+ New organization** option, so you can create an organization on the spot instead of cancelling out to the Control Center and back. Mirrors the "+ New" options in the place and person modals, and continues [#700](https://github.com/banisterious/obsidian-charted-roots/issues/700). Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Name prefix, suffix, and surname-particle fields in the Person modal** ([#709](https://github.com/banisterious/obsidian-charted-roots/issues/709)): The Add / Edit Person modal now has optional **Name prefix** (Dr., Rev.), **Name suffix** (Jr., III), and **Surname prefix** (von, de la) inputs, next to the existing Given name and Surname(s) fields. They map to the `name_prefix` / `name_suffix` / `surname_prefix` properties used for GEDCOM round-trip — previously these could only be set by hand or populated by an import. Stemmed from discussion [#706](https://github.com/banisterious/obsidian-charted-roots/discussions/706) ([@Vericia](https://github.com/Vericia)).
+
+- **Adopt orphaned organizations from the Control Center** ([#708](https://github.com/banisterious/obsidian-charted-roots/issues/708)): When you reference an organization that has no note yet — for example by typing one into an event's Organizations field — it becomes an unlinked wikilink that doesn't appear in the Organizations tab. That tab now lists these under **Orphan organizations**, each with a **Create note** button (plus **Create all**). Creating the note links up every existing reference and backfills the new organization's id onto the person notes that referenced it. Mirrors the Orphan universe values feature, bringing the two to parity. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Fixed
+
+- **Settings tab no longer renders blank on Obsidian 1.13.1**: The settings tab hosts its interface through a setting-definition render callback that relied on a container argument Obsidian 1.13.1 stopped providing, so the whole tab came up empty on that version. It now renders into the documented setting element. Obsidian 1.13.0 and earlier (which use the classic settings path) are unchanged.
+
 ## [0.22.67] - 2026-06-09
 
 A small reporter-driven patch alongside a codebase-wide type-checking pass. Family Chart highlight dimming no longer lets the connector lines show through dimmed cards, and the relationships filter now labels user-created relationship categories instead of leaving them blank. Under the hood, the TypeScript codebase is now fully type-checked with zero errors and the type-check gates CI — a sweep that also turned up and fixed two latent bugs in the "Find related research" command and the GEDCOM-X export's reported count. **1397 tests passing across 121 suites.**

@@ -1645,6 +1645,10 @@ function renderPersonTableRow(
 				surnames: Array.isArray(fm.surnames) ? fm.surnames : (fm.surnames ? [fm.surnames] : undefined),
 				maidenName: fm.maiden_name,
 				marriedNames: Array.isArray(fm.married_names) ? fm.married_names : (fm.married_names ? [fm.married_names] : undefined),
+				// Name parts (#709)
+				namePrefix: fm.name_prefix,
+				nameSuffix: fm.name_suffix,
+				surnamePrefix: fm.surname_prefix,
 				// Other
 				cr_living: typeof fm.cr_living === 'boolean' ? fm.cr_living : (fm.cr_living === 'true' ? true : (fm.cr_living === 'false' ? false : undefined)),
 				born: person.birthDate,

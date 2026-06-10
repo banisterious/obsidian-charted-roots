@@ -144,3 +144,49 @@ describe('updatePersonNote — burial date (#682)', () => {
 		expect(frontmatterOf(app, file).burial_date).toBe('19 BBY');
 	});
 });
+
+describe('updatePersonNote — name parts (#709)', () => {
+	it('writes a provided name prefix, suffix, and surname prefix', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, {
+			namePrefix: 'Dr.',
+			nameSuffix: 'Jr.',
+			surnamePrefix: 'von',
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		expect(fm.name_prefix).toBe('Dr.');
+		expect(fm.name_suffix).toBe('Jr.');
+		expect(fm.surname_prefix).toBe('von');
+	});
+
+	it('removes name parts when cleared with empty strings', async () => {
+		const app = new App();
+		const file = seedPerson(app, {
+			cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker',
+			name_prefix: 'Dr.', name_suffix: 'Jr.', surname_prefix: 'von',
+		});
+
+		await updatePersonNote(app, file, {
+			namePrefix: '',
+			nameSuffix: '',
+			surnamePrefix: '',
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		expect('name_prefix' in fm).toBe(false);
+		expect('name_suffix' in fm).toBe(false);
+		expect('surname_prefix' in fm).toBe(false);
+	});
+
+	it('leaves existing name parts untouched when not provided (undefined)', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker', name_prefix: 'Dr.' });
+
+		await updatePersonNote(app, file, { name: 'Anakin Skywalker' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).name_prefix).toBe('Dr.');
+	});
+});

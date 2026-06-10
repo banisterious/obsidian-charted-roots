@@ -15,7 +15,7 @@ import type { EventType } from '../../maps/types/map-types';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
-import { qualifyPlaceWithAncestors } from './place-context';
+import { qualifyPlaceWithAncestors, resolvePlaceContext } from './place-context';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -693,20 +693,29 @@ export class TimelineRenderer {
 	}
 
 	/**
-	 * Append the immediate parent location to each entry's place so a leaf
-	 * like "London" reads "London, England" (#701). The parent is resolved
-	 * through the place graph (parent_place links); entries whose place doesn't
-	 * match a place note, or whose place has no parent, are left untouched.
+	 * Append ancestor locations to each entry's place so a leaf like "London"
+	 * reads "London, England" (#701), or up the full hierarchy ("Lars Homestead,
+	 * Tatooine, Tatoo System, Arkanis sector, Outer Rim Territories") at a deeper
+	 * depth (#705). Ancestors are resolved through the place graph (parent_place
+	 * links); entries whose place doesn't match a place note, or whose place has
+	 * no ancestors, are left untouched.
 	 *
-	 * A per-block `place_context: true | false` overrides the global
-	 * `timelineShowPlaceContext` setting; when neither enables it this is a
-	 * no-op and the place graph is never built.
+	 * Depth is configurable: the global `timelinePlaceContextDepth` setting
+	 * (default 1; 0 = full hierarchy) sets the level, and a per-block
+	 * `place_context` override wins — a boolean toggles it, a number sets the
+	 * depth, and `0` / `"full"` requests the whole chain. When neither enables it
+	 * this is a no-op and the place graph is never built.
 	 */
 	private applyPlaceContext(entries: TimelineEntry[], config: DynamicBlockConfig): void {
-		const override = config.place_context;
-		const enabled = typeof override === 'boolean'
-			? override
-			: (this.service.getSettings().timelineShowPlaceContext ?? false);
+		const settings = this.service.getSettings();
+		const rawOverride = config.place_context;
+		// place_context is a scalar; ignore an accidental list value.
+		const override = Array.isArray(rawOverride) ? undefined : rawOverride;
+		const { enabled, depth } = resolvePlaceContext(
+			override,
+			settings.timelineShowPlaceContext ?? false,
+			settings.timelinePlaceContextDepth ?? 1
+		);
 		if (!enabled) return;
 
 		const placeGraph = this.service.getPlaceGraphService();
@@ -716,7 +725,9 @@ export class TimelineRenderer {
 			if (!node) continue;
 			const ancestorNames = placeGraph.getAncestors(node.id).map(a => a.name);
 			if (ancestorNames.length === 0) continue;
-			entry.place = qualifyPlaceWithAncestors(entry.place, ancestorNames, 1);
+			// depth 0 is the "full" sentinel → walk the whole ancestor chain.
+			const effectiveDepth = depth === 0 ? ancestorNames.length : depth;
+			entry.place = qualifyPlaceWithAncestors(entry.place, ancestorNames, effectiveDepth);
 		}
 	}
 

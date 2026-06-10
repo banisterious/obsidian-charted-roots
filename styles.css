@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-09 17:45:09 UTC
+ * - Generated: 2026-06-10 18:21:31 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -550,9 +550,26 @@ settings:
    COMPONENT: SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 131 lines, 3.53 KB */
+/* Component Size: 148 lines, 4.03 KB */
 
 /* Settings interface styling */
+
+/* ==========================================================================
+   Settings host (Obsidian 1.13.0+ getSettingDefinitions framework)
+   The imperative tab is hosted inside one framework render-def row; neutralize
+   the default .setting-item flex chrome so it spans the full tab width.
+   ========================================================================== */
+
+.cr-settings-host-row {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+}
+
+.cr-settings-host {
+  width: 100%;
+}
 
 /* ==========================================================================
    Collapsible Settings Sections
@@ -38323,7 +38340,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: DYNAMIC-CONTENT.CSS
    ========================================================================== */
 
-/* Component Size: 1217 lines, 26.68 KB */
+/* Component Size: 1223 lines, 26.99 KB */
 
 /**
  * Dynamic Content Styles
@@ -38477,6 +38494,12 @@ body.cr-media-linker-active .suggestion-container {
 .cr-timeline__place {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
+
+  /* The row (.cr-timeline__item) is flex-wrap: wrap, so a long place already
+     flows onto the next line. Allow it to break within itself too, so a deep
+     full-hierarchy place ("Lars Homestead, Tatooine, ...") wraps cleanly
+     instead of overflowing the block horizontally (#705). */
+  overflow-wrap: anywhere;
 }
 
 /* Age annotation */
@@ -41184,18 +41207,18 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-09 17:45:10 UTC
+ * Build completed: 2026-06-10 18:21:32 UTC
  * Components processed: 50
- * Total lines: 40715
- * Total size: 835.73 KB
- * Build duration: 1.73 seconds
+ * Total lines: 40738
+ * Total size: 836.54 KB
+ * Build duration: 0.3 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
  * - style-settings.css: 291 lines, 7.1 KB
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
- * - settings.css: 131 lines, 3.53 KB
+ * - settings.css: 148 lines, 4.03 KB
  * - control-center.css: 5693 lines, 106.94 KB
  * - entity-create-modals.css: 1234 lines, 25.46 KB
  * - place-modals.css: 1261 lines, 25.46 KB
@@ -41236,7 +41259,7 @@ body.cr-media-linker-active .suggestion-container {
  * - map-wizard.css: 606 lines, 12.67 KB
  * - preferences.css: 426 lines, 9.36 KB
  * - tree-output.css: 1523 lines, 29.97 KB
- * - dynamic-content.css: 1217 lines, 26.68 KB
+ * - dynamic-content.css: 1223 lines, 26.99 KB
  * - profile-view.css: 1143 lines, 25.74 KB
  * - calendar-view.css: 302 lines, 6.83 KB
  * - migration-notice.css: 135 lines, 2.66 KB

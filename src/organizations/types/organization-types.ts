@@ -22,6 +22,23 @@ export type OrganizationType =
 	| 'custom';
 
 /**
+ * An organization name referenced by entities but with no matching
+ * organization note (#708). Surfaced in the Control Center so the user can
+ * create the note ("adopt" it) and relink references.
+ */
+export interface OrphanOrganization {
+	/** The referenced organization name (wikilink target / display name). */
+	name: string;
+	/** Number of entities referencing it. */
+	entityCount: number;
+	/** Breakdown by referencing entity type. */
+	byType: {
+		people: number;
+		events: number;
+	};
+}
+
+/**
  * Definition for an organization type
  */
 export interface OrganizationTypeDefinition {
