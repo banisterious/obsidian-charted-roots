@@ -18,6 +18,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 - **Create an organization from the Manage memberships modal** ([#710](https://github.com/banisterious/obsidian-charted-roots/issues/710)): The organization dropdown in the Add membership modal now offers a **+ New organization** option, so you can create an organization on the spot instead of cancelling out to the Control Center and back. Mirrors the "+ New" options in the place and person modals, and continues [#700](https://github.com/banisterious/obsidian-charted-roots/issues/700). Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
+- **Adopt orphaned organizations from the Control Center** ([#708](https://github.com/banisterious/obsidian-charted-roots/issues/708)): When you reference an organization that has no note yet — for example by typing one into an event's Organizations field — it becomes an unlinked wikilink that doesn't appear in the Organizations tab. That tab now lists these under **Orphan organizations**, each with a **Create note** button (plus **Create all**). Creating the note links up every existing reference and backfills the new organization's id onto the person notes that referenced it. Mirrors the Orphan universe values feature, bringing the two to parity. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Fixed
 
 - **Settings tab no longer renders blank on Obsidian 1.13.1**: The settings tab hosts its interface through a setting-definition render callback that relied on a container argument Obsidian 1.13.1 stopped providing, so the whole tab came up empty on that version. It now renders into the documented setting element. Obsidian 1.13.0 and earlier (which use the classic settings path) are unchanged.

@@ -5,7 +5,7 @@
  * organizations list, statistics, and hierarchy.
  */
 
-import { Menu, setIcon, Setting, TFile } from 'obsidian';
+import { Menu, Notice, setIcon, Setting, TFile } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import { openManageMediaModal } from '../../plugin/context-menu-helpers';
 import type { LucideIconName } from '../../ui/lucide-icons';
@@ -62,6 +62,9 @@ export function renderOrganizationsTab(
 	// Organizations List card
 	renderOrganizationsListCard(container, plugin, orgService, membershipService, createCard, showTab);
 
+	// Orphan organizations card (referenced but no note) — #708
+	renderOrphanOrganizationsCard(container, orgService, createCard, showTab);
+
 	// Statistics card
 	renderOrganizationStatsCard(container, plugin, orgService, membershipService, createCard, closeModal);
 
@@ -72,6 +75,80 @@ export function renderOrganizationsTab(
 
 	// Data tools card
 	renderDataToolsCard(container, plugin, createCard);
+}
+
+/**
+ * Render the orphan-organizations card: names referenced by entities with no
+ * matching organization note (#708). Each can be "adopted" — create the note
+ * and backfill its cr_id onto the person notes that referenced it. Hidden when
+ * there are no orphans.
+ */
+function renderOrphanOrganizationsCard(
+	container: HTMLElement,
+	orgService: OrganizationService,
+	createCard: (options: { title: string; icon?: LucideIconName }) => HTMLElement,
+	showTab: (tabId: string) => void
+): void {
+	const orphans = orgService.findOrphanOrganizations();
+	if (orphans.length === 0) return;
+
+	const card = createCard({ title: 'Orphan organizations', icon: 'alert-triangle' });
+	const content = card.querySelector('.crc-card__content') as HTMLElement;
+
+	content.createEl('p', {
+		text: 'These organizations are referenced by events or people but have no organization note. Create the note to manage them; existing references link up automatically.',
+		cls: 'crc-text-muted crc-mb-3'
+	});
+
+	const adopt = (name: string): void => {
+		void (async () => {
+			try {
+				const { backfilledCount } = await orgService.adoptOrphanOrganization(name);
+				new Notice(backfilledCount > 0
+					? `Created organization "${name}" and linked ${backfilledCount} person note${backfilledCount === 1 ? '' : 's'}.`
+					: `Created organization "${name}".`);
+				showTab('organizations');
+			} catch (err) {
+				new Notice(`Failed to create organization: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		})();
+	};
+
+	orphans.forEach(orphan => {
+		const row = content.createDiv({ cls: 'crc-flex crc-justify-between crc-items-center crc-mb-2' });
+		row.createSpan({ text: `"${orphan.name}"`, cls: 'crc-code' });
+		row.createSpan({
+			text: `${orphan.entityCount} reference${orphan.entityCount === 1 ? '' : 's'}`,
+			cls: 'crc-text-muted'
+		});
+		const createBtn = row.createEl('button', { text: 'Create note', cls: 'crc-btn crc-btn--small' });
+		createBtn.addEventListener('click', () => adopt(orphan.name));
+	});
+
+	if (orphans.length > 1) {
+		const createAllBtn = content.createEl('button', {
+			text: 'Create all',
+			cls: 'crc-btn crc-btn--secondary crc-mt-3'
+		});
+		createAllBtn.addEventListener('click', () => {
+			void (async () => {
+				let created = 0;
+				let failed = 0;
+				for (const orphan of orphans) {
+					try {
+						await orgService.adoptOrphanOrganization(orphan.name);
+						created++;
+					} catch {
+						failed++;
+					}
+				}
+				new Notice(`Created ${created} organization note${created === 1 ? '' : 's'}${failed > 0 ? ` (${failed} failed)` : ''}.`);
+				showTab('organizations');
+			})();
+		});
+	}
+
+	container.appendChild(card);
 }
 
 /**

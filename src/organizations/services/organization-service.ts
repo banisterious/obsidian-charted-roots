@@ -12,8 +12,10 @@ import type {
 	OrganizationInfo,
 	OrganizationType,
 	OrganizationStats,
-	OrganizationHierarchyNode
+	OrganizationHierarchyNode,
+	OrphanOrganization
 } from '../types/organization-types';
+import { collectOrgReferenceNames, computeOrgIdBackfill } from '../orphan-organizations';
 import { isValidOrganizationType, getOrganizationType } from '../constants/organization-type-defaults';
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
@@ -290,6 +292,91 @@ export class OrganizationService {
 	/**
 	 * Create a new organization note
 	 */
+	/**
+	 * Find orphan organizations — names referenced by entities (event
+	 * `organizations`, person `membership_orgs` / legacy membership fields) that
+	 * have no matching organization note (#708). References are wikilinks
+	 * resolved by basename, so "known" is matched against each org note's
+	 * basename and name (case-insensitive). Returned most-referenced first.
+	 */
+	findOrphanOrganizations(): OrphanOrganization[] {
+		this.ensureCacheLoaded();
+
+		const known = new Set<string>();
+		for (const org of this.organizationCache.values()) {
+			known.add(org.file.basename.toLowerCase());
+			known.add(org.name.toLowerCase());
+		}
+
+		const orphans = new Map<string, OrphanOrganization>();
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
+			if (!fm) continue;
+			const refNames = collectOrgReferenceNames(fm);
+			if (refNames.length === 0) continue;
+
+			const crType = typeof fm.cr_type === 'string' ? fm.cr_type : '';
+			const bucket = crType === 'person' ? 'people' : crType === 'event' ? 'events' : null;
+
+			for (const name of refNames) {
+				const key = name.toLowerCase();
+				if (known.has(key)) continue;
+				let orphan = orphans.get(key);
+				if (!orphan) {
+					orphan = { name, entityCount: 0, byType: { people: 0, events: 0 } };
+					orphans.set(key, orphan);
+				}
+				orphan.entityCount++;
+				if (bucket) orphan.byType[bucket]++;
+			}
+		}
+
+		return Array.from(orphans.values()).sort((a, b) => b.entityCount - a.entityCount);
+	}
+
+	/**
+	 * Adopt an orphan organization: create the organization note, then backfill
+	 * its new cr_id into the `membership_org_ids` of every person note that
+	 * referenced it by name in `membership_orgs` (#708). Event references and
+	 * legacy singular fields carry no id slot — their wikilinks resolve by
+	 * basename the moment the note exists, so they need no rewrite. Returns the
+	 * created file and how many person notes were backfilled.
+	 */
+	async adoptOrphanOrganization(orphanName: string): Promise<{ file: TFile; backfilledCount: number }> {
+		const file = await this.createOrganization(orphanName, 'custom');
+		// Wait for the metadata cache to catch up, then rebuild so the new org is
+		// resolvable and we can read its generated cr_id.
+		await this.reloadCache([file]);
+		const newCrId = this.getOrganizationByFile(file)?.crId
+			?? this.app.metadataCache.getFileCache(file)?.frontmatter?.cr_id;
+
+		let backfilledCount = 0;
+		if (typeof newCrId === 'string' && newCrId) {
+			backfilledCount = await this.backfillMembershipOrgIds(orphanName, newCrId);
+		}
+		return { file, backfilledCount };
+	}
+
+	/**
+	 * Set `newCrId` on each person note whose `membership_orgs` references
+	 * `orphanName` but whose aligned `membership_org_ids` slot is empty. Returns
+	 * the number of notes changed.
+	 */
+	private async backfillMembershipOrgIds(orphanName: string, newCrId: string): Promise<number> {
+		let count = 0;
+		for (const file of this.app.vault.getMarkdownFiles()) {
+			const fm = this.app.metadataCache.getFileCache(file)?.frontmatter;
+			if (!fm || fm.cr_type !== 'person') continue;
+			const updated = computeOrgIdBackfill(fm.membership_orgs, fm.membership_org_ids, orphanName, newCrId);
+			if (!updated) continue;
+			await this.app.fileManager.processFrontMatter(file, (f: Record<string, unknown>) => {
+				f.membership_org_ids = updated;
+			});
+			count++;
+		}
+		return count;
+	}
+
 	async createOrganization(
 		name: string,
 		orgType: OrganizationType,
