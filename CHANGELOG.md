@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Timeline place context can show the full location hierarchy** ([#705](https://github.com/banisterious/obsidian-charted-roots/issues/705)): The place-context feature (v0.22.66) appended only the immediate parent, so "London, England" still left "Essex, Essex Co." ambiguous. You can now choose how many parent levels to append — set **Place context depth** under Settings → Timeline → Event display (1 = immediate parent, the default; 0 = full hierarchy up to the root place), or override per block with `place_context: <number>` or `place_context: full`. Long places wrap to the next line so deep hierarchies don't overflow the block. Requested by [@tenephor](https://github.com/tenephor), with the depth-selector and line-wrap suggestions from [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.67] - 2026-06-09
 
 A small reporter-driven patch alongside a codebase-wide type-checking pass. Family Chart highlight dimming no longer lets the connector lines show through dimmed cards, and the relationships filter now labels user-created relationship categories instead of leaving them blank. Under the hood, the TypeScript codebase is now fully type-checked with zero errors and the type-check gates CI — a sweep that also turned up and fixed two latent bugs in the "Find related research" command and the GEDCOM-X export's reported count. **1397 tests passing across 121 suites.**

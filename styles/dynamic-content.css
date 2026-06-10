@@ -150,6 +150,12 @@
 .cr-timeline__place {
   color: var(--text-muted);
   font-size: var(--font-ui-smaller);
+
+  /* The row (.cr-timeline__item) is flex-wrap: wrap, so a long place already
+     flows onto the next line. Allow it to break within itself too, so a deep
+     full-hierarchy place ("Lars Homestead, Tatooine, ...") wraps cleanly
+     instead of overflowing the block horizontally (#705). */
+  overflow-wrap: anywhere;
 }
 
 /* Age annotation */
