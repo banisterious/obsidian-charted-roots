@@ -229,6 +229,10 @@ export function openEditPersonModal(plugin: CanvasRootsPlugin, file: TFile): voi
 			surnames: Array.isArray(fm.surnames) ? fm.surnames : (fm.surnames ? [fm.surnames] : undefined),
 			maidenName: fm.maiden_name,
 			marriedNames: Array.isArray(fm.married_names) ? fm.married_names : (fm.married_names ? [fm.married_names] : undefined),
+			// Name parts (#709)
+			namePrefix: fm.name_prefix,
+			nameSuffix: fm.name_suffix,
+			surnamePrefix: fm.surname_prefix,
 			// Dates and places
 			born: fm.born,
 			died: fm.died,

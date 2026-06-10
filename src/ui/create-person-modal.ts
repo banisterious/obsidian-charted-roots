@@ -124,6 +124,10 @@ export class CreatePersonModal extends Modal {
 				surnames?: string[];
 				maidenName?: string;
 				marriedNames?: string[];
+				// Name parts (#709)
+				namePrefix?: string;
+				nameSuffix?: string;
+				surnamePrefix?: string;
 				// Dates and places
 				born?: string;
 				died?: string;
@@ -231,6 +235,10 @@ export class CreatePersonModal extends Modal {
 				surnames: ep.surnames,
 				maidenName: ep.maidenName,
 				marriedNames: ep.marriedNames,
+				// Name parts (#709)
+				namePrefix: ep.namePrefix,
+				nameSuffix: ep.nameSuffix,
+				surnamePrefix: ep.surnamePrefix,
 				// Dates and places
 				birthDate: ep.born,
 				deathDate: ep.died,
@@ -460,6 +468,39 @@ export class CreatePersonModal extends Modal {
 					} else {
 						this.personData.surnames = undefined;
 					}
+				}));
+
+		// Name parts (optional) — prefix / suffix / surname particle. Also
+		// populated by GEDCOM import; written to name_prefix / name_suffix /
+		// surname_prefix (#709).
+		new Setting(form)
+			.setName('Name prefix')
+			.setDesc('Title or honorific (e.g., Dr., Rev., Dame)')
+			.addText(text => text
+				.setPlaceholder('e.g., Dr.')
+				.setValue(this.personData.namePrefix || '')
+				.onChange(value => {
+					this.personData.namePrefix = value || undefined;
+				}));
+
+		new Setting(form)
+			.setName('Name suffix')
+			.setDesc('Generational suffix (e.g., Jr., III, V)')
+			.addText(text => text
+				.setPlaceholder('e.g., Jr.')
+				.setValue(this.personData.nameSuffix || '')
+				.onChange(value => {
+					this.personData.nameSuffix = value || undefined;
+				}));
+
+		new Setting(form)
+			.setName('Surname prefix')
+			.setDesc('Surname particle (e.g., von, de la)')
+			.addText(text => text
+				.setPlaceholder('e.g., von')
+				.setValue(this.personData.surnamePrefix || '')
+				.onChange(value => {
+					this.personData.surnamePrefix = value || undefined;
 				}));
 
 		// Maiden/married names - only show in edit mode
@@ -3046,6 +3087,10 @@ export class CreatePersonModal extends Modal {
 				surnames: this.personData.surnames,
 				maidenName: this.personData.maidenName ?? '',
 				marriedNames: this.personData.marriedNames,
+				// Name parts (#709)
+				namePrefix: this.personData.namePrefix ?? '',
+				nameSuffix: this.personData.nameSuffix ?? '',
+				surnamePrefix: this.personData.surnamePrefix ?? '',
 				// DNA tracking fields
 				dnaSharedCm: this.personData.dnaSharedCm,
 				dnaTestingCompany: this.personData.dnaTestingCompany ?? '',

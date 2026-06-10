@@ -1655,6 +1655,27 @@ export async function updatePersonNote(
 				delete frontmatter.married_names;
 			}
 		}
+		if (person.namePrefix !== undefined) {
+			if (person.namePrefix) {
+				frontmatter.name_prefix = person.namePrefix;
+			} else {
+				delete frontmatter.name_prefix;
+			}
+		}
+		if (person.nameSuffix !== undefined) {
+			if (person.nameSuffix) {
+				frontmatter.name_suffix = person.nameSuffix;
+			} else {
+				delete frontmatter.name_suffix;
+			}
+		}
+		if (person.surnamePrefix !== undefined) {
+			if (person.surnamePrefix) {
+				frontmatter.surname_prefix = person.surnamePrefix;
+			} else {
+				delete frontmatter.surname_prefix;
+			}
+		}
 		if (person.occupation !== undefined) {
 			if (person.occupation) {
 				frontmatter.occupation = person.occupation;
