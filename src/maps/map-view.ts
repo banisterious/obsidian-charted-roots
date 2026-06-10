@@ -1782,6 +1782,11 @@ export class MapView extends ItemView {
 		}
 
 		if (target) {
+			// `target` is non-null here, but as a `let` it loses that narrowing
+			// inside the deferred popup closure below; capture it in a const so the
+			// closure stays type-safe without a non-null assertion.
+			const targetLatLng = target;
+
 			// Preserve the user's current zoom level when stepping between
 			// waypoints. The hardcoded zoom 12 was causing a jolting zoom-in on
 			// every step regardless of how the user had framed the journey:
@@ -1798,7 +1803,7 @@ export class MapView extends ItemView {
 			window.setTimeout(() => {
 				const popupContent = this.buildRichWaypointPopup(waypoint, allWaypoints, journey);
 				L.popup({ maxWidth: 300, className: 'cr-journey-rich-popup' })
-					.setLatLng(target!)
+					.setLatLng(targetLatLng)
 					.setContent(popupContent)
 					.openOn(map);
 			}, JOURNEY_FLY_MS);
