@@ -1,6 +1,23 @@
 /* Settings interface styling */
 
 /* ==========================================================================
+   Settings host (Obsidian 1.13.0+ getSettingDefinitions framework)
+   The imperative tab is hosted inside one framework render-def row; neutralize
+   the default .setting-item flex chrome so it spans the full tab width.
+   ========================================================================== */
+
+.cr-settings-host-row {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+}
+
+.cr-settings-host {
+  width: 100%;
+}
+
+/* ==========================================================================
    Collapsible Settings Sections
    ========================================================================== */
 

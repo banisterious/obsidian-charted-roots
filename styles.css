@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-10 17:41:38 UTC
+ * - Generated: 2026-06-10 18:21:31 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -550,9 +550,26 @@ settings:
    COMPONENT: SETTINGS.CSS
    ========================================================================== */
 
-/* Component Size: 131 lines, 3.53 KB */
+/* Component Size: 148 lines, 4.03 KB */
 
 /* Settings interface styling */
+
+/* ==========================================================================
+   Settings host (Obsidian 1.13.0+ getSettingDefinitions framework)
+   The imperative tab is hosted inside one framework render-def row; neutralize
+   the default .setting-item flex chrome so it spans the full tab width.
+   ========================================================================== */
+
+.cr-settings-host-row {
+  display: block;
+  width: 100%;
+  border: none;
+  padding: 0;
+}
+
+.cr-settings-host {
+  width: 100%;
+}
 
 /* ==========================================================================
    Collapsible Settings Sections
@@ -41190,18 +41207,18 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-10 17:41:39 UTC
+ * Build completed: 2026-06-10 18:21:32 UTC
  * Components processed: 50
- * Total lines: 40721
- * Total size: 836.04 KB
- * Build duration: 0.29 seconds
+ * Total lines: 40738
+ * Total size: 836.54 KB
+ * Build duration: 0.3 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
  * - style-settings.css: 291 lines, 7.1 KB
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
- * - settings.css: 131 lines, 3.53 KB
+ * - settings.css: 148 lines, 4.03 KB
  * - control-center.css: 5693 lines, 106.94 KB
  * - entity-create-modals.css: 1234 lines, 25.46 KB
  * - place-modals.css: 1261 lines, 25.46 KB

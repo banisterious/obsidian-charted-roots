@@ -1,5 +1,5 @@
 import { App, Notice, normalizePath, PluginSettingTab, Setting, TFolder, TextComponent, AbstractInputSuggest, setIcon } from 'obsidian';
-import type { SettingDefinitionItem, SettingDefinitionRender, SettingGroup } from 'obsidian';
+import type { SettingDefinitionItem, SettingDefinitionRender } from 'obsidian';
 import CanvasRootsPlugin from '../main';
 import type { LogLevel } from './core/logging';
 import type { RelationshipTypeDefinition } from './relationships';
@@ -1005,23 +1005,30 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		const hosted: SettingDefinitionRender = {
 			name: '',
 			searchable: false,
-			render: (_setting: Setting, group: SettingGroup) => {
-				// SettingGroup.listEl is a 1.11.0+ API; this callback only runs on
-				// 1.13.0+ (where getSettingDefinitions() is consulted), so the access
-				// is always safe — the cast keeps the version-aware linter quiet.
-				const listEl = (group as { listEl: HTMLElement }).listEl;
+			render: (setting: Setting) => {
+				// Host the imperative collapsible/searchable tab inside this render
+				// def's row. Obsidian 1.13.0 also passed a SettingGroup with a
+				// `.listEl` as a second arg and we rendered into that, but 1.13.1 no
+				// longer provides it for a top-level render def — the access threw
+				// (swallowed by the framework) and the whole tab rendered blank.
+				// Use only the documented `setting` param: strip the default
+				// `.setting-item` row chrome and host our UI in its element.
+				const rowEl = setting.settingEl;
+				rowEl.removeClass('setting-item');
+				rowEl.addClass('cr-settings-host-row');
+				rowEl.empty();
 				// The framework re-runs render defs on every settings change to
 				// re-evaluate predicates. Our hosted UI manages its own refreshes
 				// (refreshSettings), so on a framework re-render reuse the already
 				// built host — moving the live node preserves open sections, scroll,
 				// and focus instead of tearing the whole tab down on each interaction.
 				if (this.hostEl && this.hostEl.childElementCount > 0) {
-					listEl.appendChild(this.hostEl);
+					rowEl.appendChild(this.hostEl);
 					return;
 				}
 				// Render into a dedicated child so refreshSettings() can clear only
 				// our content, never the framework's own scaffolding.
-				const host = listEl.createDiv({ cls: 'cr-settings-host' });
+				const host = rowEl.createDiv({ cls: 'cr-settings-host' });
 				this.hostEl = host;
 				this.rerender(host);
 			},
