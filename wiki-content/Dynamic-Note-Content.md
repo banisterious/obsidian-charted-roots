@@ -70,7 +70,7 @@ sort: chronological
 | `title` | string | Custom header text (default: "Timeline") |
 | `context` | `[[Note]]`, `none` | Historical context note to overlay (see below) |
 | `contextMargin` | number | Only show context events within N years of the person's lifespan (overrides global setting) |
-| `place_context` | `true`, `false` | Append each place's parent location, e.g. "London, England" instead of "London" (overrides the global **Show place context** setting). The parent comes from the place note hierarchy (`parent_place`); places that are not place notes, or have no parent, are left unchanged |
+| `place_context` | `true`, `false`, number, `full` | Append each place's parent location, e.g. "London, England" instead of "London" (overrides the global **Show place context** setting). A number sets how many parent levels to append (`place_context: 2`); `full` appends the entire hierarchy up to the root place; `true` uses the global **Place context depth**. The parent comes from the place note hierarchy (`parent_place`); places that are not place notes, or have no parent, are left unchanged. Long place strings wrap to the next line |
 | `familyEvents` | `none` | Suppress family member events on this timeline (overrides global toggles) |
 | `layout` | `chronological`, `grouped`, `personal-first` | How events are arranged (see [Layout modes](#timeline-layout-modes)) |
 | `format` | format string | Custom display format with placeholders (see [Format strings](#timeline-format-strings)) |

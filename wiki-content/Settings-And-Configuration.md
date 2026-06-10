@@ -433,6 +433,7 @@ Settings for the Events & Timelines feature.
 | **Events folder** | `Charted Roots/Events` | Default folder for new event notes |
 | **Event type display** | Icon with label | How event types appear on timelines, canvas event nodes, and maps: **Icon with label**, **Icon (with tooltip)**, or **Text label** |
 | **Show place context** | Off | Append each place's parent location to timeline entries, so "Born in London" reads "Born in London, England". The parent comes from the place note hierarchy (`parent_place`). Override per block with `place_context: true` / `place_context: false`. |
+| **Place context depth** | 1 | How many parent levels to append when place context is shown. `1` appends the immediate parent only (default); `0` appends the full hierarchy up to the root place; any `N` appends that many levels. Override per block with a number (`place_context: 2`) or `place_context: full`. Long place strings wrap to the next line. |
 | **Show built-in event types** | On | Include 22 built-in event types |
 | **Custom event types** | *(empty)* | User-defined event types |
 

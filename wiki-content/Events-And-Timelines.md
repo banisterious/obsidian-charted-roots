@@ -246,6 +246,8 @@ Burial renders alongside death when `burial_date` is set, so a person's timeline
 
 **Place context:** by default a timeline entry shows only the leaf place name (`Born in London`). Enable place context to append the place's parent location from your place note hierarchy (`Born in London, England`), which disambiguates places that share a name. Turn it on globally under Settings > Events & timelines > Event display > **Show place context**, or per block with `place_context: true`. See [Dynamic Note Content → Timeline block](Dynamic-Note-Content#timeline-block) for the block option.
 
+How many levels of ancestry are appended is configurable with the **Place context depth** setting (Settings > Events & timelines > Event display, next to **Show place context**): `1` appends the immediate parent only (the default), `0` appends the full hierarchy up to the root place, and any `N` appends that many parent levels. A block can override the global depth with a number (`place_context: 2`) or `place_context: full` for the complete hierarchy, in addition to `place_context: true` / `false`. Long place strings wrap to the next line so deep hierarchies don't overflow the block.
+
 ### Family-member events from frontmatter
 
 Events belonging to relatives can also surface on a person's timeline, toggled individually in **Settings → Advanced → Family events on timelines**:

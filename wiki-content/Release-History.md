@@ -9,6 +9,8 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.68 Round-Up: Organization Workflow Improvements, Configurable Place Context, and an Obsidian 1.13.1 Settings Fix](#v02268-round-up-organization-workflow-improvements-configurable-place-context-and-an-obsidian-1131-settings-fix-v02268)
+  - [v0.22.67 Round-Up: Highlight-Line Fix, Relationship-Filter Labels, and a Fully Type-Checked Codebase](#v02267-round-up-highlight-line-fix-relationship-filter-labels-and-a-fully-type-checked-codebase-v02267)
   - [v0.22.66 Round-Up: Personal Events and Place Context on Timelines, plus a Living-Status Control](#v02266-round-up-personal-events-and-place-context-on-timelines-plus-a-living-status-control-v02266)
   - [v0.22.65 Round-Up: Fictional-Calendar Timelines, Consistent Event Icons, and Reciprocal Child Links](#v02265-round-up-fictional-calendar-timelines-consistent-event-icons-and-reciprocal-child-links-v02265)
   - [v0.22.64 Round-Up: Family Chart Focus Indicator, Per-Move Migration Routes, and GEDCOM Place Consolidation](#v02264-round-up-family-chart-focus-indicator-per-move-migration-routes-and-gedcom-place-consolidation-v02264)
@@ -198,6 +200,36 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.68 Round-Up: Organization Workflow Improvements, Configurable Place Context, and an Obsidian 1.13.1 Settings Fix (v0.22.68)
+
+A feature release centred on Organizations, with a timeline enhancement and an Obsidian 1.13.1 fix alongside. You can now create an organization inline from the Manage memberships modal and adopt orphaned organizations — names referenced by events or people that never got a note — from the Control Center, bringing Organizations to parity with Universes. The Person modal gains optional name-prefix, name-suffix, and surname-particle fields, and the Dynamic Timeline Block's place context becomes depth-configurable, up to the full location hierarchy. The settings tab, which rendered blank on Obsidian 1.13.1, is also restored. **1420 tests passing across 122 suites**.
+
+**Added: Timeline place context can show the full location hierarchy** ([#705](https://github.com/banisterious/obsidian-charted-roots/issues/705)): The place-context feature from v0.22.66 appended only the immediate parent, so "London, England" still left "Essex, Essex Co." ambiguous. You can now choose how many parent levels to append — set "Place context depth" under Settings > Events & timelines > Event display (1 = immediate parent, the default; 0 = full hierarchy up to the root place), or override per block with `place_context: <number>` or `place_context: full`. Long places wrap to the next line so deep hierarchies don't overflow the block. Requested by [@tenephor](https://github.com/tenephor), with the depth-selector and line-wrap suggestions from [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Added: Create an organization from the Manage memberships modal** ([#710](https://github.com/banisterious/obsidian-charted-roots/issues/710)): The organization dropdown in the Add membership modal now offers a "+ New organization" option, so you can create an organization on the spot instead of cancelling out to the Control Center and back. Mirrors the "+ New" options in the place and person modals, and continues [#700](https://github.com/banisterious/obsidian-charted-roots/issues/700). Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Added: Name prefix, suffix, and surname-particle fields in the Person modal** ([#709](https://github.com/banisterious/obsidian-charted-roots/issues/709)): The Add / Edit Person modal now has optional "Name prefix" (Dr., Rev.), "Name suffix" (Jr., III), and "Surname prefix" (von, de la) inputs, next to the existing given name and surname(s) fields. They map to the `name_prefix` / `name_suffix` / `surname_prefix` properties used for GEDCOM round-trip — previously these could only be set by hand or populated by an import. Stemmed from discussion [#706](https://github.com/banisterious/obsidian-charted-roots/discussions/706) ([@Vericia](https://github.com/Vericia)).
+
+**Added: Adopt orphaned organizations from the Control Center** ([#708](https://github.com/banisterious/obsidian-charted-roots/issues/708)): When you reference an organization that has no note yet — for example by typing one into an event's Organizations field — it becomes an unlinked wikilink that doesn't appear in the Organizations tab. That tab now lists these under "Orphan organizations", each with a "Create note" button (plus "Create all"). Creating the note links up every existing reference and backfills the new organization's id onto the person notes that referenced it. Mirrors the Orphan universe values feature, bringing the two to parity. Requested by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Settings tab no longer renders blank on Obsidian 1.13.1**: The settings tab hosts its interface through a setting-definition render callback that relied on a container argument Obsidian 1.13.1 stopped providing, so the whole tab came up empty on that version. It now renders into the documented setting element. Obsidian 1.13.0 and earlier (which use the classic settings path) are unchanged.
+
+**Stability-window impact:** v0.22.68's changes are a settings fix plus additive items (configurable timeline place-context depth, inline organization creation, the Person-modal name-part fields, and orphan-organization adoption), all within the v0.22.59 stability window, so the window holds at its v0.22.59 anchor (2026-06-02).
+
+### v0.22.67 Round-Up: Highlight-Line Fix, Relationship-Filter Labels, and a Fully Type-Checked Codebase (v0.22.67)
+
+A small reporter-driven patch alongside a codebase-wide type-checking pass. Family Chart highlight dimming no longer lets the connector lines show through dimmed cards, and the relationships filter now labels user-created relationship categories instead of leaving them blank. Under the hood, the TypeScript codebase is now fully type-checked with zero errors and the type-check gates CI — a sweep that also turned up and fixed two latent bugs in the "Find related research" command and the GEDCOM-X export's reported count. **1397 tests passing across 121 suites**.
+
+**Fix: Highlight dimming no longer shows connector lines through dimmed cards** ([#670](https://github.com/banisterious/obsidian-charted-roots/issues/670)): The previous fix dimmed non-matching cards by making them translucent, so the full-brightness connector lines behind them showed through. Dimmed cards now stay fully opaque (dimmed with a filter rather than reduced opacity), so the links behind them are hidden again. Follows up the v0.22.66 highlight-dimming change. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Custom relationship categories are labelled in the relationships filter** ([#707](https://github.com/banisterious/obsidian-charted-roots/issues/707)): In the relationships filter's "By category" dropdown, a relationship category you created yourself appeared as a blank entry — clickable and functional, but with no name — because the label came from the built-in category list only. Custom category names now resolve correctly, in both the Relationships pane and the Control Center Relationships tab. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: "Find related research" recognizes the open person note** ([#704](https://github.com/banisterious/obsidian-charted-roots/issues/704)): Running the "Find related research" command while viewing a person note didn't detect the note as a person, so it always fell through to the person-picker prompt instead of using the note you were already on. It now uses the active note when it is a person.
+
+**Fix: GEDCOM-X export reports the correct exported count** ([#704](https://github.com/banisterious/obsidian-charted-roots/issues/704)): The completion notice for a GEDCOM-X export always read "0 people exported" (and zero relationships) because it counted from the wrong object; the exported file itself was complete and correct. The notice now reports the actual number of people and relationships written.
+
+**Stability-window impact:** v0.22.67's changes are all bug fixes (the highlight-line dimming, the relationship-filter labels, and the two type-check sweep fixes), with no breaking changes — the full type-checking pass is an internal quality milestone — all within the v0.22.59 stability window, so the window holds at its v0.22.59 anchor (2026-06-02).
 
 ### v0.22.66 Round-Up: Personal Events and Place Context on Timelines, plus a Living-Status Control (v0.22.66)
 

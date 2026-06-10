@@ -146,7 +146,7 @@ memberships:
 #### Via Add Relationship Modal
 
 The Add Membership modal provides:
-- Organization dropdown (sorted alphabetically)
+- Organization dropdown (sorted alphabetically), including a **+ New organization** option that lets you create an organization without leaving the modal
 - Role field with clickable role chips below the input showing the organization's defined roles (click a chip to fill the input). Freeform entry is also supported for roles not in the predefined list.
 - From/To date fields (support fictional date formats)
 - Notes field for additional context
@@ -181,6 +181,12 @@ The Control Center includes a dedicated **Organizations** tab with:
 - Color swatches and icons
 - Toggle to show/hide built-in types
 - Default role templates per type (auto-populated when creating new organizations)
+
+### Orphan Organizations Card
+
+Lists organization names that are referenced but have no organization note yet, gathered from events (the `organizations` field) and from person memberships. This mirrors the [Orphan Universe Strings card](Universe-Notes#orphan-universe-strings-card) for universes and helps you spot organizations that should be created.
+
+Each orphan has a **Create note** button (and a **Create all** button to handle the whole list at once). Creating the note links up the existing references automatically and backfills the new organization's `cr_id` onto the person notes that referenced it.
 
 ### Data Tools Card
 - Create organizations base template button
