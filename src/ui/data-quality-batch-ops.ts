@@ -14,6 +14,7 @@ import type { BidirectionalInconsistency, ImpossibleDateIssue } from '../core/da
 import { getErrorMessage } from '../core/error-utils';
 import { AddPersonTypePreviewModal } from './add-person-type-modal';
 import { pluralize } from '../utils/format-utils';
+import { isMalformedWikilink, normalizePersonNameCasing } from './data-quality-value-checks';
 import {
 	DuplicateRelationshipsPreviewModal,
 	PlaceholderRemovalPreviewModal,
@@ -252,8 +253,10 @@ export function previewRemovePlaceholders(plugin: CanvasRootsPlugin, app: App, s
 			const trimmed = value.trim();
 			if (trimmed === '') return false;
 			if (placeholderPatterns.includes(trimmed)) return true;
-			// Check for malformed wikilinks like "[[unknown) ]]"
-			if (/^\[\[.*?\)\s*\]\]$/.test(trimmed)) return true;
+			// Check for malformed wikilinks like "[[unknown) ]]" (stray closing
+			// paren). A balanced parenthetical such as "[[Jon Smith (son of
+			// Robert)]]" is a valid disambiguator, not a placeholder (#715).
+			if (isMalformedWikilink(trimmed)) return true;
 			// Check for strings that are just commas and spaces
 			if (/^[,\s]+$/.test(trimmed)) return true;
 		}
@@ -415,8 +418,10 @@ export async function removePlaceholders(plugin: CanvasRootsPlugin, app: App, sh
 			const trimmed = value.trim();
 			if (trimmed === '') return false;
 			if (placeholderPatterns.includes(trimmed)) return true;
-			// Check for malformed wikilinks like "[[unknown) ]]"
-			if (/^\[\[.*?\)\s*\]\]$/.test(trimmed)) return true;
+			// Check for malformed wikilinks like "[[unknown) ]]" (stray closing
+			// paren). A balanced parenthetical such as "[[Jon Smith (son of
+			// Robert)]]" is a valid disambiguator, not a placeholder (#715).
+			if (isMalformedWikilink(trimmed)) return true;
 			// Check for strings that are just commas and spaces
 			if (/^[,\s]+$/.test(trimmed)) return true;
 		}
@@ -630,92 +635,7 @@ export function previewNormalizeNames(plugin: CanvasRootsPlugin, app: App, showT
 	/**
 	 * Normalize a name to proper Title Case with smart handling of prefixes
 	 */
-	const normalizeName = (name: string): string | null => {
-		if (!name || typeof name !== 'string') return null;
-
-		// Trim and collapse multiple spaces
-		const cleaned = name.trim().replace(/\s+/g, ' ');
-		if (!cleaned) return null;
-
-		// Helper function to normalize a single word/segment
-		const normalizeWord = (word: string, isFirstWord: boolean): string => {
-			if (!word) return word;
-
-			const lowerWord = word.toLowerCase();
-
-			// Preserve initials (A., B., A.B., H.G., etc.)
-			// Matches patterns like "A.", "A.B.", "H.G.", etc.
-			if (/^([a-z]\.)+$/i.test(word)) {
-				return word.toUpperCase();
-			}
-
-			// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
-			if (/^[ivx]+$/i.test(word)) {
-				return word.toUpperCase();
-			}
-
-			// Common surname prefixes that should stay lowercase (unless at start)
-			const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
-			if (!isFirstWord && lowercasePrefixes.includes(lowerWord)) {
-				return lowerWord;
-			}
-
-			// Handle Mac prefix (but not "Mack" as a standalone name)
-			// Only apply if there are at least 2 more letters after "Mac"
-			if (lowerWord.startsWith('mac') && word.length > 5) {
-				return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
-			}
-
-			// Handle Mc prefix
-			if (lowerWord.startsWith('mc') && word.length > 2) {
-				return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-			}
-
-			// Handle O' prefix
-			if (lowerWord.startsWith("o'") && word.length > 2) {
-				return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-			}
-
-			// Handle hyphenated names (Abdul-Aziz, Mary-Jane, etc.)
-			if (word.includes('-')) {
-				return word.split('-')
-					.map(part => normalizeWord(part, false))
-					.join('-');
-			}
-
-			// Standard title case
-			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-		};
-
-		// Split by spaces to get words
-		const words = cleaned.split(' ');
-		const normalized = words.map((word, index) => {
-			// Handle parentheses - preserve content inside and apply title case
-			if (word.startsWith('(') && word.endsWith(')')) {
-				const inner = word.slice(1, -1);
-				return '(' + normalizeWord(inner, false) + ')';
-			}
-
-			// Handle opening parenthesis
-			if (word.startsWith('(')) {
-				const inner = word.slice(1);
-				return '(' + normalizeWord(inner, index === 0);
-			}
-
-			// Handle closing parenthesis
-			if (word.endsWith(')')) {
-				const inner = word.slice(0, -1);
-				return normalizeWord(inner, false) + ')';
-			}
-
-			return normalizeWord(word, index === 0);
-		});
-
-		const result = normalized.join(' ');
-
-		// Only return if it's different from the input
-		return result !== cleaned ? result : null;
-	};
+	const normalizeName = normalizePersonNameCasing;
 
 	for (const person of people) {
 		const cache = app.metadataCache.getFileCache(person.file);
@@ -768,92 +688,7 @@ export async function normalizeNames(plugin: CanvasRootsPlugin, app: App, showTa
 	/**
 	 * Normalize a name to proper Title Case with smart handling of prefixes
 	 */
-	const normalizeName = (name: string): string | null => {
-		if (!name || typeof name !== 'string') return null;
-
-		// Trim and collapse multiple spaces
-		const cleaned = name.trim().replace(/\s+/g, ' ');
-		if (!cleaned) return null;
-
-		// Helper function to normalize a single word/segment
-		const normalizeWord = (word: string, isFirstWord: boolean): string => {
-			if (!word) return word;
-
-			const lowerWord = word.toLowerCase();
-
-			// Preserve initials (A., B., A.B., H.G., etc.)
-			// Matches patterns like "A.", "A.B.", "H.G.", etc.
-			if (/^([a-z]\.)+$/i.test(word)) {
-				return word.toUpperCase();
-			}
-
-			// Preserve Roman numerals (I, II, III, IV, V, VI, VII, VIII, IX, X, etc.)
-			if (/^[ivx]+$/i.test(word)) {
-				return word.toUpperCase();
-			}
-
-			// Common surname prefixes that should stay lowercase (unless at start)
-			const lowercasePrefixes = ['van', 'von', 'de', 'del', 'della', 'di', 'da', 'le', 'la', 'den', 'der', 'ten', 'ter', 'du'];
-			if (!isFirstWord && lowercasePrefixes.includes(lowerWord)) {
-				return lowerWord;
-			}
-
-			// Handle Mac prefix (but not "Mack" as a standalone name)
-			// Only apply if there are at least 2 more letters after "Mac"
-			if (lowerWord.startsWith('mac') && word.length > 5) {
-				return 'Mac' + word.charAt(3).toUpperCase() + word.slice(4).toLowerCase();
-			}
-
-			// Handle Mc prefix
-			if (lowerWord.startsWith('mc') && word.length > 2) {
-				return 'Mc' + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-			}
-
-			// Handle O' prefix
-			if (lowerWord.startsWith("o'") && word.length > 2) {
-				return "O'" + word.charAt(2).toUpperCase() + word.slice(3).toLowerCase();
-			}
-
-			// Handle hyphenated names (Abdul-Aziz, Mary-Jane, etc.)
-			if (word.includes('-')) {
-				return word.split('-')
-					.map(part => normalizeWord(part, false))
-					.join('-');
-			}
-
-			// Standard title case
-			return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-		};
-
-		// Split by spaces to get words
-		const words = cleaned.split(' ');
-		const normalized = words.map((word, index) => {
-			// Handle parentheses - preserve content inside and apply title case
-			if (word.startsWith('(') && word.endsWith(')')) {
-				const inner = word.slice(1, -1);
-				return '(' + normalizeWord(inner, false) + ')';
-			}
-
-			// Handle opening parenthesis
-			if (word.startsWith('(')) {
-				const inner = word.slice(1);
-				return '(' + normalizeWord(inner, index === 0);
-			}
-
-			// Handle closing parenthesis
-			if (word.endsWith(')')) {
-				const inner = word.slice(0, -1);
-				return normalizeWord(inner, false) + ')';
-			}
-
-			return normalizeWord(word, index === 0);
-		});
-
-		const result = normalized.join(' ');
-
-		// Only return if it's different from the input
-		return result !== cleaned ? result : null;
-	};
+	const normalizeName = normalizePersonNameCasing;
 
 	for (const person of people) {
 
