@@ -1029,6 +1029,23 @@
   margin-bottom: 16px;
 }
 
+.crc-flex {
+  display: flex;
+  gap: 8px;
+}
+
+.crc-items-center {
+  align-items: center;
+}
+
+.crc-justify-between {
+  justify-content: space-between;
+}
+
+.crc-code {
+  font-family: var(--font-monospace);
+}
+
 /* Person Picker and entity creation modals moved to entity-create-modals.css */
 
 /* ==========================================================================

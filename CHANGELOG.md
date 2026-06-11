@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Orphan organization and universe rows now lay out correctly** ([#708](https://github.com/banisterious/obsidian-charted-roots/issues/708)): The rows in the Control Center's **Orphan organizations** and **Orphan universe values** cards relied on layout classes that were never defined, so the name, reference count, and **Create note** button ran together with no spacing and the buttons didn't line up. The rows now use a proper flex layout — name and count spaced out, buttons right-aligned.
+
 - **GEDCOM import no longer silently drops common date formats** ([#716](https://github.com/banisterious/obsidian-charted-roots/issues/716)): Several widely-used date formats imported blank with no warning — full month names (`27 June 1885`), month and year (`October 1848`), qualifiers with a trailing period or synonym (`Abt. 1809`, `About 1870`, `Circa`), `DD/MM/YYYY` slash dates, and dates carrying an event label (`Bapt 18 Dec 1690`, `Buried 11 April 1758`). These now parse correctly. Dates that are genuinely ambiguous (`05/06/1990`, read as day/month), recovered from an event label, or unparseable are listed in the import preview's warnings panel so you can review them before importing, instead of disappearing. Reported by [@oliverclock](https://github.com/oliverclock).
 
 ## [0.22.68] - 2026-06-10
