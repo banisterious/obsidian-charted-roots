@@ -1,0 +1,98 @@
+0 HEAD
+1 SOUR Ancestry.com Family Trees
+2 NAME Ancestry.com Member Trees
+2 VERS 2021.07.20
+2 CORP Ancestry.com
+1 DEST GED55
+1 DATE 10 JUN 2026
+1 GEDC
+2 VERS 5.5.1
+2 FORM LINEAGE-LINKED
+1 CHAR UTF-8
+1 SUBM @SUBM1@
+0 @SUBM1@ SUBM
+1 NAME Charted Roots Test
+0 @I1@ INDI
+1 NAME Eleanor /Fairweather/
+1 SEX F
+1 BIRT
+2 DATE 27 June 1850
+2 PLAC London, England
+1 FAMS @F2@
+0 @I2@ INDI
+1 NAME Walter /Fairweather/
+1 SEX M
+1 BIRT
+2 DATE October 1848
+1 FAMS @F2@
+0 @I3@ INDI
+1 NAME Susan /Hartnell/
+1 SEX F
+1 BIRT
+2 DATE Abt. 1809
+1 FAMS @F3@
+0 @I4@ INDI
+1 NAME Josiah /Hartnell/
+1 SEX M
+1 BIRT
+2 DATE Abt. 1805
+1 DEAT
+2 DATE Bef. 26 May 1876
+1 FAMS @F3@
+0 @I5@ INDI
+1 NAME Arthur /Pemberton/
+1 SEX M
+1 BIRT
+2 DATE 19/08/1990
+1 FAMS @F4@
+0 @I6@ INDI
+1 NAME Clara /Pemberton/
+1 SEX F
+1 BIRT
+2 DATE 05/06/1990
+1 FAMS @F4@
+0 @I7@ INDI
+1 NAME Thomas /Ashford/
+1 SEX M
+1 BIRT
+2 DATE Bapt 18 Dec 1690
+1 FAMS @F1@
+0 @I8@ INDI
+1 NAME Margaret /Ashford/
+1 SEX F
+1 BIRT
+2 DATE 12 FEB 1685
+1 DEAT
+2 DATE Buried 11 April 1758
+1 FAMS @F1@
+0 @I9@ INDI
+1 NAME Edmund /Crowe/
+1 SEX M
+1 BIRT
+2 DATE sometime in the spring
+0 @I10@ INDI
+1 NAME Henry /Standard/
+1 SEX M
+1 BIRT
+2 DATE 15 MAR 1950
+0 @F1@ FAM
+1 HUSB @I7@
+1 WIFE @I8@
+1 MARR
+2 DATE Abt. 1710
+0 @F2@ FAM
+1 HUSB @I2@
+1 WIFE @I1@
+1 MARR
+2 DATE About 1870
+0 @F3@ FAM
+1 HUSB @I4@
+1 WIFE @I3@
+1 MARR
+2 DATE 12 JUN 1830
+0 @F4@ FAM
+1 HUSB @I5@
+1 WIFE @I6@
+1 MARR
+2 DATE 03/04/2015
+0 TRLR

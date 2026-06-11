@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **GEDCOM import no longer silently drops common date formats** ([#716](https://github.com/banisterious/obsidian-charted-roots/issues/716)): Several widely-used date formats imported blank with no warning — full month names (`27 June 1885`), month and year (`October 1848`), qualifiers with a trailing period or synonym (`Abt. 1809`, `About 1870`, `Circa`), `DD/MM/YYYY` slash dates, and dates carrying an event label (`Bapt 18 Dec 1690`, `Buried 11 April 1758`). These now parse correctly. Dates that are genuinely ambiguous (`05/06/1990`, read as day/month), recovered from an event label, or unparseable are listed in the import preview's warnings panel so you can review them before importing, instead of disappearing. Reported by [@oliverclock](https://github.com/oliverclock).
+
 ## [0.22.68] - 2026-06-10
 
 A feature release centred on Organizations, with a timeline enhancement and an Obsidian 1.13.1 fix alongside. You can now create an organization inline from the Manage memberships modal and adopt orphaned organizations — names referenced by events or people that never got a note — from the Control Center, bringing Organizations to parity with Universes. The Person modal gains optional name-prefix, name-suffix, and surname-particle fields, and the Dynamic Timeline Block's place context becomes depth-configurable, up to the full location hierarchy. The settings tab, which rendered blank on Obsidian 1.13.1, is also restored. **1420 tests passing across 122 suites.**

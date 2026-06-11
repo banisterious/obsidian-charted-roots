@@ -16,6 +16,7 @@
 import { App, ButtonComponent, Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
+import { collectDateWarnings } from '../gedcom/gedcom-date-warnings';
 import type { GedcomDataV2, GedcomImportOptionsV2, GedcomImportResultV2 } from '../gedcom/gedcom-types';
 import { ReferenceNumberingService, type NumberingSystem as RefNumberingSystem, type NumberingStats } from '../core/reference-numbering';
 import { PersonPickerModal, type PersonInfo } from './person-picker';
@@ -1003,6 +1004,13 @@ export class ImportWizardModal extends Modal {
 				if (parseResult.valid && parseResult.data) {
 					this.formData.parsedData = parseResult.data;
 
+					// Surface ambiguous or non-standard dates here, before import,
+					// so the user can review them in the preview (#716).
+					this.formData.parseWarnings = [
+						...this.formData.parseWarnings,
+						...collectDateWarnings(parseResult.data)
+					];
+
 					// Compute preview counts from parsed data
 					const data = parseResult.data;
 					let eventCount = 0;
@@ -1217,9 +1225,18 @@ export class ImportWizardModal extends Modal {
 							addLogEntry(`Created ${result.separateNoteFilesCreated} separate note files.`, 'success');
 						}
 
-						// Show any warnings
-						for (const warning of result.warnings.slice(0, 5)) {
+						// Show any warnings (cap the log, but never hide the count -
+						// a silent cap would defeat the point of surfacing dropped
+						// or ambiguous dates, #716).
+						const WARNING_LOG_CAP = 15;
+						for (const warning of result.warnings.slice(0, WARNING_LOG_CAP)) {
 							addLogEntry(warning, 'warning');
+						}
+						if (result.warnings.length > WARNING_LOG_CAP) {
+							addLogEntry(
+								`…and ${result.warnings.length - WARNING_LOG_CAP} more warnings (${result.warnings.length} total).`,
+								'warning'
+							);
 						}
 
 						// Auto-advance to numbering step after a short delay
