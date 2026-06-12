@@ -302,6 +302,18 @@ function compareDates(
 			if (parsedA.year !== parsedB.year) {
 				return parsedA.year - parsedB.year;
 			}
+			// Same canonical year: order by month/day when fictional dates carry
+			// sub-year precision, so e.g. two same-year era dates sort by month
+			// rather than by raw-string compare (#722). A year-precision date
+			// (no month) sorts as the start of the year.
+			const fa = parsedA.fictional;
+			const fb = parsedB.fictional;
+			if (fa && fb) {
+				const monthDiff = (fa.month ?? 0) - (fb.month ?? 0);
+				if (monthDiff !== 0) return monthDiff;
+				const dayDiff = (fa.day ?? 0) - (fb.day ?? 0);
+				if (dayDiff !== 0) return dayDiff;
+			}
 			return a.localeCompare(b);
 		}
 	}

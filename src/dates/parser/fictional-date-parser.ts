@@ -170,6 +170,22 @@ export class FictionalDateParser {
 		// suffix (`DE 1222-03`) strips but a signed/negative year (`EP -30`)
 		// is left intact — the capture preserves the year's last digit. Without
 		// the guard the strip ate the negative year itself (#655).
+		// Capture the month (and optional day) from that suffix before stripping,
+		// so sub-year precision is preserved on the parsed result for ordering
+		// instead of collapsing to the year (#722). Mirrors DATE_SUFFIX_RE so the
+		// same dates that get stripped here get their precision recorded.
+		let month: number | undefined;
+		let day: number | undefined;
+		const suffixMatch = withoutTime.match(/\d-(\d{2})(?:-(\d{2}))?$/);
+		if (suffixMatch) {
+			const m = parseInt(suffixMatch[1], 10);
+			if (m >= 1 && m <= 12) month = m;
+			if (suffixMatch[2]) {
+				const d = parseInt(suffixMatch[2], 10);
+				if (d >= 1 && d <= 31) day = d;
+			}
+		}
+
 		const DATE_SUFFIX_RE = /(\d)-\d{2}(?:-\d{2})?$/;
 		const withoutSuffix = withoutTime.replace(DATE_SUFFIX_RE, '$1').trim();
 
@@ -274,6 +290,8 @@ export class FictionalDateParser {
 				year,
 				raw: dateStr,
 				canonicalYear,
+				...(month !== undefined ? { month } : {}),
+				...(day !== undefined ? { day } : {}),
 				...(isApproximate || isDecade ? { isApproximate: true } : {})
 			}
 		};
