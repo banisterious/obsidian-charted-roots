@@ -26,6 +26,36 @@ export interface SortOrderResult {
 }
 
 /**
+ * Format cycle-event titles for a user-facing Notice — quoted, capped, with an
+ * "and N more" overflow so a long list stays readable while still naming the
+ * events involved (#721).
+ */
+export function formatCycleEvents(titles: string[], max = 5): string {
+	const shown = titles.slice(0, max).map(t => `"${t}"`).join(', ');
+	const extra = titles.length - max;
+	return extra > 0 ? `${shown}, and ${extra} more` : shown;
+}
+
+/**
+ * Add a directed edge `from -> to`, incrementing the target's in-degree only
+ * when the edge is new. The adjacency Set already dedupes the edge; counting
+ * in-degree per relationship would over-count a reciprocal before/after pair
+ * (which encodes the same edge twice) and leave the target unresolvable, so the
+ * topological sort would report a phantom cycle (#721).
+ */
+function addEdge(
+	graph: Map<string, Set<string>>,
+	inDegree: Map<string, number>,
+	from: string,
+	to: string
+): void {
+	const adj = graph.get(from);
+	if (!adj || adj.has(to)) return;
+	adj.add(to);
+	inDegree.set(to, (inDegree.get(to) || 0) + 1);
+}
+
+/**
  * Compute and update sort_order values for events based on before/after relationships.
  * Uses topological sort respecting date-based ordering first, then before/after constraints.
  *
@@ -88,9 +118,12 @@ export async function computeSortOrder(
 				const refPath = normalizeWikilink(beforeRef);
 				const targetEvent = eventByPath.get(refPath);
 				if (targetEvent) {
-					// Edge: this event -> target event (this comes before target)
-					graph.get(event.crId)!.add(targetEvent.crId);
-					inDegree.set(targetEvent.crId, (inDegree.get(targetEvent.crId) || 0) + 1);
+					// Edge: this event -> target event (this comes before target).
+					// Only count the in-degree for a NEW edge — a reciprocal pair
+					// (A before B + B after A) encodes the same edge twice, and
+					// double-counting in-degree would leave the target unresolvable
+					// and report a phantom cycle (#721).
+					addEdge(graph, inDegree, event.crId, targetEvent.crId);
 				}
 			}
 		}
@@ -102,9 +135,8 @@ export async function computeSortOrder(
 				const refPath = normalizeWikilink(afterRef);
 				const sourceEvent = eventByPath.get(refPath);
 				if (sourceEvent) {
-					// Edge: source event -> this event (source comes before this)
-					graph.get(sourceEvent.crId)!.add(event.crId);
-					inDegree.set(event.crId, (inDegree.get(event.crId) || 0) + 1);
+					// Edge: source event -> this event (source comes before this).
+					addEdge(graph, inDegree, sourceEvent.crId, event.crId);
 				}
 			}
 		}
@@ -186,7 +218,7 @@ export async function computeSortOrder(
 	}
 
 	if (result.cycleEvents.length > 0) {
-		logger.warn('computeSortOrder', `Detected cycles involving ${result.cycleEvents.length} events`);
+		logger.warn('computeSortOrder', `Detected cycles involving ${result.cycleEvents.length} event(s): ${result.cycleEvents.join(', ')}`);
 	}
 
 	// Assign sort_order values and update frontmatter

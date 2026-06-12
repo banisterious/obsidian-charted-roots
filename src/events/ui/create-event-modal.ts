@@ -12,7 +12,7 @@ import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
 import { RelationshipContext } from '../../ui/quick-create-person-modal';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { EventService } from '../services/event-service';
-import { computeSortOrder } from '../services/sort-order-service';
+import { computeSortOrder, formatCycleEvents } from '../services/sort-order-service';
 import { EventPickerModal } from './event-picker-modal';
 import { waitForCacheRefresh } from '../../utils/cache-utils';
 import {
@@ -1281,7 +1281,8 @@ export class CreateEventModal extends Modal {
 
 			if (result.cycleEvents.length > 0) {
 				new Notice(
-					`Sort order updated, but ${result.cycleEvents.length} event(s) couldn't be ordered due to before/after cycles. See the console for details.`
+					`Sort order updated, but ${result.cycleEvents.length} event(s) couldn't be ordered due to a before/after loop involving: ${formatCycleEvents(result.cycleEvents)}.`,
+					10000
 				);
 			}
 		} catch (error) {
