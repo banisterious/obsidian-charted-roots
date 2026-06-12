@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Extended name fields tucked into a collapsible "Extended name options" section** ([#717](https://github.com/banisterious/obsidian-charted-roots/issues/717)): After the name-prefix/suffix/surname-particle fields were added, the Add / Edit Person modal felt cramped and pushed the non-name options further down. Those fields — along with nickname, given name, surname(s), and (when editing) maiden and married names — now live in a collapsible **Extended name options** section, collapsed by default, leaving just the baseline **Name** field up top. Mirrors the existing "Step & adoptive parents" container. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
 ### Fixed
 
 - **Statistics Dashboard date range now counts death years** ([#714](https://github.com/banisterious/obsidian-charted-roots/issues/714)): The "Date range" line in the Entity overview anchored each person on a single year — their birth, or their death only if no birth was recorded — so death dates were dropped whenever a birth year existed. The range understated the period the collection covers and could collapse to a single point like "1900 — 1900" for someone who lived 1900–1990. It now spans the earliest and latest of all birth *and* death years, so that person reads "1900 — 1990 (90 years)". The shared analytics also feed the Control Center stats tab, reports, and collections view. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
