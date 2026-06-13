@@ -75,7 +75,6 @@ export class DuplicateDetectionModal extends Modal {
 			.addSlider(slider => slider
 				.setLimits(40, 90, 5)
 				.setValue(60)
-				.setDynamicTooltip()
 				.onChange(value => {
 					this.options.minConfidence = value;
 				})
@@ -88,7 +87,6 @@ export class DuplicateDetectionModal extends Modal {
 			.addSlider(slider => slider
 				.setLimits(50, 95, 5)
 				.setValue(70)
-				.setDynamicTooltip()
 				.onChange(value => {
 					this.options.minNameSimilarity = value;
 				})
@@ -101,7 +99,6 @@ export class DuplicateDetectionModal extends Modal {
 			.addSlider(slider => slider
 				.setLimits(1, 20, 1)
 				.setValue(5)
-				.setDynamicTooltip()
 				.onChange(value => {
 					this.options.maxYearDifference = value;
 				})

@@ -1422,7 +1422,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.addSlider(slider => slider
 				.setLimits(100, 500, 25)
 				.setValue(this.plugin.settings.defaultNodeWidth)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.defaultNodeWidth = value;
 					await this.plugin.saveSettings();
@@ -1434,7 +1433,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.addSlider(slider => slider
 				.setLimits(50, 300, 25)
 				.setValue(this.plugin.settings.defaultNodeHeight)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.defaultNodeHeight = value;
 					await this.plugin.saveSettings();
@@ -1449,7 +1447,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.addSlider(slider => slider
 				.setLimits(100, 1000, 50)
 				.setValue(this.plugin.settings.horizontalSpacing)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.horizontalSpacing = value;
 					await this.plugin.saveSettings();
@@ -1461,7 +1458,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 			.addSlider(slider => slider
 				.setLimits(100, 1000, 50)
 				.setValue(this.plugin.settings.verticalSpacing)
-				.setDynamicTooltip()
 				.onChange(async (value) => {
 					this.plugin.settings.verticalSpacing = value;
 					await this.plugin.saveSettings();

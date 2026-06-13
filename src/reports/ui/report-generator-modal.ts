@@ -930,7 +930,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(2, 10, 1)
 					.setValue(this.ahnentafelOptions.maxGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.ahnentafelOptions.maxGenerations = value;
 					});
@@ -1006,7 +1005,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(10, 200, 10)
 					.setValue(this.gapsReportOptions.maxItemsPerCategory)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.gapsReportOptions.maxItemsPerCategory = value;
 					});
@@ -1068,7 +1066,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(2, 10, 1)
 					.setValue(this.registerReportOptions.maxGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.registerReportOptions.maxGenerations = value;
 					});
@@ -1108,7 +1105,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(2, 10, 1)
 					.setValue(this.pedigreeChartOptions.maxGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.pedigreeChartOptions.maxGenerations = value;
 					});
@@ -1138,7 +1134,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(2, 10, 1)
 					.setValue(this.descendantChartOptions.maxGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.descendantChartOptions.maxGenerations = value;
 					});
@@ -1427,7 +1422,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(5, 50, 5)
 					.setValue(this.universeOverviewOptions.maxEntitiesPerType)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.universeOverviewOptions.maxEntitiesPerType = value;
 					});
@@ -1535,7 +1529,6 @@ export class ReportGeneratorModal extends Modal {
 				slider
 					.setLimits(10, 200, 10)
 					.setValue(this.collectionOverviewOptions.maxMembers)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.collectionOverviewOptions.maxMembers = value;
 					});

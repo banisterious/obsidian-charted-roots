@@ -1113,7 +1113,6 @@ function renderExportCard(
 		.addSlider(slider => slider
 			.setLimits(10, 32, 2)
 			.setValue(excalidrawFontSize)
-			.setDynamicTooltip()
 			.onChange(value => { excalidrawFontSize = value; }));
 
 	// Stroke width
@@ -1123,7 +1122,6 @@ function renderExportCard(
 		.addSlider(slider => slider
 			.setLimits(1, 6, 1)
 			.setValue(excalidrawStrokeWidth)
-			.setDynamicTooltip()
 			.onChange(value => { excalidrawStrokeWidth = value; }));
 
 	// Fill style

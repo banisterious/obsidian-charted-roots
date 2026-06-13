@@ -422,7 +422,6 @@ export class SplitWizardModal extends Modal {
 				slider
 					.setLimits(2, 10, 1)
 					.setValue(this.generationsPerCanvas)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.generationsPerCanvas = value;
 					});
