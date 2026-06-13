@@ -2551,17 +2551,36 @@ export class CreatePersonModal extends Modal {
 						.setDisabled(true);
 				});
 				locationSetting.addButton(button => {
-					const icon = createLucideIcon('link', 14);
-					button.buttonEl.empty();
-					button.buttonEl.addClass('crc-btn', 'crc-btn--secondary', 'crc-btn--small');
-					button.buttonEl.appendChild(icon);
+					// Toggle Link/Unlink like the birth/death place field, so a
+					// linked marriage location can be removed via the modal (#724).
+					const renderButton = () => {
+						button.buttonEl.empty();
+						button.buttonEl.addClass('crc-btn', 'crc-btn--secondary', 'crc-btn--small');
+						if (spouse.marriageLocation) {
+							button.buttonEl.appendChild(createLucideIcon('unlink', 14));
+							button.buttonEl.appendText(' Unlink');
+						} else {
+							button.buttonEl.appendChild(createLucideIcon('link', 14));
+						}
+					};
+					renderButton();
 					button.onClick(() => {
+						if (spouse.marriageLocation) {
+							// Unlink — clearing both fields lets the writer's
+							// pre-loop drop spouse{n}_marriage_location(+_id).
+							spouse.marriageLocation = undefined;
+							spouse.marriageLocationCrId = undefined;
+							locationInput.value = '';
+							renderButton();
+							return;
+						}
 						const picker = new PlacePickerModal(
 							this.app,
 							(place: SelectedPlaceInfo) => {
 								spouse.marriageLocation = place.name;
 								spouse.marriageLocationCrId = place.crId;
 								locationInput.value = extractDisplayLabel(place.name);
+								renderButton();
 							},
 							{
 								plugin: this.plugin

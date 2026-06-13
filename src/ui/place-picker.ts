@@ -25,6 +25,12 @@ export interface SelectedPlaceInfo {
 	category?: PlaceCategory;
 	/** Place type (city, country, etc.) */
 	placeType?: string;
+	/**
+	 * Parent chain from the place graph (nearest parent first), e.g.
+	 * "Essex Co., Massachusetts, United States" — shown so same-named places
+	 * can be told apart in the picker (#724).
+	 */
+	hierarchy?: string;
 	/** The place note file */
 	file: TFile;
 }
@@ -156,11 +162,18 @@ export class PlacePickerModal extends Modal {
 			const file = this.app.vault.getAbstractFileByPath(node.filePath);
 			if (!file || !(file instanceof TFile)) continue;
 
+			// Parent chain (nearest first) so same-named places are
+			// distinguishable in the list and search (#724).
+			const hierarchy = graphService.getAncestors(node.id)
+				.map(ancestor => ancestor.name)
+				.join(', ');
+
 			this.allPlaces.push({
 				name: node.name,
 				crId: node.id,
 				category: node.category,
 				placeType: node.placeType,
+				hierarchy: hierarchy || undefined,
 				file
 			});
 		}
@@ -318,7 +331,8 @@ export class PlacePickerModal extends Modal {
 			if (this.searchQuery) {
 				const matchesSearch = place.name.toLowerCase().includes(this.searchQuery) ||
 					place.crId.toLowerCase().includes(this.searchQuery) ||
-					(place.placeType && place.placeType.toLowerCase().includes(this.searchQuery));
+					(place.placeType && place.placeType.toLowerCase().includes(this.searchQuery)) ||
+					(place.hierarchy && place.hierarchy.toLowerCase().includes(this.searchQuery));
 				if (!matchesSearch) return false;
 			}
 
@@ -368,6 +382,15 @@ export class PlacePickerModal extends Modal {
 		// Main info
 		const mainInfo = card.createDiv({ cls: 'crc-picker-item__main' });
 		mainInfo.createDiv({ cls: 'crc-picker-item__name', text: place.name });
+
+		// Disambiguation line: the parent chain when available, otherwise the
+		// filename when it differs from the display name — so two same-named
+		// places ("Essex" / "Essex") can be told apart in the list (#724).
+		const context = place.hierarchy
+			|| (place.file.basename !== place.name ? place.file.basename : '');
+		if (context) {
+			mainInfo.createDiv({ cls: 'crc-picker-item__hierarchy', text: context });
+		}
 
 		// Meta info
 		const metaInfo = card.createDiv({ cls: 'crc-picker-item__meta' });

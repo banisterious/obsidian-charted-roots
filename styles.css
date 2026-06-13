@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-13 01:04:35 UTC
+ * - Generated: 2026-06-13 20:09:01 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -6426,7 +6426,7 @@ settings:
    COMPONENT: ENTITY-CREATE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1234 lines, 25.46 KB */
+/* Component Size: 1242 lines, 25.67 KB */
 
 /* ==========================================================================
    PERSON PICKER MODAL
@@ -6653,6 +6653,14 @@ settings:
   font-size: 12px;
   color: var(--text-muted);
   font-weight: 400;
+}
+
+/* Parent chain / filename shown under a place name to disambiguate
+   same-named places in the picker (#724). */
+.crc-picker-item__hierarchy {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .crc-picker-item__dna-badge {
@@ -41271,11 +41279,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-13 01:04:35 UTC
+ * Build completed: 2026-06-13 20:09:01 UTC
  * Components processed: 50
- * Total lines: 40802
- * Total size: 837.54 KB
- * Build duration: 0.32 seconds
+ * Total lines: 40810
+ * Total size: 837.75 KB
+ * Build duration: 0.59 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
@@ -41284,7 +41292,7 @@ body.cr-media-linker-active .suggestion-container {
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 148 lines, 4.03 KB
  * - control-center.css: 5710 lines, 107.14 KB
- * - entity-create-modals.css: 1234 lines, 25.46 KB
+ * - entity-create-modals.css: 1242 lines, 25.67 KB
  * - place-modals.css: 1261 lines, 25.46 KB
  * - media-modals.css: 1995 lines, 38.67 KB
  * - import-export-wizard.css: 2092 lines, 39.9 KB

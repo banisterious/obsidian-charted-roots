@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Place linking no longer creates a duplicate note when a place's name differs from its filename** ([#724](https://github.com/banisterious/obsidian-charted-roots/issues/724)): Linking a person's birth, death, or marriage place to a note filed under a disambiguating filename — for example `Essex-MA-USA.md` with `name: Essex` — created a new `Essex.md` and linked that instead of the existing note. The wikilink builder resolved place (and source) references by looking only for a *person* with the matching id (a regression from #559), so the place's id never resolved and it fell back to filename matching, which a diverging name can't satisfy. It now resolves by the correct note type, so the link lands on the existing place. Two related gaps are fixed alongside: a linked **marriage location can now be unlinked** from the Person modal (the field was link-only), and the **place picker shows each place's parent hierarchy** (e.g. "Massachusetts, United States") so two same-named places can be told apart. Reported by [@tenephor](https://github.com/tenephor).
+
 ## [0.22.69] - 2026-06-12
 
 A reporter-driven release focused on date handling and event ordering. GEDCOM import now understands many common date formats it used to drop silently, flagging anything ambiguous in the import preview. Computing sort order no longer reports false cycles for reciprocal before/after pairs, and a real loop now opens an inspectable result you can click through to fix each culprit. Fictional/era dates keep month and day, the Statistics date range counts death years, and timeline place context uses a place's name rather than its filename. The Person modal's extended name fields fold into a collapsible section, and the Control Center's orphan organization and universe rows lay out correctly. **1476 tests passing across 128 suites.**

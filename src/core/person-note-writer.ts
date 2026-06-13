@@ -13,6 +13,7 @@ import { computeRelationshipArrayPatch, applyRelationshipArrayPatch } from './re
 import { detectSpouseTargetFormat } from './spouse-format-detector';
 import { getCanonicalLinktext } from '../utils/wikilink-resolver';
 import { findCrNoteByCrId } from '../utils/cr-id-resolver';
+import type { NoteType } from '../utils/note-type-detection';
 
 const logger = getLogger('PersonNoteWriter');
 
@@ -59,7 +60,12 @@ function stripWikilink(text: string): string {
  * @param name The display name (can already be a wikilink)
  * @param app The Obsidian app instance for file resolution
  */
-export function createSmartWikilink(name: string, app: App, crId?: string): string {
+export function createSmartWikilink(
+	name: string,
+	app: App,
+	crId?: string,
+	expectedType: NoteType = 'person'
+): string {
 	// If already formatted as a complete wikilink, return as-is
 	// This allows callers to pass pre-constructed [[basename|display]] links
 	// that bypass name-based resolution (avoids wrong-file resolution on duplicates)
@@ -92,10 +98,16 @@ export function createSmartWikilink(name: string, app: App, crId?: string): stri
 	// when a person's `name` differs from their filename (#524). The fallback
 	// `getFirstLinkpathDest(displayName)` below relies on `displayName` matching
 	// some file's basename, which silently fails when name and filename diverge.
-	// Filtered to `cr_type: person` so a duplicate file outside CR's folder
-	// structure can't shadow the canonical person note (#559).
+	// Filtered to `expectedType` so a duplicate file outside CR's folder
+	// structure can't shadow the canonical note (#559). This helper builds
+	// wikilinks for places and sources too, not only people, so the caller
+	// must say which `cr_type` the `crId` belongs to — hardcoding `'person'`
+	// here made every place/source crId fail to resolve, falling through to
+	// basename matching that can't find a note whose `name` differs from its
+	// filename (e.g. `Essex-MA-USA.md` with `name: Essex`) and emitting a bare
+	// `[[Essex]]` that spawns a new note (#724, a regression from #559).
 	if (crId) {
-		const fileById = findCrNoteByCrId(app, crId, 'person');
+		const fileById = findCrNoteByCrId(app, crId, expectedType);
 		if (fileById) {
 			// Use the canonical linktext (basename when unique, full path when
 			// the basename is shared with another vault file) so Obsidian's
@@ -406,7 +418,7 @@ export async function createPersonNote(
 
 	// Birth place (dual storage: wikilink + ID for reliable resolution)
 	if (person.birthPlaceCrId && person.birthPlaceName) {
-		frontmatter[prop('birth_place')] = `"${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}"`;
+		frontmatter[prop('birth_place')] = `"${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId, 'place')}"`;
 		frontmatter[prop('birth_place_id')] = person.birthPlaceCrId;
 		logger.debug('birthPlace', `Added (dual): wikilink=${person.birthPlaceName}, id=${person.birthPlaceCrId}`);
 	} else if (person.birthPlace) {
@@ -417,7 +429,7 @@ export async function createPersonNote(
 
 	// Death place (dual storage: wikilink + ID for reliable resolution)
 	if (person.deathPlaceCrId && person.deathPlaceName) {
-		frontmatter[prop('death_place')] = `"${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}"`;
+		frontmatter[prop('death_place')] = `"${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId, 'place')}"`;
 		frontmatter[prop('death_place_id')] = person.deathPlaceCrId;
 		logger.debug('deathPlace', `Added (dual): wikilink=${person.deathPlaceName}, id=${person.deathPlaceCrId}`);
 	} else if (person.deathPlace) {
@@ -539,7 +551,7 @@ export async function createPersonNote(
 
 	// Sources (dual storage: wikilinks + _id array)
 	if (person.sourceCrIds && person.sourceCrIds.length > 0 && person.sourceNames && person.sourceNames.length > 0) {
-		frontmatter[prop('sources')] = person.sourceNames.map((name, i) => `"${createSmartWikilink(name, app, person.sourceCrIds?.[i])}"`);
+		frontmatter[prop('sources')] = person.sourceNames.map((name, i) => `"${createSmartWikilink(name, app, person.sourceCrIds?.[i], 'source')}"`);
 		frontmatter[prop('sources_id')] = person.sourceCrIds;
 		logger.debug('sources', `Added ${person.sourceCrIds.length} sources`);
 	}
@@ -647,7 +659,7 @@ export async function createPersonNote(
 					// Drop the previously-wrapped `"${...}"` JS-string quotes — they made
 					// processFrontMatter round-trip the value into the nested-array block-list
 					// shape `[["Basename"]]`. (#513)
-					frontmatter[prop(`spouse${idx}_marriage_location`)] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId);
+					frontmatter[prop(`spouse${idx}_marriage_location`)] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId, 'place');
 					frontmatter[prop(`spouse${idx}_marriage_location_id`)] = spouse.marriageLocationCrId;
 				} else {
 					frontmatter[prop(`spouse${idx}_marriage_location`)] = spouse.marriageLocation;
@@ -1759,10 +1771,10 @@ export async function updatePersonNote(
 		// Handle birth place (dual storage: wikilink + ID)
 		if (person.birthPlaceCrId !== undefined || person.birthPlaceName !== undefined) {
 			if (person.birthPlaceCrId && person.birthPlaceName) {
-				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}`;
+				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId, 'place')}`;
 				frontmatter.birth_place_id = person.birthPlaceCrId;
 			} else if (person.birthPlaceName) {
-				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId)}`;
+				frontmatter.birth_place = `${createSmartWikilink(person.birthPlaceName, app, person.birthPlaceCrId, 'place')}`;
 				delete frontmatter.birth_place_id;
 			} else {
 				// Clear birth place
@@ -1781,10 +1793,10 @@ export async function updatePersonNote(
 		// Handle death place (dual storage: wikilink + ID)
 		if (person.deathPlaceCrId !== undefined || person.deathPlaceName !== undefined) {
 			if (person.deathPlaceCrId && person.deathPlaceName) {
-				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}`;
+				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId, 'place')}`;
 				frontmatter.death_place_id = person.deathPlaceCrId;
 			} else if (person.deathPlaceName) {
-				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId)}`;
+				frontmatter.death_place = `${createSmartWikilink(person.deathPlaceName, app, person.deathPlaceCrId, 'place')}`;
 				delete frontmatter.death_place_id;
 			} else {
 				// Clear death place
@@ -1821,7 +1833,7 @@ export async function updatePersonNote(
 		// Handle sources (dual storage: wikilinks + _id array)
 		if (person.sourceCrIds !== undefined || person.sourceNames !== undefined) {
 			if (person.sourceCrIds && person.sourceCrIds.length > 0 && person.sourceNames && person.sourceNames.length > 0) {
-				frontmatter.sources = person.sourceNames.map((name, i) => `${createSmartWikilink(name, app, person.sourceCrIds?.[i])}`);
+				frontmatter.sources = person.sourceNames.map((name, i) => `${createSmartWikilink(name, app, person.sourceCrIds?.[i], 'source')}`);
 				frontmatter.sources_id = person.sourceCrIds;
 			} else {
 				// Clear sources
@@ -1981,13 +1993,16 @@ export async function updatePersonNote(
 					}
 					if (spouse.marriageLocation) {
 						if (spouse.marriageLocationCrId) {
-							frontmatter[`spouse${idx}_marriage_location`] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId);
+							frontmatter[`spouse${idx}_marriage_location`] = createSmartWikilink(spouse.marriageLocation, app, spouse.marriageLocationCrId, 'place');
 							frontmatter[`spouse${idx}_marriage_location_id`] = spouse.marriageLocationCrId;
 						} else {
 							frontmatter[`spouse${idx}_marriage_location`] = spouse.marriageLocation;
 							delete frontmatter[`spouse${idx}_marriage_location_id`];
 						}
 					}
+					// When marriageLocation is empty the pre-loop above already
+					// cleared spouse{idx}_marriage_location(+_id), so an unlink
+					// sticks (#724); no else needed here.
 					if (spouse.marriageStatus) {
 						frontmatter[`spouse${idx}_marriage_status`] = spouse.marriageStatus;
 					}

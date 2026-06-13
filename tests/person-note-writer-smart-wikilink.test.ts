@@ -36,6 +36,102 @@ function seedPerson(
 	return file;
 }
 
+/**
+ * #724 regression (from #559): `createSmartWikilink` is shared by the person
+ * writer to build wikilinks for places (birth/death/marriage) and sources too,
+ * not only people. #559 hardcoded the cr_id lookup to `cr_type: person`, so a
+ * place's cr_id never resolved — the helper fell through to basename matching,
+ * which can't find a place note whose `name` differs from its filename
+ * (`Essex-MA-USA.md` with `name: Essex`), and emitted a bare `[[Essex]]` that
+ * spawns a new note. The fix threads an `expectedType` so the lookup filters by
+ * the correct cr_type. Latent for ~a month until #720 made the diverging-name
+ * place pattern viable.
+ */
+function seedPlace(
+	app: App,
+	args: { path: string; basename: string; name: string; crId: string }
+): TFile {
+	const file = makeTFile({
+		path: args.path,
+		basename: args.basename,
+		extension: 'md',
+	});
+	app.vault._addFile(file);
+	app.metadataCache._setFrontmatter(file, {
+		cr_type: 'place',
+		cr_id: args.crId,
+		name: args.name,
+	});
+	return file;
+}
+
+describe('createSmartWikilink — type-aware cr_id resolution (#724)', () => {
+	it('resolves a place cr_id to [[basename|name]] when expectedType is "place"', () => {
+		const app = new App();
+		seedPlace(app, {
+			path: 'Places/Essex-MA-USA.md',
+			basename: 'Essex-MA-USA',
+			name: 'Essex',
+			crId: 'place-essex-ma',
+		});
+
+		const result = createSmartWikilink('Essex', app, 'place-essex-ma', 'place');
+		expect(result).toBe('[[Essex-MA-USA|Essex]]');
+	});
+
+	it('reproduces the bug: the default "person" type leaves a place cr_id unresolved → bare link', () => {
+		const app = new App();
+		seedPlace(app, {
+			path: 'Places/Essex-MA-USA.md',
+			basename: 'Essex-MA-USA',
+			name: 'Essex',
+			crId: 'place-essex-ma',
+		});
+
+		// Pre-fix call shape (no type arg → defaults to 'person'): the place
+		// cr_id can't match a cr_type:person file, so it falls through to a
+		// basename lookup the mock can't satisfy → bare [[Essex]], which is the
+		// link that spawns a duplicate Essex.md.
+		const broken = createSmartWikilink('Essex', app, 'place-essex-ma');
+		expect(broken).toBe('[[Essex]]');
+	});
+
+	it('does not let a same-id person note shadow a place link (type filter)', () => {
+		const app = new App();
+		// A person and a place that happen to share a cr_id string.
+		seedPerson(app, {
+			path: 'People/Essex.md',
+			basename: 'Essex',
+			name: 'Essex',
+			crId: 'shared-id',
+		});
+		seedPlace(app, {
+			path: 'Places/Essex-MA-USA.md',
+			basename: 'Essex-MA-USA',
+			name: 'Essex',
+			crId: 'shared-id',
+		});
+
+		// Asking for the place must land on the place note, not the person.
+		const result = createSmartWikilink('Essex', app, 'shared-id', 'place');
+		expect(result).toBe('[[Essex-MA-USA|Essex]]');
+	});
+
+	it('resolves a source cr_id when expectedType is "source"', () => {
+		const app = new App();
+		const file = makeTFile({ path: 'Sources/1850-census.md', basename: '1850-census', extension: 'md' });
+		app.vault._addFile(file);
+		app.metadataCache._setFrontmatter(file, {
+			cr_type: 'source',
+			cr_id: 'source-1850',
+			name: '1850 Census',
+		});
+
+		const result = createSmartWikilink('1850 Census', app, 'source-1850', 'source');
+		expect(result).toBe('[[1850-census|1850 Census]]');
+	});
+});
+
 describe('createSmartWikilink — cr_id-based file resolution (#524)', () => {
 	it('returns [[basename|name]] when cr_id resolves to a file whose basename differs from the name', () => {
 		const app = new App();
