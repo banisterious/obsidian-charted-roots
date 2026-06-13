@@ -1622,7 +1622,45 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 		fictionalSummary.createSpan({ cls: 'cr-section-desc', text: 'Custom calendars for worldbuilding' });
 		const fictionalContent = fictionalDetails.createDiv({ cls: 'cr-section-content' });
 
-		renderDateSystemsSettings(fictionalContent, this.plugin);
+		// Calendarium integration — moved here from Advanced so the enable
+		// controls sit next to the calendars they import (#725).
+		new Setting(fictionalContent).setName('Calendarium').setHeading();
+
+		// Re-render the date-systems list when the integration is toggled, so
+		// imported calendars appear/disappear without reopening settings.
+		let dateSystemsContainer: HTMLElement | undefined;
+		const refreshDateSystems = () => {
+			if (dateSystemsContainer) {
+				dateSystemsContainer.empty();
+				renderDateSystemsSettings(dateSystemsContainer, this.plugin);
+			}
+		};
+
+		new Setting(fictionalContent)
+			.setName('Calendarium integration')
+			.setDesc('Import calendar definitions from the Calendarium plugin')
+			.addDropdown(dropdown => dropdown
+				.addOption('off', 'Off')
+				.addOption('read', 'Read calendars')
+				.setValue(this.plugin.settings.calendariumIntegration)
+				.onChange(async (value) => {
+					this.plugin.settings.calendariumIntegration = value as 'off' | 'read';
+					await this.plugin.saveSettings();
+					refreshDateSystems();
+				}));
+
+		new Setting(fictionalContent)
+			.setName('Sync Calendarium events')
+			.setDesc('Show Calendarium dates (fc-date, fc-end) on timelines')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.syncCalendariumEvents)
+				.onChange(async (value) => {
+					this.plugin.settings.syncCalendariumEvents = value;
+					await this.plugin.saveSettings();
+				}));
+
+		dateSystemsContainer = fictionalContent.createDiv();
+		renderDateSystemsSettings(dateSystemsContainer, this.plugin);
 	}
 
 	private renderTimelineSection(containerEl: HTMLElement): void {
@@ -2353,31 +2391,6 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					const folderList = value.split('\n').map(f => f.trim()).filter(f => f.length > 0);
 					this.plugin.settings.templateFolders = folderList;
-					await this.plugin.saveSettings();
-				}));
-
-		// --- Integrations subsection ---
-		new Setting(advancedContent).setName("Integrations").setHeading();
-
-		new Setting(advancedContent)
-			.setName('Calendarium integration')
-			.setDesc('Import calendar definitions from Calendarium plugin')
-			.addDropdown(dropdown => dropdown
-				.addOption('off', 'Off')
-				.addOption('read', 'Read calendars')
-				.setValue(this.plugin.settings.calendariumIntegration)
-				.onChange(async (value) => {
-					this.plugin.settings.calendariumIntegration = value as 'off' | 'read';
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(advancedContent)
-			.setName('Sync Calendarium events')
-			.setDesc('Show Calendarium dates (fc-date, fc-end) on timelines')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.syncCalendariumEvents)
-				.onChange(async (value) => {
-					this.plugin.settings.syncCalendariumEvents = value;
 					await this.plugin.saveSettings();
 				}));
 

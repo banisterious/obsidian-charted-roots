@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Calendarium integration settings moved next to the calendars they control**: The "Calendarium integration" and "Sync Calendarium events" options now live in Settings → **Fictional date systems** (previously under Advanced → Integrations), directly above the list where imported Calendarium calendars appear. Toggling the integration now refreshes that list in place. Follow-up to [#725](https://github.com/banisterious/obsidian-charted-roots/issues/725).
+
 ### Fixed
 
 - **Calendarium calendars now appear in Charted Roots** ([#725](https://github.com/banisterious/obsidian-charted-roots/issues/725)): With the Calendarium integration set to "read", Calendarium calendars weren't showing in the event modal's date-system dropdown or other menus. The bridge that reads Calendarium only populated its API reference on one code path (the Control Center's Date Systems card), so every other place that asked for calendars saw none. It now reads the Calendarium API wherever it's needed, so calendars appear consistently, and the bridge logs what it finds (or why it found nothing) for easier diagnosis. Note: recognizing Calendarium event dates (`fc-date`) on timelines is a separate switch — enable **Sync Calendarium events** as well. Reported by [@Fatebreak](https://github.com/Fatebreak).
