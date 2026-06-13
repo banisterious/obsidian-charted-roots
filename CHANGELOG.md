@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.69] - 2026-06-12
+
+A reporter-driven release focused on date handling and event ordering. GEDCOM import now understands many common date formats it used to drop silently, flagging anything ambiguous in the import preview. Computing sort order no longer reports false cycles for reciprocal before/after pairs, and a real loop now opens an inspectable result you can click through to fix each culprit. Fictional/era dates keep month and day, the Statistics date range counts death years, and timeline place context uses a place's name rather than its filename. The Person modal's extended name fields fold into a collapsible section, and the Control Center's orphan organization and universe rows lay out correctly. **1476 tests passing across 128 suites.**
+
 ### Added
 
 - **Inspectable result after "Compute sort order"** ([#723](https://github.com/banisterious/obsidian-charted-roots/issues/723)): When Compute sort order hit a before/after loop, its only feedback was a transient notice — the named events (added in [#721](https://github.com/banisterious/obsidian-charted-roots/issues/721)) scrolled away and weren't actionable, so fixing a cycle meant hunting down each event by hand. The operation now opens a small result dialog whenever there are cycles or errors: it shows the updated count (or a "nothing to update" state) and lists the events that couldn't be ordered as clickable links that open the note, so you can jump straight to each culprit and fix its "Occurs before/after". A hint notes that opening a note closes the dialog and that re-running Compute shows the list again. The common quick-success case keeps the lightweight toast. Split from [#721](https://github.com/banisterious/obsidian-charted-roots/issues/721) ([@doctorwodka](https://github.com/doctorwodka)).
