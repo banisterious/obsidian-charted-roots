@@ -724,10 +724,12 @@ export class TimelineRenderer {
 			const node = placeGraph.getPlaceByName(entry.place);
 			if (!node) continue;
 			const ancestorNames = placeGraph.getAncestors(node.id).map(a => a.name);
-			if (ancestorNames.length === 0) continue;
 			// depth 0 is the "full" sentinel → walk the whole ancestor chain.
 			const effectiveDepth = depth === 0 ? ancestorNames.length : depth;
-			entry.place = qualifyPlaceWithAncestors(entry.place, ancestorNames, effectiveDepth);
+			// Build from the resolved node's display name, not the wikilink target
+			// (which is the filename) — so distinctly-filed notes that share a
+			// name (e.g. two "Essex" notes) render their name, not the path (#720).
+			entry.place = qualifyPlaceWithAncestors(node.name, ancestorNames, effectiveDepth);
 		}
 	}
 

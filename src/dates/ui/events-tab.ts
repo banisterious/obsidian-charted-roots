@@ -17,6 +17,7 @@ import { getEventType, getAllEventTypes } from '../../events/types/event-types';
 import { TimelineCanvasExporter, TimelineColorScheme, TimelineLayoutStyle } from '../../events/services/timeline-canvas-exporter';
 import { TimelineMarkdownExporter, TimelineExportFormat } from '../../events/services/timeline-markdown-exporter';
 import { computeSortOrder } from '../../events/services/sort-order-service';
+import { SortOrderResultModal } from '../../events/ui/sort-order-result-modal';
 import { renderEventTypeManagerCard } from '../../events/ui/event-type-manager-card';
 import { isEventNote } from '../../utils/note-type-detection';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
@@ -281,10 +282,11 @@ function renderEventNotesCard(
 						const events = eventService.getAllEvents();
 						const result = await computeSortOrder(plugin.app, events, plugin.getDateService());
 
-						if (result.errors.length > 0) {
-							new Notice(`Computed sort order with ${result.errors.length} errors. Check console.`);
-						} else if (result.cycleEvents.length > 0) {
-							new Notice(`Updated ${result.updatedCount} events. ${result.cycleEvents.length} events in cycles couldn't be ordered.`);
+						// Cycles or errors need an inspectable, actionable surface
+						// (clickable culprit links); the quick-success case keeps the
+						// lightweight toast (#723).
+						if (result.cycleEventNotes.length > 0 || result.errors.length > 0) {
+							new SortOrderResultModal(plugin.app, result).open();
 						} else {
 							new Notice(`Successfully computed sort order for ${result.updatedCount} events.`);
 						}

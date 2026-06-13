@@ -15,6 +15,7 @@ import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
 import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
+import { computeCollectionDateRange } from './collection-date-range';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
@@ -2627,18 +2628,9 @@ export class FamilyGraphService {
 			}
 		}
 
-		// Calculate date ranges
-		const datesWithYears = allPeople
-			.map(p => p.birthDate || p.deathDate)
-			.filter((d): d is string => !!d && typeof d === 'string')
-			.map(d => {
-				const match = d.match(/^(\d{4})/);
-				return match ? parseInt(match[1]) : null;
-			})
-			.filter((y): y is number => y !== null);
-
-		const earliestYear = datesWithYears.length > 0 ? Math.min(...datesWithYears) : undefined;
-		const latestYear = datesWithYears.length > 0 ? Math.max(...datesWithYears) : undefined;
+		// Calculate the date range across BOTH birth and death years, so it
+		// reflects the whole period the collection covers (#714).
+		const { earliest: earliestYear, latest: latestYear } = computeCollectionDateRange(allPeople);
 
 		// Collection size statistics
 		// Normalize collection structure for consistent handling

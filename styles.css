@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-10 18:21:31 UTC
+ * - Generated: 2026-06-13 01:04:35 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -707,7 +707,7 @@ settings:
    COMPONENT: CONTROL-CENTER.CSS
    ========================================================================== */
 
-/* Component Size: 5693 lines, 106.94 KB */
+/* Component Size: 5710 lines, 107.14 KB */
 
 /* ==========================================================================
    Charted Roots Control Center - Styling
@@ -1738,6 +1738,23 @@ settings:
 
 .crc-mb-4 {
   margin-bottom: 16px;
+}
+
+.crc-flex {
+  display: flex;
+  gap: 8px;
+}
+
+.crc-items-center {
+  align-items: center;
+}
+
+.crc-justify-between {
+  justify-content: space-between;
+}
+
+.crc-code {
+  font-family: var(--font-monospace);
 }
 
 /* Person Picker and entity creation modals moved to entity-create-modals.css */
@@ -26354,7 +26371,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1588 lines, 32.73 KB */
+/* Component Size: 1635 lines, 33.54 KB */
 
 /**
  * Events Styles
@@ -27942,6 +27959,53 @@ svg.leaflet-image-layer.leaflet-interactive path {
 /* Date-action button in Notice fragment offered by create-event modal */
 .cr-create-event__date-action-btn {
   margin-top: 8px;
+}
+
+/* Compute sort order result modal (#723) — inspectable, navigable outcome */
+.crc-sort-order-result-summary {
+  margin-top: 0;
+  font-weight: 600;
+}
+
+.crc-sort-order-result-clean {
+  color: var(--text-muted);
+}
+
+.crc-sort-order-result-section {
+  margin-top: 16px;
+}
+
+.crc-sort-order-result-heading {
+  margin-bottom: 4px;
+}
+
+.crc-sort-order-result-errors,
+.crc-sort-order-result-cycles {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.crc-sort-order-result-cycles li {
+  margin-bottom: 4px;
+}
+
+.crc-sort-order-result-errors li {
+  color: var(--text-error);
+}
+
+.crc-sort-order-result-link {
+  cursor: pointer;
+  color: var(--text-accent);
+}
+
+.crc-sort-order-result-link:hover {
+  text-decoration: underline;
+}
+
+.crc-sort-order-result-hint {
+  margin-top: 16px;
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
 }
 
 
@@ -41207,11 +41271,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-10 18:21:32 UTC
+ * Build completed: 2026-06-13 01:04:35 UTC
  * Components processed: 50
- * Total lines: 40738
- * Total size: 836.54 KB
- * Build duration: 0.3 seconds
+ * Total lines: 40802
+ * Total size: 837.54 KB
+ * Build duration: 0.32 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
@@ -41219,7 +41283,7 @@ body.cr-media-linker-active .suggestion-container {
  * - base.css: 99 lines, 1.54 KB
  * - layout.css: 22 lines, 0.25 KB
  * - settings.css: 148 lines, 4.03 KB
- * - control-center.css: 5693 lines, 106.94 KB
+ * - control-center.css: 5710 lines, 107.14 KB
  * - entity-create-modals.css: 1234 lines, 25.46 KB
  * - place-modals.css: 1261 lines, 25.46 KB
  * - media-modals.css: 1995 lines, 38.67 KB
@@ -41243,7 +41307,7 @@ body.cr-media-linker-active .suggestion-container {
  * - map-view.css: 2264 lines, 50.29 KB
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
- * - events.css: 1588 lines, 32.73 KB
+ * - events.css: 1635 lines, 33.54 KB
  * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB

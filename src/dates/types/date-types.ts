@@ -72,6 +72,10 @@ export interface ParsedFictionalDate {
 	raw: string;
 	/** Canonical year for sorting/comparison (absolute timeline position) */
 	canonicalYear: number;
+	/** Month (1-12) when the date carried month precision, e.g. `DE 1264-08` (#722) */
+	month?: number;
+	/** Day of month (1-31) when the date carried day precision, e.g. `DE 1264-08-15` (#722) */
+	day?: number;
 	/** Whether the date carried an approximation marker (ish, ?, circa, etc.) */
 	isApproximate?: boolean;
 }

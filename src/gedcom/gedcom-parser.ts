@@ -89,6 +89,29 @@ export interface GedcomValidationResult {
 }
 
 /**
+ * Result of normalizing a GEDCOM date, with classification so callers can
+ * surface ambiguous or non-standard inputs instead of dropping them silently.
+ */
+export interface GedcomDateNormalization {
+	/** The normalized date string, or undefined if it could not be parsed. */
+	value: string | undefined;
+	/**
+	 * Classification of the input:
+	 * - `ok`: empty input, or a clean parse needing no user attention.
+	 * - `event-label`: a non-standard event label (e.g. "Bapt", "Buried") was
+	 *   stripped before parsing the date; the value may not match the field.
+	 * - `ambiguous-slash`: a DD/MM vs MM/DD slash date that could not be
+	 *   disambiguated; read as DD/MM by convention.
+	 * - `unparsed`: a non-empty input that no format matched; value is undefined.
+	 */
+	status: 'ok' | 'event-label' | 'ambiguous-slash' | 'unparsed';
+	/** The original (trimmed) input. */
+	original: string;
+	/** For `event-label`, the label that was stripped (e.g. "Bapt"). */
+	label?: string;
+}
+
+/**
  * Parse a GEDCOM file into structured data
  */
 export class GedcomParser {
@@ -463,51 +486,154 @@ export class GedcomParser {
 	 * - Ranges: "BET 1882 AND 1885" (passed through)
 	 */
 	static normalizeGedcomDate(gedcomDate: string): string | undefined {
-		if (!gedcomDate) return undefined;
-
-		const trimmed = gedcomDate.trim();
-
-		// Handle date ranges (BET X AND Y) - pass through as-is
-		if (/^BET\s+.+\s+AND\s+.+$/i.test(trimmed)) {
-			return trimmed.toUpperCase();
-		}
-
-		// Extract qualifier prefix if present (ABT, BEF, AFT, CAL, EST)
-		const qualifierMatch = trimmed.match(/^(ABT|BEF|AFT|CAL|EST)\s+(.+)$/i);
-		const qualifier = qualifierMatch ? qualifierMatch[1].toUpperCase() : null;
-		const datePart = qualifierMatch ? qualifierMatch[2].trim() : trimmed;
-
-		// Parse the date portion
-		const normalized = this.parseDatePart(datePart);
-		if (!normalized) return undefined;
-
-		// Return with qualifier prefix if present
-		return qualifier ? `${qualifier} ${normalized}` : normalized;
+		return this.normalizeGedcomDateDetailed(gedcomDate).value;
 	}
 
 	/**
-	 * Parse a date string (without qualifiers) into normalized format.
-	 * Preserves precision - doesn't add false month/day.
+	 * Normalize a GEDCOM date and classify the input so callers can surface
+	 * ambiguous (DD/MM vs MM/DD) or non-standard (event-label) dates to the
+	 * user instead of dropping them silently.
+	 */
+	static normalizeGedcomDateDetailed(gedcomDate: string): GedcomDateNormalization {
+		const original = (gedcomDate || '').trim();
+
+		// Empty input is not an error - nothing to warn about.
+		if (!original) {
+			return { value: undefined, status: 'ok', original };
+		}
+
+		// Date ranges (BET X AND Y) - pass through as-is.
+		if (/^BET\s+.+\s+AND\s+.+$/i.test(original)) {
+			return { value: original.toUpperCase(), status: 'ok', original };
+		}
+
+		// Strip a non-standard event-label prefix (e.g. "Bapt 18 Dec 1690",
+		// "Buried 11 April 1758") that some exporters leak into the date value.
+		// The date is recovered but flagged, since e.g. a baptism date is not
+		// the same as a birth date.
+		let working = original;
+		let label: string | undefined;
+		const labelMatch = working.match(/^(bapt(?:ized|ised|\.)?|christened|chr\.?|buried|bur\.?)\s+(.+)$/i);
+		if (labelMatch) {
+			label = labelMatch[1].replace(/\.$/, '');
+			working = labelMatch[2].trim();
+		}
+
+		// Extract a qualifier prefix if present. Allow an optional trailing
+		// period (e.g. "Abt.") and common synonyms (ABOUT/CIRCA -> ABT).
+		let qualifier: string | null = null;
+		const qualifierMatch = working.match(/^(ABT|ABOUT|CIRCA|CIR|BEF|BEFORE|AFT|AFTER|CAL|EST)\.?\s+(.+)$/i);
+		if (qualifierMatch) {
+			qualifier = this.normalizeQualifier(qualifierMatch[1]);
+			working = qualifierMatch[2].trim();
+		}
+
+		// Parse the remaining date portion.
+		const parsed = this.parseDatePortion(working);
+		if (!parsed.value) {
+			return { value: undefined, status: 'unparsed', original, label };
+		}
+
+		const value = qualifier ? `${qualifier} ${parsed.value}` : parsed.value;
+
+		if (label) {
+			return { value, status: 'event-label', original, label };
+		}
+		if (parsed.ambiguous) {
+			return { value, status: 'ambiguous-slash', original };
+		}
+		return { value, status: 'ok', original };
+	}
+
+	/** Map qualifier synonyms onto the canonical GEDCOM qualifier tokens. */
+	private static normalizeQualifier(q: string): string {
+		const upper = q.toUpperCase();
+		switch (upper) {
+			case 'ABOUT':
+			case 'CIRCA':
+			case 'CIR':
+				return 'ABT';
+			case 'BEFORE':
+				return 'BEF';
+			case 'AFTER':
+				return 'AFT';
+			default:
+				return upper;
+		}
+	}
+
+	/**
+	 * Parse a date string (without qualifiers/labels) into normalized format,
+	 * trying slash dates first, then textual formats. Reports whether a slash
+	 * date had to be disambiguated by convention.
+	 */
+	private static parseDatePortion(datePart: string): { value?: string; ambiguous?: boolean } {
+		const slash = this.parseSlashDate(datePart);
+		if (slash) return slash;
+		return { value: this.parseDatePart(datePart) };
+	}
+
+	/**
+	 * Parse a slash date (DD/MM/YYYY). Disambiguates when one component is > 12;
+	 * otherwise assumes DD/MM (the non-US GEDCOM norm) and marks the result
+	 * ambiguous. Returns null if the input is not a slash date.
+	 */
+	private static parseSlashDate(datePart: string): { value: string; ambiguous?: boolean } | null {
+		const match = datePart.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+		if (!match) return null;
+
+		const first = parseInt(match[1], 10);
+		const second = parseInt(match[2], 10);
+		const year = match[3];
+
+		let day: number;
+		let month: number;
+		let ambiguous = false;
+
+		if (first > 12 && second <= 12) {
+			day = first;
+			month = second;
+		} else if (second > 12 && first <= 12) {
+			// US-style MM/DD - the day is unambiguously the second component.
+			day = second;
+			month = first;
+		} else {
+			// Ambiguous - assume DD/MM by convention.
+			day = first;
+			month = second;
+			ambiguous = true;
+		}
+
+		if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+
+		const value = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+		return ambiguous ? { value, ambiguous: true } : { value };
+	}
+
+	/**
+	 * Parse a textual date string into normalized format. Accepts both 3-letter
+	 * abbreviations and full month names. Preserves precision - doesn't add a
+	 * false month/day.
 	 */
 	private static parseDatePart(datePart: string): string | undefined {
-		// Format: DD MMM YYYY (e.g., "15 MAR 1950") → YYYY-MM-DD
-		const fullMatch = datePart.match(/^(\d{1,2})\s+([A-Z]{3})\s+(\d{4})$/i);
+		// Format: DD MMM YYYY / DD Month YYYY (e.g., "15 MAR 1950", "27 June 1885")
+		const fullMatch = datePart.match(/^(\d{1,2})\s+([A-Za-z]+)\.?\s+(\d{4})$/);
 		if (fullMatch) {
-			const day = fullMatch[1].padStart(2, '0');
 			const month = this.monthToNumber(fullMatch[2]);
-			const year = fullMatch[3];
-			return `${year}-${month}-${day}`;
+			if (!month) return undefined;
+			const day = fullMatch[1].padStart(2, '0');
+			return `${fullMatch[3]}-${month}-${day}`;
 		}
 
-		// Format: MMM YYYY (e.g., "MAR 1950") → YYYY-MM
-		const monthYearMatch = datePart.match(/^([A-Z]{3})\s+(\d{4})$/i);
+		// Format: MMM YYYY / Month YYYY (e.g., "MAR 1950", "October 1848")
+		const monthYearMatch = datePart.match(/^([A-Za-z]+)\.?\s+(\d{4})$/);
 		if (monthYearMatch) {
 			const month = this.monthToNumber(monthYearMatch[1]);
-			const year = monthYearMatch[2];
-			return `${year}-${month}`;
+			if (!month) return undefined;
+			return `${monthYearMatch[2]}-${month}`;
 		}
 
-		// Format: YYYY (e.g., "1950") → YYYY
+		// Format: YYYY (e.g., "1950")
 		const yearMatch = datePart.match(/^(\d{4})$/);
 		if (yearMatch) {
 			return yearMatch[1];
@@ -517,14 +643,25 @@ export class GedcomParser {
 	}
 
 	/**
-	 * Convert month abbreviation to number
+	 * Convert a month name (3-letter abbreviation or full name) to a 2-digit
+	 * number. Returns undefined for an unrecognized month so the caller fails
+	 * cleanly instead of silently defaulting to January.
 	 */
-	private static monthToNumber(month: string): string {
+	private static monthToNumber(month: string): string | undefined {
 		const months: Record<string, string> = {
-			'JAN': '01', 'FEB': '02', 'MAR': '03', 'APR': '04',
-			'MAY': '05', 'JUN': '06', 'JUL': '07', 'AUG': '08',
-			'SEP': '09', 'OCT': '10', 'NOV': '11', 'DEC': '12'
+			'JAN': '01', 'JANUARY': '01',
+			'FEB': '02', 'FEBRUARY': '02',
+			'MAR': '03', 'MARCH': '03',
+			'APR': '04', 'APRIL': '04',
+			'MAY': '05',
+			'JUN': '06', 'JUNE': '06',
+			'JUL': '07', 'JULY': '07',
+			'AUG': '08', 'AUGUST': '08',
+			'SEP': '09', 'SEPT': '09', 'SEPTEMBER': '09',
+			'OCT': '10', 'OCTOBER': '10',
+			'NOV': '11', 'NOVEMBER': '11',
+			'DEC': '12', 'DECEMBER': '12'
 		};
-		return months[month.toUpperCase()] || '01';
+		return months[month.toUpperCase()];
 	}
 }

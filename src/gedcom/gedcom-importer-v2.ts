@@ -9,6 +9,7 @@
 import { App, Notice, TFile, TFolder, Vault, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomParserV2 } from './gedcom-parser-v2';
+import { collectDateWarnings } from './gedcom-date-warnings';
 import {
 	GedcomDataV2,
 	GedcomIndividualV2,
@@ -782,6 +783,11 @@ export class GedcomImporterV2 {
 				}
 				new Notice(missingMsg, 10000);
 			}
+
+			// Surface ambiguous or non-standard dates instead of dropping them
+			// silently (#716). Scanning the parsed data warns once per couple's
+			// marriage date, not once per spouse.
+			result.warnings.push(...collectDateWarnings(gedcomData));
 
 			result.success = result.errors.length === 0;
 

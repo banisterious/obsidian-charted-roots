@@ -433,102 +433,9 @@ export class CreatePersonModal extends Modal {
 					this.personData.name = value;
 				}));
 
-		// Nickname (optional)
-		new Setting(form)
-			.setName('Nickname')
-			.setDesc('Informal name or alias (optional)')
-			.addText(text => text
-				.setPlaceholder('e.g., Bobby, Gram')
-				.setValue(this.personData.nickname || '')
-				.onChange(value => {
-					this.personData.nickname = value || undefined;
-				}));
-
-		// Name components (optional) - for cultures with multiple surnames or explicit name parts
-		new Setting(form)
-			.setName('Given name')
-			.setDesc('First/given name(s), if different from what appears in full name')
-			.addText(text => text
-				.setPlaceholder('e.g., María José')
-				.setValue(this.personData.givenName || '')
-				.onChange(value => {
-					this.personData.givenName = value || undefined;
-				}));
-
-		new Setting(form)
-			.setName('Surname(s)')
-			.setDesc('Family name(s) - separate multiple with commas (e.g., "García, López")')
-			.addText(text => text
-				.setPlaceholder('e.g., García, López')
-				.setValue(this.personData.surnames?.join(', ') || '')
-				.onChange(value => {
-					if (value) {
-						// Split on commas, trim whitespace
-						this.personData.surnames = splitAndTrim(value);
-					} else {
-						this.personData.surnames = undefined;
-					}
-				}));
-
-		// Name parts (optional) — prefix / suffix / surname particle. Also
-		// populated by GEDCOM import; written to name_prefix / name_suffix /
-		// surname_prefix (#709).
-		new Setting(form)
-			.setName('Name prefix')
-			.setDesc('Title or honorific (e.g., Dr., Rev., Dame)')
-			.addText(text => text
-				.setPlaceholder('e.g., Dr.')
-				.setValue(this.personData.namePrefix || '')
-				.onChange(value => {
-					this.personData.namePrefix = value || undefined;
-				}));
-
-		new Setting(form)
-			.setName('Name suffix')
-			.setDesc('Generational suffix (e.g., Jr., III, V)')
-			.addText(text => text
-				.setPlaceholder('e.g., Jr.')
-				.setValue(this.personData.nameSuffix || '')
-				.onChange(value => {
-					this.personData.nameSuffix = value || undefined;
-				}));
-
-		new Setting(form)
-			.setName('Surname prefix')
-			.setDesc('Surname particle (e.g., von, de la)')
-			.addText(text => text
-				.setPlaceholder('e.g., von')
-				.setValue(this.personData.surnamePrefix || '')
-				.onChange(value => {
-					this.personData.surnamePrefix = value || undefined;
-				}));
-
-		// Maiden/married names - only show in edit mode
-		if (this.editMode) {
-			new Setting(form)
-				.setName('Maiden name')
-				.setDesc('Birth surname (before marriage)')
-				.addText(text => text
-					.setPlaceholder('e.g., Johnson')
-					.setValue(this.personData.maidenName || '')
-					.onChange(value => {
-						this.personData.maidenName = value || undefined;
-					}));
-
-			new Setting(form)
-				.setName('Married name(s)')
-				.setDesc('Surname(s) after marriage - separate multiple with commas')
-				.addText(text => text
-					.setPlaceholder('e.g., Smith, Jones')
-					.setValue(this.personData.marriedNames?.join(', ') || '')
-					.onChange(value => {
-						if (value) {
-							this.personData.marriedNames = splitAndTrim(value);
-						} else {
-							this.personData.marriedNames = undefined;
-						}
-					}));
-		}
+		// Extended name options (nickname, name parts, maiden/married names) in a
+		// collapsible section so the modal isn't cramped for the common case (#717).
+		this.renderExtendedNameSection(form);
 
 		// Sex
 		new Setting(form)
@@ -1407,6 +1314,140 @@ export class CreatePersonModal extends Modal {
 			this.adoptiveMotherField.crId ||
 			this.parentsField.crIds.length > 0
 		);
+	}
+
+	/**
+	 * Render the extended name options (nickname, name parts, maiden/married
+	 * names) in a collapsible section so the modal isn't cramped for users who
+	 * only need the baseline name (#717). Starts expanded when any field already
+	 * holds data, so existing values stay visible.
+	 */
+	private renderExtendedNameSection(container: HTMLElement): void {
+		const wrapper = container.createDiv({ cls: 'crc-inline-expand' });
+
+		// Collapsed-state trigger
+		const expandLink = wrapper.createDiv({ cls: 'crc-inline-expand__trigger' });
+		const linkIcon = expandLink.createSpan({ cls: 'crc-inline-expand__icon' });
+		expandLink.createSpan({ text: 'Extended name options', cls: 'crc-inline-expand__text' });
+		setIcon(linkIcon, 'chevron-down');
+
+		// Expanded content
+		const content = wrapper.createDiv({ cls: 'crc-inline-expand__content' });
+		const collapseHeader = content.createDiv({ cls: 'crc-inline-expand__header' });
+		collapseHeader.createSpan({ text: 'Extended name options', cls: 'crc-inline-expand__title' });
+		const collapseLink = collapseHeader.createEl('button', {
+			cls: 'crc-inline-expand__collapse clickable-icon',
+			attr: { 'aria-label': 'Collapse section' }
+		});
+		setIcon(collapseLink, 'chevron-up');
+
+		// Always start collapsed to keep the modal uncluttered, even when the
+		// person already has extended name data (#717).
+		expandLink.addEventListener('click', () => {
+			wrapper.addClass('crc-inline-expand--expanded');
+		});
+		collapseLink.addEventListener('click', () => {
+			wrapper.removeClass('crc-inline-expand--expanded');
+		});
+
+		const fields = content.createDiv({ cls: 'crc-inline-expand__fields' });
+
+		// Nickname (optional)
+		new Setting(fields)
+			.setName('Nickname')
+			.setDesc('Informal name or alias (optional)')
+			.addText(text => text
+				.setPlaceholder('e.g., Bobby, Gram')
+				.setValue(this.personData.nickname || '')
+				.onChange(value => {
+					this.personData.nickname = value || undefined;
+				}));
+
+		// Name components (optional) - for cultures with multiple surnames or explicit name parts
+		new Setting(fields)
+			.setName('Given name')
+			.setDesc('First/given name(s), if different from what appears in full name')
+			.addText(text => text
+				.setPlaceholder('e.g., María José')
+				.setValue(this.personData.givenName || '')
+				.onChange(value => {
+					this.personData.givenName = value || undefined;
+				}));
+
+		new Setting(fields)
+			.setName('Surname(s)')
+			.setDesc('Family name(s) - separate multiple with commas (e.g., "García, López")')
+			.addText(text => text
+				.setPlaceholder('e.g., García, López')
+				.setValue(this.personData.surnames?.join(', ') || '')
+				.onChange(value => {
+					if (value) {
+						// Split on commas, trim whitespace
+						this.personData.surnames = splitAndTrim(value);
+					} else {
+						this.personData.surnames = undefined;
+					}
+				}));
+
+		// Name parts (optional) — prefix / suffix / surname particle. Also
+		// populated by GEDCOM import; written to name_prefix / name_suffix /
+		// surname_prefix (#709).
+		new Setting(fields)
+			.setName('Name prefix')
+			.setDesc('Title or honorific (e.g., Dr., Rev., Dame)')
+			.addText(text => text
+				.setPlaceholder('e.g., Dr.')
+				.setValue(this.personData.namePrefix || '')
+				.onChange(value => {
+					this.personData.namePrefix = value || undefined;
+				}));
+
+		new Setting(fields)
+			.setName('Name suffix')
+			.setDesc('Generational suffix (e.g., Jr., III, V)')
+			.addText(text => text
+				.setPlaceholder('e.g., Jr.')
+				.setValue(this.personData.nameSuffix || '')
+				.onChange(value => {
+					this.personData.nameSuffix = value || undefined;
+				}));
+
+		new Setting(fields)
+			.setName('Surname prefix')
+			.setDesc('Surname particle (e.g., von, de la)')
+			.addText(text => text
+				.setPlaceholder('e.g., von')
+				.setValue(this.personData.surnamePrefix || '')
+				.onChange(value => {
+					this.personData.surnamePrefix = value || undefined;
+				}));
+
+		// Maiden/married names - only show in edit mode
+		if (this.editMode) {
+			new Setting(fields)
+				.setName('Maiden name')
+				.setDesc('Birth surname (before marriage)')
+				.addText(text => text
+					.setPlaceholder('e.g., Johnson')
+					.setValue(this.personData.maidenName || '')
+					.onChange(value => {
+						this.personData.maidenName = value || undefined;
+					}));
+
+			new Setting(fields)
+				.setName('Married name(s)')
+				.setDesc('Surname(s) after marriage - separate multiple with commas')
+				.addText(text => text
+					.setPlaceholder('e.g., Smith, Jones')
+					.setValue(this.personData.marriedNames?.join(', ') || '')
+					.onChange(value => {
+						if (value) {
+							this.personData.marriedNames = splitAndTrim(value);
+						} else {
+							this.personData.marriedNames = undefined;
+						}
+					}));
+		}
 	}
 
 	/**
