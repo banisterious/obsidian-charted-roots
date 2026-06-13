@@ -10,6 +10,9 @@
 
 import { App } from 'obsidian';
 import type { FictionalDateSystem, FictionalEra } from '../dates/types/date-types';
+import { getLogger } from '../core/logging';
+
+const logger = getLogger('CalendariumBridge');
 
 /**
  * Calendarium's internal date structure
@@ -112,7 +115,38 @@ export class CalendariumBridge {
 	isAvailable(): boolean {
 		const appWithPlugins = this.app as unknown as { plugins?: { enabledPlugins?: Set<string> } };
 		const isEnabled = appWithPlugins.plugins?.enabledPlugins?.has('calendarium') ?? false;
-		return isEnabled && !!(window as Window & { Calendarium?: CalendariumAPI }).Calendarium;
+		return isEnabled && !!this.calendariumGlobal();
+	}
+
+	/**
+	 * The `window.Calendarium` API object, if present. Calendarium assigns it
+	 * synchronously during its own load (`window.Calendarium = this.api`) and
+	 * removes it on unload, so it's a reliable presence check at UI time.
+	 */
+	private calendariumGlobal(): CalendariumAPI | undefined {
+		return (window as Window & { Calendarium?: CalendariumAPI }).Calendarium;
+	}
+
+	/**
+	 * Populate `this.api` synchronously from `window.Calendarium`.
+	 *
+	 * The async `initialize()` (which waits on `onSettingsLoaded`) is the
+	 * historical path, but nothing ever called it, so `this.api` stayed null and
+	 * every read returned empty — no calendars in any menu or setting (#725).
+	 * Calendarium exposes the API synchronously and fires `onSettingsLoaded`
+	 * immediately once its settings are loaded, so by the time any CR UI reads
+	 * the bridge the global is ready; grab it directly. Returns true if the API
+	 * is available.
+	 */
+	private ensureApi(): boolean {
+		if (this.api) return true;
+		const global = this.calendariumGlobal();
+		if (global) {
+			this.api = global;
+			this.initialized = true;
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -168,7 +202,7 @@ export class CalendariumBridge {
 	 * Get list of calendar names from Calendarium
 	 */
 	getCalendarNames(): string[] {
-		if (!this.api) {
+		if (!this.ensureApi() || !this.api) {
 			return [];
 		}
 		return this.api.getCalendars();
@@ -178,10 +212,16 @@ export class CalendariumBridge {
 	 * Get the Calendarium API for a specific calendar
 	 */
 	getCalendarAPI(calendarName: string): CalendariumCalendarAPI | undefined {
-		if (!this.api) {
+		if (!this.ensureApi() || !this.api) {
 			return undefined;
 		}
-		return this.api.getAPI(calendarName);
+		try {
+			// Calendarium throws (not returns undefined) for an unknown name.
+			return this.api.getAPI(calendarName);
+		} catch (e) {
+			logger.warn('getCalendarAPI', `Calendarium has no calendar named "${calendarName}"`, e);
+			return undefined;
+		}
 	}
 
 	/**
@@ -189,15 +229,17 @@ export class CalendariumBridge {
 	 * These can be used alongside Charted Roots' built-in and custom date systems
 	 */
 	importCalendars(): FictionalDateSystem[] {
-		if (!this.api) {
+		if (!this.ensureApi() || !this.api) {
+			logger.debug('importCalendars', 'Calendarium API not available; returning no calendars');
 			return [];
 		}
 
 		const systems: FictionalDateSystem[] = [];
 		const calendarNames = this.api.getCalendars();
+		logger.debug('importCalendars', `Calendarium reports ${calendarNames.length} calendar(s)`);
 
 		for (const name of calendarNames) {
-			const calApi = this.api.getAPI(name);
+			const calApi = this.getCalendarAPI(name);
 			if (!calApi) {
 				continue;
 			}
@@ -209,6 +251,7 @@ export class CalendariumBridge {
 			const calendar = anyCalApi.getObject?.();
 
 			if (!calendar) {
+				logger.warn('importCalendars', `Calendar "${name}" exposed no object via getObject(); skipping`);
 				continue;
 			}
 
@@ -218,6 +261,7 @@ export class CalendariumBridge {
 			}
 		}
 
+		logger.debug('importCalendars', `Imported ${systems.length} calendar system(s)`);
 		return systems;
 	}
 
