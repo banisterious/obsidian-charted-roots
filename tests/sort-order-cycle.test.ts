@@ -59,6 +59,30 @@ describe('computeSortOrder cycle handling (#721)', () => {
 		expect(result.cycleEvents).toContain('B');
 	});
 
+	it('carries each cycle event paired with its note for navigation (#723)', async () => {
+		const events = [
+			makeEvent({ crId: 'a', title: 'A', before: ['[[B]]'] }),
+			makeEvent({ crId: 'b', title: 'B', before: ['[[A]]'] }), // real loop
+		];
+		const result = await computeSortOrder(makeApp(new Map()), events, null);
+
+		expect(result.cycleEventNotes.map(n => n.title).sort()).toEqual(['A', 'B']);
+		// Each entry links back to its own note so the result view can open it.
+		for (const note of result.cycleEventNotes) {
+			expect(note.file.path).toBe(`${note.title}.md`);
+		}
+	});
+
+	it('reports no cycle notes when everything resolves', async () => {
+		const events = [
+			makeEvent({ crId: 'a', title: 'A', before: ['[[B]]'], date: 'EP -6' }),
+			makeEvent({ crId: 'b', title: 'B', after: ['[[A]]'], date: 'EP -6' }),
+		];
+		const result = await computeSortOrder(makeApp(new Map()), events, null);
+
+		expect(result.cycleEventNotes).toEqual([]);
+	});
+
 	it('orders a non-reciprocal chain correctly', async () => {
 		const events = [
 			makeEvent({ crId: 'c', title: 'C', after: ['[[B]]'] }),

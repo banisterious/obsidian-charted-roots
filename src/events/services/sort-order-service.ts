@@ -19,10 +19,21 @@ const logger = getLogger('SortOrderService');
 export interface SortOrderResult {
 	/** Number of events that were updated */
 	updatedCount: number;
-	/** Events that couldn't be ordered due to cycles */
+	/** Titles of events that couldn't be ordered due to cycles (for the toast) */
 	cycleEvents: string[];
+	/**
+	 * Events that couldn't be ordered, with their notes so the result can be
+	 * navigable — the inspectable result view links each one (#723).
+	 */
+	cycleEventNotes: CycleEventNote[];
 	/** Any errors encountered */
 	errors: string[];
+}
+
+/** A cycle event paired with its note, so the result view can link to it (#723). */
+export interface CycleEventNote {
+	title: string;
+	file: TFile;
 }
 
 /**
@@ -74,6 +85,7 @@ export async function computeSortOrder(
 	const result: SortOrderResult = {
 		updatedCount: 0,
 		cycleEvents: [],
+		cycleEventNotes: [],
 		errors: []
 	};
 
@@ -214,6 +226,7 @@ export async function computeSortOrder(
 	for (const event of events) {
 		if (!visited.has(event.crId)) {
 			result.cycleEvents.push(event.title);
+			result.cycleEventNotes.push({ title: event.title, file: event.file });
 		}
 	}
 

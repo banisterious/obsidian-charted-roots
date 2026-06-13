@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Inspectable result after "Compute sort order"** ([#723](https://github.com/banisterious/obsidian-charted-roots/issues/723)): When Compute sort order hit a before/after loop, its only feedback was a transient notice — the named events (added in [#721](https://github.com/banisterious/obsidian-charted-roots/issues/721)) scrolled away and weren't actionable, so fixing a cycle meant hunting down each event by hand. The operation now opens a small result dialog whenever there are cycles or errors: it shows the updated count (or a "nothing to update" state) and lists the events that couldn't be ordered as clickable links that open the note, so you can jump straight to each culprit and fix its "Occurs before/after". A hint notes that opening a note closes the dialog and that re-running Compute shows the list again. The common quick-success case keeps the lightweight toast. Split from [#721](https://github.com/banisterious/obsidian-charted-roots/issues/721) ([@doctorwodka](https://github.com/doctorwodka)).
+
 ### Changed
 
 - **Extended name fields tucked into a collapsible "Extended name options" section** ([#717](https://github.com/banisterious/obsidian-charted-roots/issues/717)): After the name-prefix/suffix/surname-particle fields were added, the Add / Edit Person modal felt cramped and pushed the non-name options further down. Those fields — along with nickname, given name, surname(s), and (when editing) maiden and married names — now live in a collapsible **Extended name options** section, collapsed by default, leaving just the baseline **Name** field up top. Mirrors the existing "Step & adoptive parents" container. Requested by [@doctorwodka](https://github.com/doctorwodka).
