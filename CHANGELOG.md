@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.70] - 2026-06-14
+
+A reporter-driven release focused on fictional-worldbuilding correctness and entity linking. Calendarium calendars now appear throughout Charted Roots rather than on a single screen, and the integration's settings move next to the calendars they control. Linking a person's place no longer spawns a duplicate note when a place's display name differs from its filename; a marriage location can be unlinked; and the place picker shows each place's parent hierarchy so same-named places can be told apart. The Statistics date range is now era-aware and grouped per universe, so fictional BBY/ABY dates no longer pollute the span, and years before a calendar's earliest era read sensibly. Orphan-organization detection also catches parents referenced only by another organization. **1493 tests passing across 129 suites.**
+
 ### Changed
 
 - **Calendarium integration settings moved next to the calendars they control**: The "Calendarium integration" and "Sync Calendarium events" options now live in Settings → **Fictional date systems** (previously under Advanced → Integrations), directly above the list where imported Calendarium calendars appear. Toggling the integration now refreshes that list in place. Follow-up to [#725](https://github.com/banisterious/obsidian-charted-roots/issues/725).
