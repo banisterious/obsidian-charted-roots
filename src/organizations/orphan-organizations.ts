@@ -37,7 +37,9 @@ function toArray(value: unknown): unknown[] {
  * Collect every organization name a note's frontmatter references, across all
  * supported fields, deduped (case-insensitive, first spelling wins). Covers the
  * event `organizations` list, the flat `membership_orgs` list, the legacy
- * nested `memberships[].org`, and the legacy singular `organization` / `house`.
+ * nested `memberships[].org`, the legacy singular `organization` / `house`, and
+ * another organization's `parent_org` (so a parent referenced only by a child
+ * org, with no note of its own, is detected as an orphan too — #708).
  */
 export function collectOrgReferenceNames(fm: Record<string, unknown> | undefined | null): string[] {
 	if (!fm) return [];
@@ -60,6 +62,7 @@ export function collectOrgReferenceNames(fm: Record<string, unknown> | undefined
 	}
 	add(fm.organization);
 	add(fm.house);
+	add(fm.parent_org);
 
 	return names;
 }

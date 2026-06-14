@@ -96,7 +96,7 @@ function renderOrphanOrganizationsCard(
 	const content = card.querySelector('.crc-card__content') as HTMLElement;
 
 	content.createEl('p', {
-		text: 'These organizations are referenced by events or people but have no organization note. Create the note to manage them; existing references link up automatically.',
+		text: 'These organizations are referenced by events, people, or other organizations but have no organization note. Create the note to manage them; existing references link up automatically.',
 		cls: 'crc-text-muted crc-mb-3'
 	});
 

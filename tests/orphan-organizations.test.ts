@@ -37,6 +37,11 @@ describe('collectOrgReferenceNames (#708)', () => {
 		expect(collectOrgReferenceNames({ house: 'House Tully' })).toEqual(['House Tully']);
 	});
 
+	it("collects an organization's parent_org so a parent with no note is an orphan (#708)", () => {
+		expect(collectOrgReferenceNames({ cr_type: 'organization', parent_org: '[[Royal House of Alderaan]]' }))
+			.toEqual(['Royal House of Alderaan']);
+	});
+
 	it('dedupes case-insensitively across fields, first spelling wins', () => {
 		expect(collectOrgReferenceNames({
 			organizations: ['[[Jedi Order]]'],
