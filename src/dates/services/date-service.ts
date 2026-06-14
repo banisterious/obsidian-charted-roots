@@ -294,6 +294,22 @@ export class DateService {
 			}
 		}
 
+		// Pre-epoch: the year precedes every era's covered range — typically a
+		// calendar that defines only forward eras and no "before" era, so a date
+		// earlier than its earliest era has nothing to label it. Render it
+		// relative to that earliest era ("29 before GR") instead of a bare
+		// negative like "-29" (#729).
+		let earliest: { epoch: number; abbrev: string } | null = null;
+		for (const era of system.eras) {
+			if ((era.direction || 'forward') !== 'forward') continue;
+			if (!earliest || era.epoch < earliest.epoch) {
+				earliest = { epoch: era.epoch, abbrev: era.abbrev };
+			}
+		}
+		if (earliest) {
+			return `${earliest.epoch - year} before ${earliest.abbrev}`;
+		}
+
 		return String(year);
 	}
 

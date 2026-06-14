@@ -9,6 +9,7 @@ import { App, ButtonComponent, Modal, TFolder } from 'obsidian';
 import { FamilyGraphService, CollectionAnalytics } from '../core/family-graph';
 import { FolderFilterService } from '../core/folder-filter';
 import { createLucideIcon, LucideIconName } from './lucide-icons';
+import { formatDateRangeLine } from '../core/collection-date-range';
 
 /**
  * Modal to display folder-level statistics and health reports
@@ -75,8 +76,11 @@ export class FolderStatisticsModal extends Modal {
 		this.createStatCard(overviewGrid, 'home', 'Family groups', this.analytics.totalFamilies.toString());
 		this.createStatCard(overviewGrid, 'folder', 'Collections', this.analytics.totalUserCollections.toString());
 
-		if (this.analytics.dateRange.earliest && this.analytics.dateRange.latest) {
-			const dateRangeText = `${this.analytics.dateRange.earliest} - ${this.analytics.dateRange.latest}`;
+		const dateRanges = this.analytics.dateRange.byUniverse;
+		if (dateRanges.length > 0) {
+			const dateRangeText = dateRanges.length === 1
+				? formatDateRangeLine(dateRanges[0], false)
+				: dateRanges.map(r => formatDateRangeLine(r, true)).join('; ');
 			this.createStatCard(overviewGrid, 'calendar', 'Date range', dateRangeText);
 		}
 

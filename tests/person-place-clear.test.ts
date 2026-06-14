@@ -116,6 +116,65 @@ describe('updatePersonNote — clearing birth/death place (#680)', () => {
 	});
 });
 
+/**
+ * #724 — the marriage-location field in the spouse-metadata modal was
+ * link-only (no Unlink), so a linked marriage location couldn't be removed.
+ * The modal now clears `marriageLocation`/`marriageLocationCrId` on unlink;
+ * this fences the writer end of that contract — an empty marriage location in
+ * the saved metadata removes the spouse{n}_marriage_location(+_id) keys.
+ */
+describe('updatePersonNote — clearing marriage location (#724)', () => {
+	const SEEDED_SPOUSE = {
+		cr_type: 'person',
+		cr_id: 'person-anakin',
+		name: 'Anakin Skywalker',
+		spouse1: '[[Padme]]',
+		spouse1_id: 'person-padme',
+		spouse1_marriage_date: '22 BBY',
+		spouse1_marriage_location: '[[Varykino]]',
+		spouse1_marriage_location_id: 'place-varykino',
+	};
+
+	it('removes spouse marriage_location(+_id) when the location is unlinked but the spouse remains', async () => {
+		const app = new App();
+		const file = seedPerson(app, { ...SEEDED_SPOUSE });
+
+		await updatePersonNote(app, file, {
+			spouseMetadata: [
+				// Spouse kept (still has a marriage date → indexed path runs),
+				// but the location was unlinked → empty.
+				{ name: 'Padme', crId: 'person-padme', marriageDate: '22 BBY', marriageLocation: undefined },
+			],
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		expect('spouse1_marriage_location' in fm).toBe(false);
+		expect('spouse1_marriage_location_id' in fm).toBe(false);
+		// The spouse and unrelated metadata survive.
+		expect(fm.spouse1).toContain('Padme');
+		expect(fm.spouse1_marriage_date).toBe('22 BBY');
+	});
+
+	it('writes a place-resolved marriage_location when one is linked', async () => {
+		const app = new App();
+		const placeFile = makeTFile({ path: 'Places/Varykino-Naboo.md', basename: 'Varykino-Naboo', extension: 'md' });
+		app.vault._addFile(placeFile);
+		app.metadataCache._setFrontmatter(placeFile, { cr_type: 'place', cr_id: 'place-varykino', name: 'Varykino' });
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, {
+			spouseMetadata: [
+				{ name: 'Padme', crId: 'person-padme', marriageLocation: 'Varykino', marriageLocationCrId: 'place-varykino' },
+			],
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		// Resolved to the diverging-filename place note, not a bare [[Varykino]].
+		expect(fm.spouse1_marriage_location).toBe('[[Varykino-Naboo|Varykino]]');
+		expect(fm.spouse1_marriage_location_id).toBe('place-varykino');
+	});
+});
+
 describe('updatePersonNote — burial date (#682)', () => {
 	it('writes a provided burial date', async () => {
 		const app = new App();

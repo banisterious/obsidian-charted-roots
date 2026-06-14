@@ -9,6 +9,7 @@ import { setIcon, Setting } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import { StatisticsService } from '../services/statistics-service';
+import { formatDateRangeLine } from '../../core/collection-date-range';
 import { createUniverseService } from '../../universes/services/universe-service';
 import { UniverseWizardModal } from '../../universes/ui/universe-wizard';
 import type { StatisticsData, TopListItem } from '../types/statistics-types';
@@ -80,17 +81,18 @@ function renderOverviewCard(
 	createStatItem('Organizations', stats.entityCounts.organizations, 'building');
 	createStatItem('Canvases', stats.entityCounts.canvases, 'file');
 
-	// Date range
-	if (stats.dateRange.earliest || stats.dateRange.latest) {
+	// Date range — per-universe and era-aware (#719)
+	const ranges = stats.dateRange.byUniverse;
+	if (ranges.length > 0) {
 		const dateRangeDiv = content.createDiv({ cls: 'cr-date-range' });
 		dateRangeDiv.createEl('span', { cls: 'cr-date-range-label', text: 'Date range: ' });
-		const rangeText = `${stats.dateRange.earliest ?? '?'} — ${stats.dateRange.latest ?? '?'}`;
-		dateRangeDiv.createEl('span', { cls: 'cr-date-range-value', text: rangeText });
-		if (stats.dateRange.spanYears) {
-			dateRangeDiv.createEl('span', {
-				cls: 'crc-text-muted',
-				text: ` (${stats.dateRange.spanYears} years)`
-			});
+		if (ranges.length === 1) {
+			dateRangeDiv.createEl('span', { cls: 'cr-date-range-value', text: formatDateRangeLine(ranges[0], false) });
+		} else {
+			const list = dateRangeDiv.createEl('ul', { cls: 'cr-date-range-list' });
+			for (const range of ranges) {
+				list.createEl('li', { cls: 'cr-date-range-value', text: formatDateRangeLine(range, true) });
+			}
 		}
 	}
 

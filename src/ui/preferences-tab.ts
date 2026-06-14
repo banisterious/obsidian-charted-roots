@@ -1275,7 +1275,6 @@ export function renderCanvasLayoutCard(
 				slider
 					.setLimits(min, max, step)
 					.setValue(getValue())
-					.setDynamicTooltip()
 					.onChange(async (value) => {
 						setValue(value);
 						await plugin.saveSettings();

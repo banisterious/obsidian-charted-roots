@@ -24,6 +24,18 @@
   font-weight: var(--font-semibold);
 }
 
+/* Per-universe date-range list when more than one universe is present (#719) */
+.cr-date-range-list,
+.cr-sv-date-range-list {
+  margin: var(--size-4-1) 0 0;
+  padding-left: var(--size-4-4);
+}
+
+.cr-date-range-list li,
+.cr-sv-date-range-list li {
+  margin-bottom: var(--size-4-1);
+}
+
 /* Progress rows for completeness */
 .cr-stat-progress-row {
   margin-bottom: var(--size-4-3);

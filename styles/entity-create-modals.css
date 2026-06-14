@@ -225,6 +225,14 @@
   font-weight: 400;
 }
 
+/* Parent chain / filename shown under a place name to disambiguate
+   same-named places in the picker (#724). */
+.crc-picker-item__hierarchy {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 .crc-picker-item__dna-badge {
   display: inline-flex;
   align-items: center;

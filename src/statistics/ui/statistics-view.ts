@@ -10,6 +10,7 @@ import type CanvasRootsPlugin from '../../../main';
 import { capitalize, pluralize } from '../../utils/format-utils';
 import { StatisticsService } from '../services/statistics-service';
 import { summarizeCoreIssues } from '../services/core-issues-summary';
+import { formatDateRangeLine } from '../../core/collection-date-range';
 import type {
 	StatisticsData,
 	StatisticsViewState,
@@ -428,19 +429,18 @@ export class StatisticsView extends ItemView {
 		createEntityRow('Universes', this.stats.entityCounts.universes, 'globe');
 		createEntityRow('Canvases', this.stats.entityCounts.canvases, 'file');
 
-		// Date range
-		if (this.stats.dateRange.earliest || this.stats.dateRange.latest) {
+		// Date range — per-universe and era-aware (#719)
+		const ranges = this.stats.dateRange.byUniverse;
+		if (ranges.length > 0) {
 			const dateRange = content.createDiv({ cls: 'cr-sv-date-range' });
 			dateRange.createSpan({ text: 'Date range: ', cls: 'cr-sv-date-range-label' });
-			dateRange.createSpan({
-				text: `${this.stats.dateRange.earliest ?? '?'} — ${this.stats.dateRange.latest ?? '?'}`,
-				cls: 'cr-sv-date-range-value'
-			});
-			if (this.stats.dateRange.spanYears) {
-				dateRange.createSpan({
-					text: ` (${this.stats.dateRange.spanYears} years)`,
-					cls: 'crc-text-muted'
-				});
+			if (ranges.length === 1) {
+				dateRange.createSpan({ text: formatDateRangeLine(ranges[0], false), cls: 'cr-sv-date-range-value' });
+			} else {
+				const list = dateRange.createEl('ul', { cls: 'cr-sv-date-range-list' });
+				for (const range of ranges) {
+					list.createEl('li', { text: formatDateRangeLine(range, true), cls: 'cr-sv-date-range-value' });
+				}
 			}
 		}
 

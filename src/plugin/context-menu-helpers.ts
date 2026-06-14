@@ -356,7 +356,7 @@ export function addSourceToPersonNote(plugin: CanvasRootsPlugin, file: TFile): v
 					? (Array.isArray(fm.sources) ? fm.sources.map(String) : [String(fm.sources)])
 					: [];
 
-				fm.sources = [...existingLinks, createSmartWikilink(source.title, plugin.app, source.crId)];
+				fm.sources = [...existingLinks, createSmartWikilink(source.title, plugin.app, source.crId, 'source')];
 				fm.sources_id = [...existingIds, source.crId];
 			});
 

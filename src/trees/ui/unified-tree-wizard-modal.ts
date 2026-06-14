@@ -890,7 +890,6 @@ export class UnifiedTreeWizardModal extends Modal {
 				.addSlider(slider => slider
 					.setLimits(0, 10, 1)
 					.setValue(this.formData.maxAncestorGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.formData.maxAncestorGenerations = value;
 					}));
@@ -903,7 +902,6 @@ export class UnifiedTreeWizardModal extends Modal {
 				.addSlider(slider => slider
 					.setLimits(0, 10, 1)
 					.setValue(this.formData.maxDescendantGenerations)
-					.setDynamicTooltip()
 					.onChange(value => {
 						this.formData.maxDescendantGenerations = value;
 					}));
@@ -1425,7 +1423,6 @@ export class UnifiedTreeWizardModal extends Modal {
 			.addSlider(slider => slider
 				.setLimits(10, 32, 2)
 				.setValue(this.formData.excalidrawFontSize)
-				.setDynamicTooltip()
 				.onChange(value => { this.formData.excalidrawFontSize = value; }));
 
 		// Fill style
