@@ -72,6 +72,41 @@ describe('DateService.formatCanonicalYear — fictional-era inverse formatting (
 	});
 });
 
+describe('DateService.formatCanonicalYear — pre-epoch years (#729)', () => {
+	// A calendar with a single forward era and no "before" era: any year before
+	// its epoch has no era to label it.
+	const service = createDateService({
+		enableFictionalDates: true,
+		showBuiltInDateSystems: true,
+		fictionalDateSystems: [{
+			id: 'gaean_reach',
+			name: 'Gaean Reach Calendar',
+			universe: 'Gaean Reach',
+			eras: [{ id: 'gr', name: 'Gaean Reach', abbrev: 'GR', epoch: 0, direction: 'forward' }],
+			defaultEra: 'gr'
+		}]
+	});
+
+	it('renders a pre-epoch year relative to the earliest era instead of a bare negative', () => {
+		expect(service.formatCanonicalYear(-29, 'Gaean Reach')).toBe('29 before GR');
+		expect(service.formatCanonicalYear(-500, 'Gaean Reach')).toBe('500 before GR');
+	});
+
+	it('still labels on-or-after-epoch years normally', () => {
+		expect(service.formatCanonicalYear(0, 'Gaean Reach')).toBe('0 GR');
+		expect(service.formatCanonicalYear(1538, 'Gaean Reach')).toBe('1538 GR');
+	});
+
+	it('leaves real-world (no universe) negatives as the bare integer', () => {
+		// No fictional system in play — "before" phrasing doesn't apply.
+		expect(service.formatCanonicalYear(-100)).toBe('-100');
+	});
+
+	it('does not trigger for calendars with a backward era (BBY covers pre-epoch)', () => {
+		expect(service.formatCanonicalYear(-82, 'Star Wars')).toBe('82 BBY');
+	});
+});
+
 describe('DateService.formatCanonicalYear — round-trip with parseDate (#453)', () => {
 	const service = makeService();
 
