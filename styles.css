@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-13 20:09:01 UTC
+ * - Generated: 2026-06-14 20:14:01 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -31794,7 +31794,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: STATISTICS.CSS
    ========================================================================== */
 
-/* Component Size: 1817 lines, 36.5 KB */
+/* Component Size: 1829 lines, 36.77 KB */
 
 /**
  * Statistics Tab & View Styles
@@ -31820,6 +31820,18 @@ body.cr-media-linker-active .suggestion-container {
 
 .cr-date-range-value {
   font-weight: var(--font-semibold);
+}
+
+/* Per-universe date-range list when more than one universe is present (#719) */
+.cr-date-range-list,
+.cr-sv-date-range-list {
+  margin: var(--size-4-1) 0 0;
+  padding-left: var(--size-4-4);
+}
+
+.cr-date-range-list li,
+.cr-sv-date-range-list li {
+  margin-bottom: var(--size-4-1);
 }
 
 /* Progress rows for completeness */
@@ -41279,11 +41291,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-13 20:09:01 UTC
+ * Build completed: 2026-06-14 20:14:02 UTC
  * Components processed: 50
- * Total lines: 40810
- * Total size: 837.75 KB
- * Build duration: 0.59 seconds
+ * Total lines: 40822
+ * Total size: 838.03 KB
+ * Build duration: 1.11 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
@@ -41319,7 +41331,7 @@ body.cr-media-linker-active .suggestion-container {
  * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
- * - statistics.css: 1817 lines, 36.5 KB
+ * - statistics.css: 1829 lines, 36.77 KB
  * - command-menu.css: 73 lines, 1.6 KB
  * - dashboard.css: 491 lines, 9.63 KB
  * - universe-wizard.css: 617 lines, 11.13 KB

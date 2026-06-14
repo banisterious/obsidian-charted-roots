@@ -15,6 +15,7 @@ import { getErrorMessage } from '../core/error-utils';
 import { pluralize } from '../utils/format-utils';
 import type { PersonNode } from '../core/family-graph';
 import { aggregateCollections, type AggregatedCollection } from '../core/collections-aggregator';
+import { formatDateRangeLine } from '../core/collection-date-range';
 
 export type CollectionBrowseMode = 'all' | 'families' | 'collections';
 
@@ -495,10 +496,15 @@ function loadAnalyticsData(container: HTMLElement, plugin: CanvasRootsPlugin): v
 				});
 			}
 
-			if (analytics.dateRange.earliest && analytics.dateRange.latest) {
+			const dateRanges = analytics.dateRange.byUniverse;
+			if (dateRanges.length === 1) {
 				highlightsList.createEl('li', {
-					text: `Date range: ${analytics.dateRange.earliest} - ${analytics.dateRange.latest} (${analytics.dateRange.span} years)`
+					text: `Date range: ${formatDateRangeLine(dateRanges[0], false)}`
 				});
+			} else if (dateRanges.length > 1) {
+				for (const range of dateRanges) {
+					highlightsList.createEl('li', { text: `Date range — ${formatDateRangeLine(range, true)}` });
+				}
 			}
 		}
 

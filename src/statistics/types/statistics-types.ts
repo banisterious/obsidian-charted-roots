@@ -5,6 +5,7 @@
  */
 
 import type { TFile } from 'obsidian';
+import type { DisplayDateRange } from '../../core/collection-date-range';
 
 /**
  * Entity counts across all note types
@@ -129,12 +130,10 @@ export type QualityIssueType =
 	| 'dateInconsistencies';
 
 /**
- * Date range across all entities
+ * Date range across all entities, grouped per universe and era-aware (#719).
  */
 export interface DateRange {
-	earliest: string | null;
-	latest: string | null;
-	spanYears: number | null;
+	byUniverse: DisplayDateRange[];
 }
 
 /**

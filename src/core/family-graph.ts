@@ -15,7 +15,7 @@ import type { CanvasRootsSettings, ValueAliasSettings } from '../settings';
 import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
 import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
-import { computeCollectionDateRange } from './collection-date-range';
+import { computeCollectionDateRange, type DisplayDateRange } from './collection-date-range';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
@@ -246,9 +246,8 @@ export interface CollectionAnalytics {
 		}>;
 	};
 	dateRange: {
-		earliest?: number;
-		latest?: number;
-		span?: number;
+		/** Per-universe, era-aware spans with display-ready labels (#719). */
+		byUniverse: DisplayDateRange[];
 	};
 }
 
@@ -2629,8 +2628,25 @@ export class FamilyGraphService {
 		}
 
 		// Calculate the date range across BOTH birth and death years, so it
-		// reflects the whole period the collection covers (#714).
-		const { earliest: earliestYear, latest: latestYear } = computeCollectionDateRange(allPeople);
+		// reflects the whole period the collection covers (#714). Resolve years
+		// through the DateService so fictional BBY/ABY dates use signed canonical
+		// years instead of being misread as ordinary years, and group per
+		// universe so unrelated timelines aren't conflated (#719). Falls back to
+		// a leading-4-digit read when no DateService is wired (pre-#695 behavior).
+		const fallbackYear = (d: string): number | null => {
+			const m = d.match(/^(\d{4})/);
+			return m ? parseInt(m[1], 10) : null;
+		};
+		const rawRanges = computeCollectionDateRange(
+			allPeople,
+			(d, u) => this.dateService ? this.dateService.getCanonicalYear(d, u) : fallbackYear(d)
+		);
+		const dateRangeByUniverse: DisplayDateRange[] = rawRanges.ranges.map(r => ({
+			universe: r.universe,
+			earliest: this.dateService ? this.dateService.formatCanonicalYear(r.earliest, r.universe) : String(r.earliest),
+			latest: this.dateService ? this.dateService.formatCanonicalYear(r.latest, r.universe) : String(r.latest),
+			spanYears: r.span
+		}));
 
 		// Collection size statistics
 		// Normalize collection structure for consistent handling
@@ -2679,9 +2695,7 @@ export class FamilyGraphService {
 				}))
 			},
 			dateRange: {
-				earliest: earliestYear,
-				latest: latestYear,
-				span: earliestYear && latestYear ? latestYear - earliestYear : undefined
+				byUniverse: dateRangeByUniverse
 			}
 		};
 	}

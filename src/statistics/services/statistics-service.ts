@@ -126,13 +126,22 @@ export class StatisticsService {
 	 */
 	private getFamilyGraphService(): FamilyGraphService {
 		if (!this.familyGraphService) {
-			this.familyGraphService = new FamilyGraphService(this.app);
-			this.familyGraphService.setSettings(this.settings);
-			this.familyGraphService.setPropertyAliases(this.settings.propertyAliases);
-			this.familyGraphService.setValueAliases(this.settings.valueAliases);
-			const folderFilter = this.createFolderFilter();
-			if (folderFilter) {
-				this.familyGraphService.setFolderFilter(folderFilter);
+			if (this.plugin) {
+				// Use the plugin's fully-configured graph so the date range is
+				// era-aware — its DateService carries the universe→calendar
+				// resolver (#650). Building a bare graph here left the date range
+				// falling back to a non-era-aware leading-digit read, so fictional
+				// universes were mislabelled or dropped entirely (#719).
+				this.familyGraphService = this.plugin.createFamilyGraphService();
+			} else {
+				this.familyGraphService = new FamilyGraphService(this.app);
+				this.familyGraphService.setSettings(this.settings);
+				this.familyGraphService.setPropertyAliases(this.settings.propertyAliases);
+				this.familyGraphService.setValueAliases(this.settings.valueAliases);
+				const folderFilter = this.createFolderFilter();
+				if (folderFilter) {
+					this.familyGraphService.setFolderFilter(folderFilter);
+				}
 			}
 		}
 		return this.familyGraphService;
@@ -507,13 +516,9 @@ export class StatisticsService {
 	 * Compute date range
 	 */
 	private computeDateRange(analytics: ReturnType<FamilyGraphService['calculateCollectionAnalytics']>): DateRange {
-		const { earliest, latest, span } = analytics.dateRange;
-
-		return {
-			earliest: earliest ? String(earliest) : null,
-			latest: latest ? String(latest) : null,
-			spanYears: span ?? null
-		};
+		// Era-aware, per-universe ranges are computed upstream in the family graph
+		// (which holds the DateService); pass them through (#719).
+		return { byUniverse: analytics.dateRange.byUniverse };
 	}
 
 	/**
