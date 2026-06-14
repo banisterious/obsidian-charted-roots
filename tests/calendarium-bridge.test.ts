@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { App } from 'obsidian';
 import { CalendariumBridge } from '../src/integrations/calendarium-bridge';
 
@@ -31,11 +31,13 @@ function fakeCalendariumApi(calendars: FakeCalendar[]) {
 }
 
 function setGlobal(api: unknown): void {
-	(globalThis as unknown as { window: { Calendarium?: unknown } }).window = { Calendarium: api };
+	// vi.stubGlobal sets the global without referencing `globalThis` directly
+	// (which the obsidian lint rule bans); the bridge reads `window.Calendarium`.
+	vi.stubGlobal('window', { Calendarium: api });
 }
 
 afterEach(() => {
-	delete (globalThis as unknown as { window?: unknown }).window;
+	vi.unstubAllGlobals();
 });
 
 describe('CalendariumBridge — synchronous API grab (#725)', () => {
@@ -53,7 +55,7 @@ describe('CalendariumBridge — synchronous API grab (#725)', () => {
 	});
 
 	it('returns no calendars when window.Calendarium is absent', () => {
-		(globalThis as unknown as { window: Record<string, unknown> }).window = {};
+		vi.stubGlobal('window', {});
 		const bridge = new CalendariumBridge({} as App);
 		expect(bridge.importCalendars()).toEqual([]);
 	});
