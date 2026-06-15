@@ -32,6 +32,7 @@ export {
 	getPlaceTypesByCategory,
 	isBuiltInPlaceTypeCategory,
 	getAllPlaceTypeCategories,
+	reorderPlaceTypeCategories,
 	getCategoryHierarchyLevelRange,
 	getCategoryForHierarchyLevel
 } from './constants/default-place-types';

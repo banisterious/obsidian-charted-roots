@@ -421,6 +421,34 @@ export function getAllPlaceTypeCategories(
 }
 
 /**
+ * Move a category one step up or down within the given display order and return
+ * a flat, sequential renumbering (0, 1, 2, …) for every category.
+ *
+ * Reordering by raw sort-order numbers is fragile because the built-in
+ * categories occupy fixed positions (0–4) a custom category can't out-rank
+ * (#733). Renumbering the whole list sequentially after each move makes the
+ * order fully WYSIWYG: the caller persists each returned `sortOrder` (built-ins
+ * via a customization, custom categories on their own definition). A move at
+ * the top/bottom boundary is a no-op but still returns the sequential numbering,
+ * so callers can persist unconditionally.
+ */
+export function reorderPlaceTypeCategories(
+	orderedIds: ReadonlyArray<string>,
+	categoryId: string,
+	direction: 'up' | 'down'
+): Array<{ id: string; sortOrder: number }> {
+	const ids = [...orderedIds];
+	const i = ids.indexOf(categoryId);
+	if (i !== -1) {
+		const j = direction === 'up' ? i - 1 : i + 1;
+		if (j >= 0 && j < ids.length) {
+			[ids[i], ids[j]] = [ids[j], ids[i]];
+		}
+	}
+	return ids.map((id, idx) => ({ id, sortOrder: idx }));
+}
+
+/**
  * Get hierarchy level range for a category
  */
 export function getCategoryHierarchyLevelRange(categoryId: string): { min: number; max: number } {

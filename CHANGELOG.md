@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Reorder place type categories with up/down controls** ([#733](https://github.com/banisterious/obsidian-charted-roots/issues/733)): The Place type manager (Control Center → Places) now has move-up/move-down buttons on each category. Previously a custom category couldn't be sorted above the built-in categories — they occupy fixed sort positions a numeric order couldn't out-rank — so e.g. an "Astrographical" category was stuck below Geographic and Political divisions. Moving a category now renumbers the whole list, so any category (custom or built-in) can be placed anywhere, including at the very top. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Changed
 
 - **Create/edit place type modal: the quick level presets now have breathing room** from the dynamic hierarchy text above them, instead of sitting flush against it. Minor spacing polish raised in discussion #728 by [@DigitalDreamn](https://github.com/DigitalDreamn).
