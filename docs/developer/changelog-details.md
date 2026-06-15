@@ -4,6 +4,8 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.70 Release Cohort](#v02270-release-cohort-2026-06-14)
+- [v0.22.69 Release Cohort](#v02269-release-cohort-2026-06-12)
 - [v0.22.68 Release Cohort](#v02268-release-cohort-2026-06-10)
 - [v0.22.67 Release Cohort](#v02267-release-cohort-2026-06-09)
 - [v0.22.66 Release Cohort](#v02266-release-cohort-2026-06-08)
@@ -21,6 +23,54 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.70 Release Cohort (2026-06-14)
+
+A reporter-driven cohort centred on fictional-worldbuilding correctness and entity linking, with a deprecation cleanup alongside. Notable implementation work:
+
+**Place linking by note type (#724).** `createSmartWikilink` in `src/core/person-note-writer.ts` resolved a `cr_id` by searching only for a `cr_type: person` note (a regression from #559), so a place's id never matched and a diverging name/filename — `Essex-MA-USA.md` with `name: Essex` — fell back to filename matching, which can't satisfy a name that differs from the file, and spawned a new `Essex.md`. The helper now takes an `expectedType` and resolves by the correct note type, so the link lands on the existing place. Two related gaps land alongside: a linked marriage location can now be unlinked from the Person modal (`src/ui/create-person-modal.ts`, previously link-only), and the place picker (`src/ui/place-picker.ts`) shows each place's parent hierarchy (e.g. "Massachusetts, United States") so two same-named places can be told apart. `src/plugin/context-menu-helpers.ts` passes the expected type through.
+
+**Calendarium API read on every bridge access (#725).** `src/integrations/calendarium-bridge.ts` only set its API reference inside the Control Center Date Systems card's async path, so every other read — the event modal's date-system dropdown and other menus — saw a null API and returned no calendars. The bridge now grabs `window.Calendarium` synchronously on each read and logs what it finds (or why it found nothing) for easier diagnosis, so calendars surface consistently wherever the integration is used.
+
+**Calendarium settings moved to Fictional date systems (#725).** The "Calendarium integration" and "Sync Calendarium events" toggles lived under Advanced → Integrations, two sections away from the Fictional date systems list where imported calendars appear — likely why the integration read as not working. `src/settings.ts` moves both into that section, directly above the list, and refreshes the list in place when the integration is toggled.
+
+**Orphan parent-org detection (#708).** An organization named only as another org's `parent_org` (Settings → "Parent organization"), with no note of its own, wasn't surfaced under Orphan organizations. `collectOrgReferenceNames` in `src/organizations/orphan-organizations.ts` now scans `parent_org` alongside event, person, and membership references, and the card copy in `src/organizations/ui/organizations-tab.ts` notes organizations as a possible referrer.
+
+**Era-aware, per-universe Statistics date range (#719).** The Entity overview read the leading four digits of each date, so a fictional `8082 BBY` parsed as the year 8082 and pooled with real-world dates into a nonsensical span. Years now resolve through `DateService` canonical years and the range is grouped per universe (`src/core/collection-date-range.ts`, `src/statistics/services/statistics-service.ts`): a real-world span stays Gregorian, fictional universes read era-correct (e.g. `8082 BBY — 23 ABY`), and a mixed vault lists each separately. The same per-universe range feeds the Collections (`src/ui/collections-tab.ts`) and folder-statistics (`src/ui/folder-statistics-modal.ts`) views via `src/core/family-graph.ts`.
+
+**Pre-epoch fictional years (#729).** A canonical year before every era a calendar defines — common when a calendar has only forward eras and no "before"-style era — rendered as a bare signed number, e.g. a Gaean Reach range showing `-29 — 1538 GR`. `formatCanonicalYear` in `src/dates/services/date-service.ts` now renders such a year relative to the earliest era, e.g. `29 before GR`, anywhere canonical years display — including the Statistics date range and the map time slider. Surfaced from #719.
+
+**Deprecated slider tooltip cleanup.** Obsidian's slider now always shows its value inline, making `setDynamicTooltip()` a deprecated no-op. All 21 calls were dropped across settings, reports, wizards, and modals (`src/settings.ts`, `src/reports/ui/report-generator-modal.ts`, `src/trees/ui/unified-tree-wizard-modal.ts`, `src/ui/duplicate-detection-modal.ts`, `src/ui/preferences-tab.ts`, `src/ui/split-wizard-modal.ts`, `src/dates/ui/events-tab.ts`). No behavior change.
+
+**Files created:** none new beyond tests. Suite total 1493 across 129 suites.
+
+---
+
+## v0.22.69 Release Cohort (2026-06-12)
+
+A reporter-driven cohort focused on date handling and event ordering, with a Person-modal layout refresh alongside. Notable implementation work:
+
+**GEDCOM date format coverage and ambiguity surfacing (#716).** Several common formats imported blank with no warning — full month names (`27 June 1885`), month-and-year (`October 1848`), dotted/synonym qualifiers (`Abt. 1809`, `About 1870`, `Circa`), `DD/MM/YYYY` slash dates, and event-label-prefixed dates (`Bapt 18 Dec 1690`). `src/gedcom/gedcom-parser.ts` now parses these, and a new `src/gedcom/gedcom-date-warnings.ts` collects genuinely ambiguous (`05/06/1990`, read day/month), label-recovered, or unparseable dates so `src/ui/import-wizard-modal.ts` lists them in the import preview's warnings panel instead of dropping them silently. A pre-import scan reports each couple's marriage date once rather than once per spouse (`src/gedcom/gedcom-importer-v2.ts`).
+
+**Phantom event-sort cycles and named real cycles (#721).** A reciprocal before/after pair — A "Occurs before" B, B "Occurs after" A — encodes one edge A→B, but `src/events/services/sort-order-service.ts` counted in-degree per relationship, so the target's in-degree hit 2 and never resolved; the topological sort reported a phantom cycle and left sort order stale. In-degree is now counted only for new edges. When a genuine cycle exists, the notice and console list the event titles instead of only a count (`src/dates/ui/events-tab.ts`, `src/events/ui/create-event-modal.ts`).
+
+**Era-date month/day precision (#722).** An era date with month or day precision such as `DE 1264-08-15` parsed down to just its year, so two events sharing an era-year could only tiebreak on a raw-string comparison, which mis-sorts across eras (a December date landing before a March date with the same canonical year). `src/dates/parser/fictional-date-parser.ts` now records month and day — captured before the negative-year suffix strip, so `EP -01-12` keeps both the negative year and the month — via new fields on `src/dates/types/date-types.ts`, and the event sort in `sort-order-service.ts` orders by them within the same canonical year.
+
+**Inspectable result after Compute sort order (#723).** Compute sort order's only feedback on a before/after loop was a transient notice — the named events (added in #721) scrolled away and weren't actionable. A new `src/events/ui/sort-order-result-modal.ts` now opens a result dialog whenever there are cycles or errors: it shows the updated count (or a "nothing to update" state) and lists unorderable events as clickable links that open each culprit note, with a hint that opening a note closes the dialog and that re-running shows the list again. `SortOrderResult` carries note references for navigation; the quick-success case keeps the lightweight toast.
+
+**Collapsible extended name options (#717).** After the name-prefix/suffix/surname-particle fields landed, the Add / Edit Person modal felt cramped. `src/ui/create-person-modal.ts` moves nickname, given name, surname(s), the name parts, and (in edit mode) maiden and married names into a collapsible **Extended name options** section, collapsed by default, leaving just the baseline **Name** field at the top — reusing the existing step/adoptive-parents collapsible pattern.
+
+**Timeline place context uses display name (#720).** The Dynamic Timeline Block's place-context hierarchy (e.g. "Born in London, England") built its leaf segment from the place wikilink's target — the file name — rather than the place note's display name, so vaults disambiguating same-named places by filename (two "Essex" notes filed as `Essex-EssexCo-MA-USA` and `Essex-EssexCo-Ontario-Canada`) showed the filename. `src/dynamic-content/renderers/timeline-renderer.ts` now builds the leaf from `node.name`, corrected even when the place has no ancestors.
+
+**Statistics date range counts death years (#714).** The Entity overview anchored each person on a single year — birth, or death only when no birth — dropping death dates whenever a birth existed, so the span understated the period and could collapse to a point like "1900 — 1900". A new pure `computeCollectionDateRange` in `src/core/collection-date-range.ts` pools both birth and death years, so a lone 1900–1990 person reads "1900 — 1990 (90 years)"; the shared analytics in `src/core/family-graph.ts` also feed the Control Center stats tab, reports, and collections view.
+
+**Orphan card row layout (#708).** The rows in the Control Center's **Orphan organizations** and **Orphan universe values** cards relied on flex utility classes (`crc-flex`, `crc-justify-between`, `crc-items-center`, `crc-code`) that were never defined, so name, reference count, and **Create note** button ran together with no spacing. `styles/control-center.css` now defines the utilities, so both cards lay out correctly — name and count spaced, buttons right-aligned.
+
+**Parenthetical name disambiguators in data-quality ops (#715).** People disambiguated with a balanced parenthetical title — `Jon Smith (son of Robert)` — were misread by two batch operations: "Remove placeholder values" flagged such references for deletion (its malformed-link check matched any link ending in `)`), and "Normalize name formatting" re-cased the annotation to `(Son Of Robert)`. The malformed-wikilink check and name-casing were extracted into a shared, unit-tested `src/ui/data-quality-value-checks.ts` (removing the duplicated preview/apply copies in `src/ui/data-quality-batch-ops.ts`): malformed-link detection now requires an unbalanced closing paren, and name normalization leaves parenthetical annotations verbatim.
+
+**Files created:** `src/gedcom/gedcom-date-warnings.ts`, `src/events/ui/sort-order-result-modal.ts`, `src/ui/data-quality-value-checks.ts`. Suite total 1476 across 128 suites.
 
 ---
 

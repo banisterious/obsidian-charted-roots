@@ -184,7 +184,7 @@ The Control Center includes a dedicated **Organizations** tab with:
 
 ### Orphan Organizations Card
 
-Lists organization names that are referenced but have no organization note yet, gathered from events (the `organizations` field) and from person memberships. This mirrors the [Orphan Universe Strings card](Universe-Notes#orphan-universe-strings-card) for universes and helps you spot organizations that should be created.
+Lists organization names that are referenced but have no organization note yet, gathered from events (the `organizations` field), from person memberships, and from other organizations that name them as a parent (the `parent_org` field). This mirrors the [Orphan Universe Strings card](Universe-Notes#orphan-universe-strings-card) for universes and helps you spot organizations that should be created.
 
 Each orphan has a **Create note** button (and a **Create all** button to handle the whole list at once). Creating the note links up the existing references automatically and backfills the new organization's `cr_id` onto the person notes that referenced it.
 

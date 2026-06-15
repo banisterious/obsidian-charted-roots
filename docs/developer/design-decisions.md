@@ -4,6 +4,9 @@ This document records architectural decisions (ADRs) for Charted Roots.
 
 ## Table of Contents
 
+- [Era-Aware Per-Universe Statistics Date Range](#era-aware-per-universe-statistics-date-range-2026-06-14)
+- [Calendarium Bridge Reads the API Synchronously on Each Access](#calendarium-bridge-reads-the-api-synchronously-on-each-access-2026-06-14)
+- [Shared Wikilink Builder Takes an Expected Note Type](#shared-wikilink-builder-takes-an-expected-note-type-2026-06-14)
 - [Settings Tab Render Host on Obsidian 1.13.1](#settings-tab-render-host-on-obsidian-1131-2026-06-10)
 - [Place-Context Depth Sentinel](#place-context-depth-sentinel-2026-06-10)
 - [Orphan-Organization Adoption](#orphan-organization-adoption-2026-06-10)
@@ -15,6 +18,47 @@ This document records architectural decisions (ADRs) for Charted Roots.
 - [Switch to family-chart Library](#switch-to-family-chart-library-2025-11-20)
 - [Layout Engine Extraction](#layout-engine-extraction-2025-11-20)
 - [Canvas-Only Mode Removal](#canvas-only-mode-removal-2025-11-20)
+
+---
+
+## Era-Aware Per-Universe Statistics Date Range (2026-06-14)
+
+**Decision:** Resolve the Statistics date range through `DateService` canonical years and group it per universe rather than reading the leading four digits of each date and pooling everything into one span.
+
+**Context:**
+
+[#719](https://github.com/banisterious/obsidian-charted-roots/issues/719) (split from #714, raised in discussion #712) reported that the Entity overview's "Date range" took the first four digits of each date, so a fictional `8082 BBY` was treated as the ordinary year 8082 and pooled with real-world dates into a nonsensical span.
+
+**Decision points:**
+
+- **Resolve through canonical years, not a digit read.** The range now resolves each date through the same era-aware machinery the timeline uses (`DateService.getCanonicalYear`, returning a signed canonical year), so `8082 BBY` lands as a large negative year instead of being misread as 8082. The helper (`src/core/collection-date-range.ts`) stays pure by taking an injected `resolveYear` callback; production wires it to `DateService`.
+- **Group per universe, never pool.** Years are grouped by a person's `universe` (absent = real-world). A real-world vault shows a plain Gregorian span, each fictional universe shows an era-correct one, and a mixed vault lists each separately rather than conflating them. Real-world sorts first, then universes alphabetically, for stable display order. The same per-universe range feeds the Collections and folder-statistics views.
+- **Fallback when no `DateService` is wired.** When no `resolveYear`/`DateService` is available, the helper falls back to a leading four-digit read of each date — the prior behaviour — so the range degrades gracefully rather than failing in contexts where the dates layer isn't injected.
+
+---
+
+## Calendarium Bridge Reads the API Synchronously on Each Access (2026-06-14)
+
+**Decision:** Have the Calendarium bridge grab `window.Calendarium` synchronously on each read via `ensureApi()`, rather than relying on the async `initialize()` path to populate `this.api`.
+
+**Context:**
+
+[#725](https://github.com/banisterious/obsidian-charted-roots/issues/725) reported that with the integration set to "read," Calendarium calendars didn't appear in the event modal's date-system dropdown or other menus. The bridge only populated its API reference on one code path (the Control Center's Date Systems card), so every other caller saw no calendars.
+
+**Decision points:**
+
+- **Read on access, not via a one-time init.** The async `initialize()` (which waits on `onSettingsLoaded`) was never called, so `this.api` stayed null and every read returned empty. Calendarium assigns `window.Calendarium = this.api` synchronously during its own load and fires `onSettingsLoaded` immediately once settings are loaded, so by the time any CR UI reads the bridge the global is ready. `ensureApi()` grabs it directly on each access and caches it once found, so every consumer (`getCalendarNames`, `getCalendarAPI`, `importCalendars`) sees calendars consistently.
+- **Keep `initialize()` as a no-op-tolerant path.** The historical async path is left in place rather than removed, but it is no longer load-bearing — `ensureApi()` is the source of truth, and the bridge logs what it finds (or why it found nothing) for easier diagnosis.
+
+---
+
+## Shared Wikilink Builder Takes an Expected Note Type (2026-06-14)
+
+**Decision:** `createSmartWikilink` (`src/core/person-note-writer.ts`) takes an `expectedType: NoteType` argument so it resolves place and source references by the correct note type, not by assuming person.
+
+**Context:**
+
+[#724](https://github.com/banisterious/obsidian-charted-roots/issues/724) reported that linking a person's place created a duplicate note when the place's display name differed from its filename. The shared builder resolved references by looking only for a *person* with the matching id (a regression from #559), so a place's id never resolved and it fell back to filename matching, which a diverging name can't satisfy. Callers now pass `expectedType` (`'place'`, `'source'`, defaulting to `'person'`) so the link lands on the existing note.
 
 ---
 

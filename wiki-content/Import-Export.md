@@ -120,10 +120,12 @@ Charted Roots provides full round-trip support for GEDCOM 5.5.1 format, allowing
 Before any files are created, Charted Roots analyzes the GEDCOM data and shows a quality preview modal if issues or place name variants are detected. This allows you to:
 
 - **Review detected issues** organized by category:
-  - **Dates**: Death before birth, future dates, events before birth/after death
+  - **Dates**: Death before birth, future dates, events before birth/after death, plus ambiguous or unparseable dates
   - **Relationships**: Gender/role mismatches, parent younger than child
   - **References**: Orphan references to non-existent records
   - **Data**: Missing names, unknown sex, no dates recorded
+
+GEDCOM import handles a wide range of date formats: full month names (`27 June 1885`), month and year (`October 1848`), qualifiers such as `Abt.`, `About`, and `Circa`, `DD/MM/YYYY` slash dates, and dates carrying an event label (`Bapt 18 Dec 1690`, `Buried 11 April 1758`). Dates that are genuinely ambiguous (`05/06/1990`, read as day/month), recovered from an event label, or unparseable are listed in the preview's warnings so you can review them before importing rather than having them disappear silently.
 
 - **Standardize place name variants** before import:
   - Choose canonical forms for country names (e.g., "USA" vs "United States of America")

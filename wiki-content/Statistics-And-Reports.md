@@ -66,7 +66,7 @@ The Entity Overview section displays counts for each entity type in your vault:
 | **Organizations** | Total organization notes |
 | **Canvases** | Total canvas files |
 
-Also shows the date range spanning all entities (earliest to latest dates).
+Also shows the date range spanning all entities, counting both birth and death years. The range is era-aware and grouped per universe: real-world dates show a plain Gregorian span, fictional universes show an era-correct span (e.g. "8082 BBY — 23 ABY"), and a mixed vault lists each universe separately rather than conflating them.
 
 ### Data Completeness
 

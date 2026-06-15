@@ -89,7 +89,7 @@ None of the parts are required — `name` on its own is enough for a complete pe
 ### Notes
 
 - **GEDCOM import** fills these fields automatically. The generational suffix is also folded into the display name (so `John Smith` plus `III` becomes `John Smith III`), which keeps same-named relatives distinct. When entering people by hand, there is no need to repeat the suffix in both `name` and `name_suffix` unless you want it shown.
-- The Create and Edit Person form currently offers Name, Nickname, Given name, Surname(s), and — in edit mode — Maiden and Married names. The prefix and suffix fields are set in the note's properties directly, or arrive through import.
+- The Add / Edit Person modal keeps the baseline **Name** field up top. The remaining name fields — nickname, given name, surname(s), prefix, suffix, surname particle, and (in edit mode) maiden and married names — fold into a collapsible **Extended name options** section, collapsed by default, so the modal stays uncluttered. Fields can also be set in the note's properties directly, or arrive through import.
 
 ---
 
@@ -168,6 +168,14 @@ The Edit Modal includes a dedicated Children section:
 Children are stored using two array properties:
 - `child` — Display names (wikilinks)
 - `children_id` — cr_id references for robust linking
+
+### Place Linking
+
+When linking a person's birth, death, or marriage place:
+
+- A place whose display name differs from its filename now links to the existing note instead of creating a duplicate — for example a place note filed as `Essex-MA-USA.md` with `name: Essex` is found and linked rather than spawning a new `Essex.md`.
+- The place picker shows each place's parent hierarchy (e.g. "Massachusetts, United States") so two same-named places can be told apart.
+- A linked marriage location can now be unlinked from the Person modal.
 
 ### Living Status
 

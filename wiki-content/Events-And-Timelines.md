@@ -244,7 +244,7 @@ Adoption is a shared life event — it renders on both the adoptee's and the ado
 
 Burial renders alongside death when `burial_date` is set, so a person's timeline can show both the death entry and a separate burial entry on a later date. The timeline block's `include: [...]` filter honors burial — restrict your timeline to a subset of event types and burial is included or excluded accordingly.
 
-**Place context:** by default a timeline entry shows only the leaf place name (`Born in London`). Enable place context to append the place's parent location from your place note hierarchy (`Born in London, England`), which disambiguates places that share a name. Turn it on globally under Settings > Events & timelines > Event display > **Show place context**, or per block with `place_context: true`. See [Dynamic Note Content → Timeline block](Dynamic-Note-Content#timeline-block) for the block option.
+**Place context:** by default a timeline entry shows only the leaf place name (`Born in London`). The leaf uses the place note's display name rather than its filename, so places disambiguated with distinct filenames (two "Essex" notes filed as `Essex-EssexCo-MA-USA` and `Essex-EssexCo-Ontario-Canada`) still render as "Essex". Enable place context to append the place's parent location from your place note hierarchy (`Born in London, England`), which disambiguates places that share a name. Turn it on globally under Settings > Events & timelines > Event display > **Show place context**, or per block with `place_context: true`. See [Dynamic Note Content → Timeline block](Dynamic-Note-Content#timeline-block) for the block option.
 
 How many levels of ancestry are appended is configurable with the **Place context depth** setting (Settings > Events & timelines > Event display, next to **Show place context**): `1` appends the immediate parent only (the default), `0` appends the full hierarchy up to the root place, and any `N` appends that many parent levels. A block can override the global depth with a number (`place_context: 2`) or `place_context: full` for the complete hierarchy, in addition to `place_context: true` / `false`. Long place strings wrap to the next line so deep hierarchies don't overflow the block.
 
@@ -646,6 +646,8 @@ The "Compute sort order" button in the Events tab automatically calculates `sort
 - The algorithm performs a topological sort on the event graph
 - Each event receives a `sort_order` value (multiples of 10 for flexibility)
 - Cycles are detected and reported (cyclic events can't be fully ordered)
+
+When there are cycles or errors, an inspectable result dialog opens listing the events that couldn't be ordered as clickable links — open a note to jump straight to its "Occurs before/after" and fix the loop. Opening a note closes the dialog; re-running "Compute sort order" shows the list again. The quick-success case keeps the lightweight toast.
 
 **Benefits:**
 - Enables correct sorting in Obsidian Bases without manual numbering

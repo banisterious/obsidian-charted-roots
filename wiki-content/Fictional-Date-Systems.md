@@ -123,6 +123,8 @@ The abbreviation matching is case-insensitive (`TA`, `ta`, `Ta` all work). The y
 
 **Negative years.** A year may carry a leading minus sign for eras that count through a zero point — for example `EP -18` (eighteen years before the era's epoch). Negative years parse to a negative canonical year and sort earliest-first, so `EP -500` comes before `EP -200`, which comes before `EP -1`.
 
+**Years before a calendar's earliest era.** A year that falls before every era a calendar defines — common when a calendar has only forward eras and no "before"-style era — now displays relative to that earliest era rather than as a bare negative. A Gaean Reach year that would have read `-29` now reads `29 before GR`. This applies anywhere canonical years are displayed, including the Statistics date range and the map time slider.
+
 **Decade notation.** A trailing `s` marks a decade — `EP 30s` is treated as the start of the 30s (canonical year 30, flagged approximate). This combines with a negative year as `EP -30s`.
 
 **Approximation and precision suffixes.** Approximation markers (`~`, `ish`, `circa`, `c.`, `?`) are recognized and flag the date approximate — for example `DE ~1226` or `PEF 260ish`. An ISO-style month/day suffix is accepted and reduced to the year for sorting and display: `DE 1264-08-15` and `DE 1222-03` both resolve to their era-year (the month/day is kept in the raw frontmatter for finer tiebreaks but isn't part of the parsed year).
@@ -271,8 +273,10 @@ Charted Roots integrates with the [Calendarium](https://github.com/javalent/cale
 ### Enabling the Integration
 
 1. Install and enable the [Calendarium](https://github.com/javalent/calendarium) plugin
-2. Open **Settings → Charted Roots → Advanced → Integrations**
-3. Set **Integration mode** to "Read-only (import calendars)"
+2. Open **Settings → Charted Roots → Fictional date systems**
+3. Set **Calendarium integration** to "Read calendars"
+
+The **Calendarium integration** dropdown and the **Sync Calendarium events** toggle live directly above the imported-calendars list (they previously lived under Advanced → Integrations). Enabling the integration surfaces your Calendarium calendars throughout Charted Roots' date-system menus. Recognizing Calendarium event dates (`fc-date`) on timelines is a separate switch — enable **Sync Calendarium events** as well.
 
 ### How It Works
 
