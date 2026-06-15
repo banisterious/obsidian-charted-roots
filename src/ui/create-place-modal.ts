@@ -6,7 +6,7 @@
 import { App, ButtonComponent, Modal, Setting, TFile, Notice, normalizePath } from 'obsidian';
 import { createPlaceNote, updatePlaceNote, PlaceData } from '../core/place-note-writer';
 import { PlaceCategory, PlaceType, PlaceNode, KNOWN_PLACE_TYPES } from '../models/place';
-import { getAllPlaceTypesWithCustomizations, getPlaceTypeHierarchyLevel } from '../places/constants/default-place-types';
+import { getAllPlaceTypesWithCustomizations, getPlaceTypeHierarchyLevel, getPlaceTypeDisplayName } from '../places/constants/default-place-types';
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
@@ -488,7 +488,14 @@ export class CreatePlaceModal extends Modal {
 			church: 'Churches',
 			other: 'Other'
 		};
-		return names[type] || capitalize(type);
+		// Custom types aren't in the built-in plural map — resolve their display
+		// name from the registry (honoring customizations) so the group header
+		// reads "Region (space)" rather than the raw "Space_region" slug (#728).
+		return names[type] || getPlaceTypeDisplayName(
+			type,
+			this.settings?.customPlaceTypes || [],
+			this.settings?.placeTypeCustomizations || {}
+		);
 	}
 
 	/**

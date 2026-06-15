@@ -23,6 +23,7 @@ import { StandardizePlaceTypesModal, findNonStandardTypePlaces } from './standar
 import { StandardizePlaceVariantsModal, findPlaceNameVariants } from './standardize-place-variants-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { renderPlaceTypeManagerCard } from '../places/ui/place-type-manager-card';
+import { getPlaceTypeDisplayName } from '../places/constants/default-place-types';
 import { BulkGeocodeModal } from '../maps/ui/bulk-geocode-modal';
 import { EnrichPlaceHierarchyModal } from '../maps/ui/enrich-place-hierarchy-modal';
 import { OrganizePlacesModal, findMisplacedPlaces } from './organize-places-modal';
@@ -786,7 +787,10 @@ function loadPlaceStatistics(container: HTMLElement, plugin: CanvasRootsPlugin, 
 		const badge = typeRow.createEl('span', {
 			cls: 'crc-stats-type-badge'
 		});
-		badge.createEl('span', { text: type, cls: 'crc-stats-type-name' });
+		const typeLabel = type === 'untyped'
+			? 'Untyped'
+			: getPlaceTypeDisplayName(type, plugin.settings.customPlaceTypes, plugin.settings.placeTypeCustomizations);
+		badge.createEl('span', { text: typeLabel, cls: 'crc-stats-type-name' });
 		badge.createEl('span', { text: count.toString(), cls: 'crc-stats-type-count' });
 	}
 
@@ -1182,7 +1186,7 @@ function loadPlaceList(
 			// Type cell
 			const typeCell = row.createEl('td', { cls: 'crc-place-cell-type' });
 			if (place.placeType) {
-				typeCell.textContent = place.placeType;
+				typeCell.textContent = getPlaceTypeDisplayName(place.placeType, plugin.settings.customPlaceTypes, plugin.settings.placeTypeCustomizations);
 			} else {
 				typeCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
 			}
@@ -2003,7 +2007,7 @@ export function renderPlacesList(options: PlacesListOptions): void {
 			// Type cell
 			const typeCell = row.createEl('td', { cls: 'crc-place-cell-type' });
 			if (place.placeType) {
-				typeCell.textContent = place.placeType;
+				typeCell.textContent = getPlaceTypeDisplayName(place.placeType, plugin.settings.customPlaceTypes, plugin.settings.placeTypeCustomizations);
 			} else {
 				typeCell.createEl('span', { text: '—', cls: 'crc-text-muted' });
 			}

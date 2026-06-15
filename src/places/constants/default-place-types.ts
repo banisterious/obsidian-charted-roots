@@ -289,6 +289,22 @@ export function getPlaceType(
 }
 
 /**
+ * Resolve a place type id to its display name, honoring built-in names and
+ * user customizations. Falls back to a humanized form of the id
+ * ("space_region" → "Space region") when the id isn't a known type — e.g. a
+ * note referencing a since-deleted custom type. Used wherever a place type is
+ * shown to the user so the raw sluggified id never surfaces (#728).
+ */
+export function getPlaceTypeDisplayName(
+	id: string,
+	customTypes: PlaceTypeDefinition[] = [],
+	customizations: Record<string, Partial<PlaceTypeDefinition>> = {}
+): string {
+	return getPlaceType(id, customTypes, customizations)?.name
+		?? id.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+/**
  * Check if a type ID is valid (exists in built-in or custom types)
  */
 export function isValidPlaceType(
