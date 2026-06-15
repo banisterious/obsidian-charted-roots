@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Create/edit place type modal: the quick level presets now have breathing room** from the dynamic hierarchy text above them, instead of sitting flush against it. Minor spacing polish raised in discussion #728 by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Fixed
 
 - **Place types now show their display name instead of the internal id across the Control Center and place modals** ([#732](https://github.com/banisterious/obsidian-charted-roots/issues/732)): The Place Statistics card's type breakdown, the Places list's Type column, and the Create/Edit place modal's Parent place dropdown headers all rendered the raw sluggified id (e.g. `space_region`, `astro_system`) instead of the type's display name. Each now resolves to the proper name — honoring built-in names and customizations — so they read "Region (space)", "Astro system", etc.; an unknown id falls back to a humanized form of the slug. Same class of issue as #731, surfaced in discussion #728 by [@DigitalDreamn](https://github.com/DigitalDreamn).
