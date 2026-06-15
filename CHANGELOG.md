@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Universe dynamic blocks now show the type's display name instead of its internal id** ([#731](https://github.com/banisterious/obsidian-charted-roots/issues/731)): The Type column in the `charted-roots-universe-places`, `-events`, and `-organizations` blocks rendered the raw sluggified id (e.g. `astro_sector`, `space_region`, `noble_house`, `plot_point`) rather than a readable label. Each type id now resolves to its proper display name — honoring built-in names and any customizations — so the column reads "Astro sector", "Noble house", etc. An unknown id (such as a since-deleted custom type) falls back to a humanized form of the slug. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ## [0.22.70] - 2026-06-14
 
 A reporter-driven release focused on fictional-worldbuilding correctness and entity linking. Calendarium calendars now appear throughout Charted Roots rather than on a single screen, and the integration's settings move next to the calendars they control. Linking a person's place no longer spawns a duplicate note when a place's display name differs from its filename; a marriage location can be unlinked; and the place picker shows each place's parent hierarchy so same-named places can be told apart. The Statistics date range is now era-aware and grouped per universe, so fictional BBY/ABY dates no longer pollute the span, and years before a calendar's earliest era read sensibly. Orphan-organization detection also catches parents referenced only by another organization. **1493 tests passing across 129 suites.**

@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-14 20:14:01 UTC
+ * - Generated: 2026-06-15 16:48:46 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -34890,7 +34890,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: UNIVERSE-ENTITIES.CSS
    ========================================================================== */
 
-/* Component Size: 187 lines, 4.14 KB */
+/* Component Size: 186 lines, 4.11 KB */
 
 /* ==========================================================================
    UNIVERSE ENTITIES DYNAMIC BLOCK (#359)
@@ -34974,7 +34974,6 @@ body.cr-media-linker-active .suggestion-container {
   border-radius: var(--cr-radius-xs, 4px);
   font-size: 10px;
   font-weight: var(--font-semibold);
-  text-transform: capitalize;
   background: var(--background-modifier-hover);
   color: var(--text-muted);
 }
@@ -41291,11 +41290,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-14 20:14:02 UTC
+ * Build completed: 2026-06-15 16:48:46 UTC
  * Components processed: 50
- * Total lines: 40822
- * Total size: 838.03 KB
- * Build duration: 1.11 seconds
+ * Total lines: 40821
+ * Total size: 838 KB
+ * Build duration: 0.54 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
@@ -41336,7 +41335,7 @@ body.cr-media-linker-active .suggestion-container {
  * - dashboard.css: 491 lines, 9.63 KB
  * - universe-wizard.css: 617 lines, 11.13 KB
  * - universes.css: 41 lines, 0.73 KB
- * - universe-entities.css: 187 lines, 4.14 KB
+ * - universe-entities.css: 186 lines, 4.11 KB
  * - collections.css: 41 lines, 0.73 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
  * - family-wizard.css: 641 lines, 13.73 KB
