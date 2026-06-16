@@ -24,6 +24,8 @@ import type {
 import { ProfileDataLoader } from './profile-data-loader';
 import { renderIdentityHeader } from './sections/identity-section';
 import { getEventType } from '../events/types/event-types';
+import { getOrganizationType } from '../organizations/constants/organization-type-defaults';
+import { getSourceType } from '../sources/types/source-types';
 import { renderRelationshipsSection, isOtherRelationship } from './sections/relationships-section';
 import { renderMembershipsSection } from './sections/memberships-section';
 import { renderEventsSection } from './sections/events-section';
@@ -375,6 +377,28 @@ export class ProfileView extends ItemView {
 					settings.showBuiltInEventTypes !== false,
 					settings.eventTypeCustomizations
 				)?.name ?? typeId;
+			},
+			orgTypeResolver: (typeId) => {
+				const settings = this.plugin.settings;
+				// getOrganizationType never returns undefined — it falls back to
+				// the 'custom' built-in for unknown ids, so compare ids to detect
+				// a miss and keep the raw id rather than mislabeling it "Custom".
+				const def = getOrganizationType(
+					typeId,
+					settings.customOrganizationTypes || [],
+					settings.organizationTypeCustomizations
+				);
+				return def.id === typeId ? def.name : typeId;
+			},
+			sourceTypeResolver: (typeId) => {
+				const settings = this.plugin.settings;
+				return settings.sourceTypeCustomizations?.[typeId]?.name
+					?? getSourceType(
+						typeId,
+						settings.customSourceTypes || [],
+						settings.showBuiltInSourceTypes !== false
+					)?.name
+					?? typeId;
 			}
 		});
 
