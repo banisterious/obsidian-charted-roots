@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Added
 
+- **Smarter hierarchy ranks for place types** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): Building a multi-level place hierarchy (e.g. Region (space) → Sector → System for sci-fi worldbuilding) is much less fiddly. Each category in the Place type manager now has a **"+ Add type"** button that pre-selects that category and defaults the new type one hierarchy level deeper than the deepest existing type in it — so successive adds auto-increment instead of all landing at the same level. Each type row also has **up/down arrows** to reorder it within its category; moving renumbers the category's levels (anchored at its current minimum), which both realizes the chosen order and breaks ties between types that previously shared a level. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 - **Reorder place type categories with up/down controls** ([#733](https://github.com/banisterious/obsidian-charted-roots/issues/733)): The Place type manager (Control Center → Places) now has move-up/move-down buttons on each category. Previously a custom category couldn't be sorted above the built-in categories — they occupy fixed sort positions a numeric order couldn't out-rank — so e.g. an "Astrographical" category was stuck below Geographic and Political divisions. Moving a category now renumbers the whole list, so any category (custom or built-in) can be placed anywhere, including at the very top. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Changed

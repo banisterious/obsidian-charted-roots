@@ -421,6 +421,57 @@ export function getAllPlaceTypeCategories(
 }
 
 /**
+ * Pick a sensible hierarchy level for a new place type being added to a
+ * category. If the category already has types, the new one sits one level
+ * deeper than the deepest existing type (so successive adds auto-increment,
+ * e.g. Region (space) → Sector → System). An empty category starts at the
+ * category's range minimum (0 for custom categories). Solves the "every new
+ * type lands at the same level" friction (#734).
+ */
+export function nextHierarchyLevelForCategory(
+	categoryId: string,
+	existingLevels: ReadonlyArray<number>
+): number {
+	if (existingLevels.length > 0) {
+		return Math.max(...existingLevels) + 1;
+	}
+	return getCategoryHierarchyLevelRange(categoryId).min;
+}
+
+/**
+ * Move a place type one step up or down within its category and return the new
+ * hierarchy level for every type in that category.
+ *
+ * Reordering by hand-editing each type's level slider is tedious and easy to
+ * get wrong — and types that share a level (e.g. several new types all left at
+ * 0) have no defined order at all (#734). After a move the whole category is
+ * renumbered to consecutive levels anchored at the category's current minimum
+ * level, which both realizes the requested order and breaks any ties. Returns
+ * an empty array when the move is a no-op (type not found, or already at the
+ * top/bottom boundary) so callers can skip persisting.
+ */
+export function reorderTypeWithinCategory(
+	categoryTypes: ReadonlyArray<{ id: string; hierarchyLevel: number }>,
+	typeId: string,
+	direction: 'up' | 'down'
+): Array<{ id: string; hierarchyLevel: number }> {
+	// Current display order: shallowest first, stable on ties.
+	const order = categoryTypes
+		.map((t, idx) => ({ id: t.id, hierarchyLevel: t.hierarchyLevel, idx }))
+		.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel || a.idx - b.idx);
+
+	const i = order.findIndex(t => t.id === typeId);
+	if (i === -1) return [];
+	const j = direction === 'up' ? i - 1 : i + 1;
+	if (j < 0 || j >= order.length) return [];
+
+	[order[i], order[j]] = [order[j], order[i]];
+
+	const base = Math.min(...categoryTypes.map(t => t.hierarchyLevel));
+	return order.map((t, idx) => ({ id: t.id, hierarchyLevel: base + idx }));
+}
+
+/**
  * Move a category one step up or down within the given display order and return
  * a flat, sequential renumbering (0, 1, 2, …) for every category.
  *

@@ -20,6 +20,10 @@ interface PlaceTypeEditorModalOptions {
 	editType?: PlaceTypeDefinition;
 	/** Built-in type to customize (for overriding defaults) */
 	customizeBuiltIn?: PlaceTypeDefinition;
+	/** Pre-select this category when creating a new type (#734). */
+	defaultCategory?: string;
+	/** Pre-fill this hierarchy level when creating a new type (#734). */
+	defaultHierarchyLevel?: number;
 }
 
 /**
@@ -73,6 +77,16 @@ export class PlaceTypeEditorModal extends Modal {
 				this.description = options.customizeBuiltIn.description || '';
 				this.hierarchyLevel = options.customizeBuiltIn.hierarchyLevel;
 				this.category = options.customizeBuiltIn.category;
+			}
+		} else {
+			// Creating a new type — seed the category and a smart starting level
+			// when the caller supplies them (e.g. the per-category "+ Add type"
+			// button), so the new type lands in the right place (#734).
+			if (options.defaultCategory) {
+				this.category = options.defaultCategory;
+			}
+			if (typeof options.defaultHierarchyLevel === 'number') {
+				this.hierarchyLevel = options.defaultHierarchyLevel;
 			}
 		}
 	}
