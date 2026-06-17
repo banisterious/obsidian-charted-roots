@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.71] - 2026-06-16
+
+A reporter-driven release focused on place type management and consistent display names. The Place type manager (Control Center → Places) gains up/down reordering for both categories and the types within them, plus a per-category "+ Add type" button with smart hierarchy-level defaults — making non-Earth and deeply nested place hierarchies far less fiddly to build. Several surfaces that showed a raw internal id now show the proper display name: the universe dynamic blocks, the Place Statistics card and place pickers, and the organization/source type in the Entity Profile pane. The Statistics date range splits universe-less fictional dates into their own "Uncategorized" bucket, and adding a member to an organization no longer silently fails when a person note carries a foreign `type` property. **1526 tests passing across 134 suites.**
+
 ### Added
 
 - **Smarter hierarchy ranks for place types** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): Building a multi-level place hierarchy (e.g. Region (space) → Sector → System for sci-fi worldbuilding) is much less fiddly. Each category in the Place type manager now has a **"+ Add type"** button that pre-selects that category and defaults the new type one hierarchy level deeper than the deepest existing type in it — so successive adds auto-increment instead of all landing at the same level. Each type row also has **up/down arrows** to reorder it within its category; moving renumbers the category's levels (anchored at its current minimum), which both realizes the chosen order and breaks ties between types that previously shared a level. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
