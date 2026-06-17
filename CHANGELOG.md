@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Parent place dropdown no longer shows the raw type id for the highest-ranked type** ([#739](https://github.com/banisterious/obsidian-charted-roots/issues/739)): when a place's type is the highest in its hierarchy (so nothing can be its parent), the dropdown's "No valid parent types for …" message showed the internal sluggified id. It now shows the type's display name — a spot missed by #732. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Changed
 
 - **Place type reordering now preserves intentional ties and gaps** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up): the up/down controls in the Place type manager swap a type's hierarchy level with its neighbour's, rather than renumbering the whole category. Default same-rank pairs (State/Province, District/Township, etc.) stay tied, and any custom gaps are left intact. A tied neighbour disables the arrow (tied types can't be ordered relative to each other — adjust one via Customize). The Customize/Edit action is now a gear/pencil icon with a tooltip to keep the row uncluttered. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
