@@ -289,6 +289,22 @@ export function getPlaceType(
 }
 
 /**
+ * Resolve a place type id to its display name, honoring built-in names and
+ * user customizations. Falls back to a humanized form of the id
+ * ("space_region" → "Space region") when the id isn't a known type — e.g. a
+ * note referencing a since-deleted custom type. Used wherever a place type is
+ * shown to the user so the raw sluggified id never surfaces (#728).
+ */
+export function getPlaceTypeDisplayName(
+	id: string,
+	customTypes: PlaceTypeDefinition[] = [],
+	customizations: Record<string, Partial<PlaceTypeDefinition>> = {}
+): string {
+	return getPlaceType(id, customTypes, customizations)?.name
+		?? id.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+/**
  * Check if a type ID is valid (exists in built-in or custom types)
  */
 export function isValidPlaceType(
@@ -402,6 +418,85 @@ export function getAllPlaceTypeCategories(
 
 	// Sort by sortOrder
 	return categories.sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+/**
+ * Pick a sensible hierarchy level for a new place type being added to a
+ * category. If the category already has types, the new one sits one level
+ * deeper than the deepest existing type (so successive adds auto-increment,
+ * e.g. Region (space) → Sector → System). An empty category starts at the
+ * category's range minimum (0 for custom categories). Solves the "every new
+ * type lands at the same level" friction (#734).
+ */
+export function nextHierarchyLevelForCategory(
+	categoryId: string,
+	existingLevels: ReadonlyArray<number>
+): number {
+	if (existingLevels.length > 0) {
+		return Math.max(...existingLevels) + 1;
+	}
+	return getCategoryHierarchyLevelRange(categoryId).min;
+}
+
+/**
+ * Move a place type one step up or down within its category and return the new
+ * hierarchy level for every type in that category.
+ *
+ * Reordering by hand-editing each type's level slider is tedious and easy to
+ * get wrong — and types that share a level (e.g. several new types all left at
+ * 0) have no defined order at all (#734). After a move the whole category is
+ * renumbered to consecutive levels anchored at the category's current minimum
+ * level, which both realizes the requested order and breaks any ties. Returns
+ * an empty array when the move is a no-op (type not found, or already at the
+ * top/bottom boundary) so callers can skip persisting.
+ */
+export function reorderTypeWithinCategory(
+	categoryTypes: ReadonlyArray<{ id: string; hierarchyLevel: number }>,
+	typeId: string,
+	direction: 'up' | 'down'
+): Array<{ id: string; hierarchyLevel: number }> {
+	// Current display order: shallowest first, stable on ties.
+	const order = categoryTypes
+		.map((t, idx) => ({ id: t.id, hierarchyLevel: t.hierarchyLevel, idx }))
+		.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel || a.idx - b.idx);
+
+	const i = order.findIndex(t => t.id === typeId);
+	if (i === -1) return [];
+	const j = direction === 'up' ? i - 1 : i + 1;
+	if (j < 0 || j >= order.length) return [];
+
+	[order[i], order[j]] = [order[j], order[i]];
+
+	const base = Math.min(...categoryTypes.map(t => t.hierarchyLevel));
+	return order.map((t, idx) => ({ id: t.id, hierarchyLevel: base + idx }));
+}
+
+/**
+ * Move a category one step up or down within the given display order and return
+ * a flat, sequential renumbering (0, 1, 2, …) for every category.
+ *
+ * Reordering by raw sort-order numbers is fragile because the built-in
+ * categories occupy fixed positions (0–4) a custom category can't out-rank
+ * (#733). Renumbering the whole list sequentially after each move makes the
+ * order fully WYSIWYG: the caller persists each returned `sortOrder` (built-ins
+ * via a customization, custom categories on their own definition). A move at
+ * the top/bottom boundary is a no-op but still returns the sequential numbering,
+ * so callers can persist unconditionally.
+ */
+export function reorderPlaceTypeCategories(
+	orderedIds: ReadonlyArray<string>,
+	categoryId: string,
+	direction: 'up' | 'down'
+): Array<{ id: string; sortOrder: number }> {
+	const ids = [...orderedIds];
+	const i = ids.indexOf(categoryId);
+	if (i !== -1) {
+		const j = direction === 'up' ? i - 1 : i + 1;
+		if (j >= 0 && j < ids.length) {
+			[ids[i], ids[j]] = [ids[j], ids[i]];
+		}
+	}
+	return ids.map((id, idx) => ({ id, sortOrder: idx }));
 }
 
 /**

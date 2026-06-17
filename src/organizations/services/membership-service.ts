@@ -16,6 +16,7 @@ import type {
 import { OrganizationService, createSmartWikilink } from './organization-service';
 import { getLogger } from '../../core/logging';
 import { waitForCacheRefresh } from '../../utils/cache-utils';
+import { isNoteType } from '../../utils/note-type-detection';
 
 const logger = getLogger('MembershipService');
 
@@ -163,8 +164,13 @@ export class MembershipService {
 
 			const fm = cache.frontmatter;
 
-			// Skip non-person notes (check both cr_type and legacy type)
-			if ((fm.cr_type && fm.cr_type !== 'person') || (fm.type && fm.type !== 'person')) continue;
+			// Skip non-person notes. Use the shared detection so `cr_type` stays
+			// authoritative: a foreign `type` value (e.g. `type: character` from
+			// the user's own data model) must not exclude a `cr_type: person`
+			// note from the member scan, which silently wiped the org's members
+			// list (#738). Falls back to legacy `type: person` when cr_type is
+			// absent, per the user's note-type detection settings.
+			if (!isNoteType(fm, 'person', cache, this.plugin.settings.noteTypeDetection)) continue;
 
 			const personMemberships = this.getPersonMembershipsFromFile(file);
 			for (const membership of personMemberships) {

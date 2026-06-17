@@ -1258,3 +1258,13 @@
   padding: 12px 16px;
   border-top: 1px solid var(--background-modifier-border);
 }
+
+/* Place type editor — quick level presets: give the row breathing room from
+   the dynamic hierarchy text above it (#728). */
+.cr-level-presets {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}

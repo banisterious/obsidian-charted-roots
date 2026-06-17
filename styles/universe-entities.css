@@ -80,7 +80,6 @@
   border-radius: var(--cr-radius-xs, 4px);
   font-size: 10px;
   font-weight: var(--font-semibold);
-  text-transform: capitalize;
   background: var(--background-modifier-hover);
   color: var(--text-muted);
 }

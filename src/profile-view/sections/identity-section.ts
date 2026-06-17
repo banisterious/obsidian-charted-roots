@@ -35,6 +35,18 @@ export interface IdentityHeaderOptions {
 	 * unresolved (#665).
 	 */
 	eventTypeResolver?: (typeId: string) => string;
+	/**
+	 * Resolve an organization-type id to its display name (e.g. `noble_house`
+	 * → "Noble house"). Same decoupling as `eventTypeResolver`; falls back to
+	 * the raw id when unset or unresolved (#735).
+	 */
+	orgTypeResolver?: (typeId: string) => string;
+	/**
+	 * Resolve a source-type id to its display name. Same decoupling as
+	 * `eventTypeResolver`; falls back to the raw id when unset or unresolved
+	 * (#735).
+	 */
+	sourceTypeResolver?: (typeId: string) => string;
 }
 
 export function renderIdentityHeader(
@@ -168,7 +180,7 @@ function renderEntityMeta(
 			renderMetaFields(container, getEventFields(data, options), editable, options);
 			break;
 		case 'source':
-			renderMetaFields(container, getSourceFields(data), editable, options);
+			renderMetaFields(container, getSourceFields(data, options), editable, options);
 			break;
 		case 'organization':
 			renderOrgMeta(container, data, options);
@@ -358,13 +370,19 @@ function getEventFields(
 
 // ── Source ───────────────────────────────────────────────────
 
-function getSourceFields(data: ProfileEntityData & { entityType: 'source' }): EditableFieldConfig[] {
+function getSourceFields(
+	data: ProfileEntityData & { entityType: 'source' },
+	options: IdentityHeaderOptions
+): EditableFieldConfig[] {
+	const sourceType = data.source.sourceType || '';
 	return [
 		{
 			property: 'source_type',
 			label: 'Source type',
-			displayValue: data.source.sourceType || '',
-			rawValue: data.source.sourceType || '',
+			// Show the catalog display name, keeping the raw id as the editable
+			// value (#735).
+			displayValue: sourceType ? (options.sourceTypeResolver?.(sourceType) ?? sourceType) : '',
+			rawValue: sourceType,
 			inputType: 'text',
 			placeholder: 'Source type...'
 		},
@@ -397,19 +415,22 @@ function renderOrgMeta(
 	const editable = !!options.onFieldSave;
 	let fieldCount = 0;
 
-	// Org type
-	if (data.org.orgType || editable) {
+	// Org type — show the catalog display name (e.g. "Noble house"), keeping the
+	// raw id as the editable value (#735).
+	const orgType = data.org.orgType || '';
+	const orgTypeDisplay = orgType ? (options.orgTypeResolver?.(orgType) ?? orgType) : '';
+	if (orgType || editable) {
 		if (editable && options.onFieldSave && options.onEditNotify) {
 			createEditableField(container, {
 				property: 'org_type',
 				label: 'Organization type',
-				displayValue: data.org.orgType || '',
-				rawValue: data.org.orgType || '',
+				displayValue: orgTypeDisplay,
+				rawValue: orgType,
 				inputType: 'text',
 				placeholder: 'Org type...'
 			}, options.onFieldSave, options.onEditNotify);
 		} else {
-			container.createSpan({ text: data.org.orgType || '' });
+			container.createSpan({ text: orgTypeDisplay });
 		}
 		fieldCount++;
 	}

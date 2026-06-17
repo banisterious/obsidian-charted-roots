@@ -8,6 +8,19 @@
 import { MarkdownRenderer, MarkdownRenderChild, App, TFile } from 'obsidian';
 import type { DynamicBlockConfig, DynamicContentService } from '../services/dynamic-content-service';
 import type { UniverseEntities, UniverseEntityEntry } from '../../universes/types/universe-types';
+import { getPlaceType } from '../../places/constants/default-place-types';
+import { getEventType } from '../../events/types/event-types';
+import { getOrganizationType } from '../../organizations/constants/organization-type-defaults';
+
+/**
+ * Turn a sluggified type id into a readable sentence-case label
+ * ("astro_sector" → "Astro sector"). Used as a fallback when an id isn't a
+ * known place/event/organization type — e.g. a note referencing a since-deleted
+ * custom type (#731).
+ */
+export function humanizeTypeId(id: string): string {
+	return id.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
 
 /**
  * Context for rendering universe entities
@@ -174,7 +187,7 @@ export class UniverseEntitiesRenderer {
 			const nameCell = row.createEl('td');
 			await this.renderWikilink(nameCell, entry, context, component);
 
-			row.createEl('td', { text: entry.placeType || '—', cls: 'cr-universe-entities__meta' });
+			row.createEl('td', { text: entry.placeType ? this.placeTypeLabel(entry.placeType) : '—', cls: 'cr-universe-entities__meta' });
 		}
 	}
 
@@ -217,7 +230,7 @@ export class UniverseEntitiesRenderer {
 			const typeCell = row.createEl('td', { cls: 'cr-universe-entities__meta' });
 			if (entry.eventType) {
 				const badge = typeCell.createSpan({ cls: `cr-universe-entities__badge cr-universe-entities__badge--${entry.eventType}` });
-				badge.textContent = entry.eventType;
+				badge.textContent = this.eventTypeLabel(entry.eventType);
 			} else {
 				typeCell.textContent = '—';
 			}
@@ -258,8 +271,32 @@ export class UniverseEntitiesRenderer {
 			const nameCell = row.createEl('td');
 			await this.renderWikilink(nameCell, entry, context, component);
 
-			row.createEl('td', { text: entry.orgType || '—', cls: 'cr-universe-entities__meta' });
+			row.createEl('td', { text: entry.orgType ? this.orgTypeLabel(entry.orgType) : '—', cls: 'cr-universe-entities__meta' });
 		}
+	}
+
+	/**
+	 * Resolve a place/event/organization type id to its display name, honoring
+	 * built-in names and user customizations. Falls back to a humanized slug
+	 * ("astro_sector" → "Astro sector") when the id isn't a known type — e.g. a
+	 * note referencing a since-deleted custom type (#731).
+	 */
+	private placeTypeLabel(id: string): string {
+		const s = this.service.getSettings();
+		return getPlaceType(id, s.customPlaceTypes, s.placeTypeCustomizations)?.name ?? humanizeTypeId(id);
+	}
+
+	private eventTypeLabel(id: string): string {
+		const s = this.service.getSettings();
+		return getEventType(id, s.customEventTypes, true, s.eventTypeCustomizations)?.name ?? humanizeTypeId(id);
+	}
+
+	private orgTypeLabel(id: string): string {
+		const s = this.service.getSettings();
+		// getOrganizationType never returns undefined — it falls back to the
+		// 'custom' built-in for unknown ids, so compare ids to detect a miss.
+		const def = getOrganizationType(id, s.customOrganizationTypes, s.organizationTypeCustomizations);
+		return def.id === id ? def.name : humanizeTypeId(id);
 	}
 
 	/**

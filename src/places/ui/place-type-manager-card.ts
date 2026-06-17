@@ -12,6 +12,9 @@ import {
 	DEFAULT_PLACE_TYPES,
 	getAllPlaceTypesWithCustomizations,
 	getAllPlaceTypeCategories,
+	reorderPlaceTypeCategories,
+	nextHierarchyLevelForCategory,
+	reorderTypeWithinCategory,
 	isBuiltInPlaceTypeCategory
 } from '../';
 import { BUILT_IN_PLACE_TYPE_CATEGORIES } from '../types/place-types';
@@ -117,8 +120,10 @@ export function renderPlaceTypeManagerCard(
 		}
 
 		// Render each category as a table section
-		for (const category of categories) {
-			const categoryTypes = byCategory[category.id] || [];
+		for (const [categoryIndex, category] of categories.entries()) {
+			// Shallowest-first so the reorder arrows read top-to-bottom (#734).
+			const categoryTypes = (byCategory[category.id] || []).slice()
+				.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel || a.name.localeCompare(b.name));
 			const isBuiltIn = isBuiltInPlaceTypeCategory(category.id);
 			const isCatCustomized = customizedCatIds.has(category.id);
 
@@ -140,8 +145,33 @@ export function renderPlaceTypeManagerCard(
 				});
 			}
 
-			// Add edit/delete buttons for ALL categories
+			// Add reorder/edit/delete buttons for ALL categories
 			const actionsContainer = categoryHeaderRow.createDiv({ cls: 'crc-type-category-actions' });
+
+			// Reorder controls — move this category up or down in the display
+			// order, renumbering all categories so a custom category can sit above
+			// the built-ins (#733).
+			const moveCategory = (direction: 'up' | 'down') => {
+				void persistCategoryOrder(plugin, categories.map(c => c.id), category.id, direction, () => {
+					renderTypeList();
+					onRefresh();
+				});
+			};
+			const moveUpBtn = actionsContainer.createEl('button', {
+				text: '↑',
+				cls: 'crc-btn crc-btn--small',
+				attr: { 'aria-label': 'Move category up' }
+			});
+			moveUpBtn.disabled = categoryIndex === 0;
+			moveUpBtn.addEventListener('click', () => moveCategory('up'));
+
+			const moveDownBtn = actionsContainer.createEl('button', {
+				text: '↓',
+				cls: 'crc-btn crc-btn--small',
+				attr: { 'aria-label': 'Move category down' }
+			});
+			moveDownBtn.disabled = categoryIndex === categories.length - 1;
+			moveDownBtn.addEventListener('click', () => moveCategory('down'));
 
 			const editCatBtn = actionsContainer.createEl('button', {
 				text: isBuiltIn ? 'Customize' : 'Edit',
@@ -165,18 +195,48 @@ export function renderPlaceTypeManagerCard(
 				});
 			});
 
+			// Add a type directly into this category, pre-selecting it and
+			// defaulting to a sensible hierarchy level (#734).
+			const addTypeBtn = actionsContainer.createEl('button', {
+				text: '+ Add type',
+				cls: 'crc-btn crc-btn--small'
+			});
+			addTypeBtn.addEventListener('click', () => {
+				const modal = new PlaceTypeEditorModal(plugin.app, plugin, {
+					defaultCategory: category.id,
+					defaultHierarchyLevel: nextHierarchyLevelForCategory(
+						category.id,
+						categoryTypes.map(t => t.hierarchyLevel)
+					),
+					onSave: () => {
+						renderTypeList();
+						onRefresh();
+					}
+				});
+				modal.open();
+			});
+
 			if (categoryTypes.length > 0) {
 				// Create table
 				const table = categorySection.createEl('table', { cls: 'crc-type-table' });
 				const tbody = table.createEl('tbody');
 
-				for (const type of categoryTypes) {
+				for (const [typeIndex, type] of categoryTypes.entries()) {
 					const isHidden = hiddenTypes.has(type.id);
 					const isCustomized = customizedIds.has(type.id);
 
 					renderTypeRow(tbody, type, isHidden, isCustomized, plugin, () => {
 						renderTypeList();
 						onRefresh();
+					}, {
+						canMoveUp: typeIndex > 0,
+						canMoveDown: typeIndex < categoryTypes.length - 1,
+						onMove: (direction) => {
+							void persistTypeOrder(plugin, categoryTypes, type.id, direction, () => {
+								renderTypeList();
+								onRefresh();
+							});
+						}
 					});
 				}
 			} else {
@@ -245,7 +305,8 @@ function renderTypeRow(
 	isHidden: boolean,
 	isCustomized: boolean,
 	plugin: CanvasRootsPlugin,
-	onUpdate: () => void
+	onUpdate: () => void,
+	reorder?: { canMoveUp: boolean; canMoveDown: boolean; onMove: (direction: 'up' | 'down') => void }
 ): void {
 	const row = tbody.createEl('tr', {
 		cls: `crc-type-row ${isHidden ? 'is-hidden' : ''}`
@@ -276,6 +337,32 @@ function renderTypeRow(
 	// Actions cell
 	const actionsCell = row.createEl('td', { cls: 'crc-type-cell-actions' });
 	const actionsWrapper = actionsCell.createDiv({ cls: 'crc-type-actions-wrapper' });
+
+	// Reorder controls — move this type up/down within its category, renumbering
+	// the category's hierarchy levels so the order is WYSIWYG (#734).
+	if (reorder) {
+		const upBtn = actionsWrapper.createEl('button', {
+			text: '↑',
+			cls: 'crc-btn crc-btn--small',
+			attr: { 'aria-label': 'Move type up (shallower)' }
+		});
+		upBtn.disabled = !reorder.canMoveUp;
+		upBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			reorder.onMove('up');
+		});
+
+		const downBtn = actionsWrapper.createEl('button', {
+			text: '↓',
+			cls: 'crc-btn crc-btn--small',
+			attr: { 'aria-label': 'Move type down (deeper)' }
+		});
+		downBtn.disabled = !reorder.canMoveDown;
+		downBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			reorder.onMove('down');
+		});
+	}
 
 	// Edit/Customize button
 	const editBtn = actionsWrapper.createEl('button', {
@@ -393,6 +480,93 @@ function confirmDeleteType(
 	});
 
 	modal.open();
+}
+
+/**
+ * Move a category up or down and persist the resulting sequential order (#733).
+ *
+ * The whole category list is renumbered 0..n so the order is WYSIWYG: built-in
+ * categories store their new position as a `sortOrder` customization (dropped
+ * again when it happens to match the default, to keep the "customized" badge
+ * honest), and custom categories get their `sortOrder` updated in place.
+ */
+async function persistCategoryOrder(
+	plugin: CanvasRootsPlugin,
+	orderedIds: string[],
+	categoryId: string,
+	direction: 'up' | 'down',
+	onSave: () => void
+): Promise<void> {
+	const newOrder = reorderPlaceTypeCategories(orderedIds, categoryId, direction);
+
+	const customizations = plugin.settings.placeTypeCategoryCustomizations ?? {};
+	const customCategories = plugin.settings.customPlaceTypeCategories ?? [];
+	const customById = new Map(customCategories.map(c => [c.id, c]));
+
+	for (const { id, sortOrder } of newOrder) {
+		if (isBuiltInPlaceTypeCategory(id)) {
+			const builtInDef = BUILT_IN_PLACE_TYPE_CATEGORIES.find(c => c.id === id);
+			const existing = { ...(customizations[id] ?? {}) };
+			if (builtInDef && sortOrder === builtInDef.sortOrder) {
+				// Back at its default slot — drop the redundant sortOrder, and the
+				// whole entry if nothing else was customized.
+				delete existing.sortOrder;
+				if (Object.keys(existing).length === 0) {
+					delete customizations[id];
+				} else {
+					customizations[id] = existing;
+				}
+			} else {
+				customizations[id] = { ...existing, sortOrder };
+			}
+		} else {
+			const custom = customById.get(id);
+			if (custom) custom.sortOrder = sortOrder;
+		}
+	}
+
+	plugin.settings.placeTypeCategoryCustomizations = customizations;
+	plugin.settings.customPlaceTypeCategories = customCategories;
+	await plugin.saveSettings();
+	onSave();
+}
+
+/**
+ * Move a place type up or down within its category and persist the renumbered
+ * hierarchy levels (#734). Built-in types store their new level as a
+ * customization; custom types are updated on their own definition. A no-op move
+ * (boundary or unknown id) returns without saving.
+ */
+async function persistTypeOrder(
+	plugin: CanvasRootsPlugin,
+	categoryTypes: ReadonlyArray<{ id: string; hierarchyLevel: number; builtIn: boolean }>,
+	typeId: string,
+	direction: 'up' | 'down',
+	onSave: () => void
+): Promise<void> {
+	const newLevels = reorderTypeWithinCategory(categoryTypes, typeId, direction);
+	if (newLevels.length === 0) return;
+
+	const builtInById = new Map(categoryTypes.map(t => [t.id, t.builtIn]));
+	const customizations = plugin.settings.placeTypeCustomizations ?? {};
+	const customTypes = plugin.settings.customPlaceTypes ?? [];
+	const customById = new Map(customTypes.map(t => [t.id, t]));
+
+	for (const { id, hierarchyLevel } of newLevels) {
+		if (builtInById.get(id)) {
+			const existing = { ...(customizations[id] ?? {}) };
+			existing.hierarchyLevel = hierarchyLevel;
+			customizations[id] = existing;
+		} else {
+			const custom = customById.get(id);
+			if (custom) custom.hierarchyLevel = hierarchyLevel;
+		}
+	}
+
+	plugin.settings.placeTypeCustomizations = customizations;
+	plugin.settings.customPlaceTypes = customTypes;
+	await plugin.saveSettings();
+	onSave();
 }
 
 /**

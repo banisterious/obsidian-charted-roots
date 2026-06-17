@@ -2639,10 +2639,16 @@ export class FamilyGraphService {
 		};
 		const rawRanges = computeCollectionDateRange(
 			allPeople,
-			(d, u) => this.dateService ? this.dateService.getCanonicalYear(d, u) : fallbackYear(d)
+			(d, u) => this.dateService ? this.dateService.getCanonicalYear(d, u) : fallbackYear(d),
+			// A universe-less date that still parses as fictional (BBY/ABY etc.)
+			// has no era to resolve or label, so split it into its own
+			// "Uncategorized" bucket instead of leaking a bare signed year into
+			// the real-world span (#719 follow-up).
+			(d, u) => this.dateService ? this.dateService.parseDate(d, u)?.type === 'fictional' : false
 		);
 		const dateRangeByUniverse: DisplayDateRange[] = rawRanges.ranges.map(r => ({
 			universe: r.universe,
+			...(r.uncategorized ? { uncategorized: true } : {}),
 			earliest: this.dateService ? this.dateService.formatCanonicalYear(r.earliest, r.universe) : String(r.earliest),
 			latest: this.dateService ? this.dateService.formatCanonicalYear(r.latest, r.universe) : String(r.latest),
 			spanYears: r.span

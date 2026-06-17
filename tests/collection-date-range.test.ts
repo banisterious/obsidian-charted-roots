@@ -72,6 +72,59 @@ describe('computeCollectionDateRange (#714/#719)', () => {
 		], resolveYear);
 		expect(ranges).toEqual([{ universe: undefined, earliest: 1801, latest: 1801, span: 0 }]);
 	});
+
+	// #719 follow-up: a person with a BBY/ABY date but no `universe` link still
+	// resolves to a signed canonical year, but it must NOT pool into the
+	// real-world span (where it shows as a bare "-33") — it gets its own bucket.
+	describe('uncategorized fictional dates (no universe link)', () => {
+		// A no-universe resolver that still understands BBY/ABY (mirrors how the
+		// real DateService parses an era abbrev even without a universe context).
+		const resolveEraAware = (dateStr: string, universe: string | undefined): number | null => {
+			const bby = dateStr.match(/^(\d+)\s*BBY$/i);
+			if (bby) return -parseInt(bby[1], 10);
+			const aby = dateStr.match(/^(\d+)\s*ABY$/i);
+			if (aby) return parseInt(aby[1], 10);
+			return resolveYear(dateStr, universe);
+		};
+		const isFictional = (dateStr: string): boolean => /\d+\s*(BBY|ABY)$/i.test(dateStr);
+
+		it('splits universe-less fictional dates into an Uncategorized bucket', () => {
+			const { ranges } = computeCollectionDateRange([
+				{ birthDate: '33 BBY', deathDate: '9 ABY' } // no universe
+			], resolveEraAware, isFictional);
+			expect(ranges).toEqual([
+				{ universe: undefined, uncategorized: true, earliest: -33, latest: 9, span: 42 }
+			]);
+		});
+
+		it('keeps real-world and uncategorized-fictional spans separate (no -33 — 1990 pollution)', () => {
+			const { ranges } = computeCollectionDateRange([
+				{ birthDate: '1850', deathDate: '1990' },        // real-world
+				{ birthDate: '33 BBY', deathDate: '9 ABY' }      // fictional, no universe
+			], resolveEraAware, isFictional);
+			expect(ranges).toEqual([
+				{ universe: undefined, earliest: 1850, latest: 1990, span: 140 },
+				{ universe: undefined, uncategorized: true, earliest: -33, latest: 9, span: 42 }
+			]);
+		});
+
+		it('sorts the uncategorized bucket last, after real-world and named universes', () => {
+			const { ranges } = computeCollectionDateRange([
+				{ birthDate: '1850', deathDate: '1990' },                         // real-world
+				{ birthDate: '8082 BBY', deathDate: '23 ABY', universe: 'starwars' }, // named universe
+				{ birthDate: '33 BBY' }                                           // uncategorized
+			], resolveEraAware, isFictional);
+			expect(ranges.map(r => r.uncategorized ? 'uncat' : (r.universe ?? 'real')))
+				.toEqual(['real', 'starwars', 'uncat']);
+		});
+
+		it('without an isFictional predicate, universe-less fictional dates still pool as real-world (legacy)', () => {
+			const { ranges } = computeCollectionDateRange([
+				{ birthDate: '33 BBY', deathDate: '9 ABY' }
+			], resolveEraAware);
+			expect(ranges).toEqual([{ universe: undefined, earliest: -33, latest: 9, span: 42 }]);
+		});
+	});
 });
 
 describe('formatDateRangeLine (#719)', () => {
@@ -90,5 +143,10 @@ describe('formatDateRangeLine (#719)', () => {
 	it('omits the span suffix for a single-point range', () => {
 		expect(formatDateRangeLine({ earliest: '1850', latest: '1850', spanYears: 0 }, false))
 			.toBe('1850 — 1850');
+	});
+
+	it('always labels the Uncategorized bucket, even when the universe is hidden', () => {
+		expect(formatDateRangeLine({ uncategorized: true, earliest: '-33', latest: '9', spanYears: 42 }, false))
+			.toBe('Uncategorized: -33 — 9 (42 years)');
 	});
 });
