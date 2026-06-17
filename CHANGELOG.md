@@ -12,6 +12,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Changed
+
+- **Place type reordering now preserves intentional ties and gaps** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up): the up/down controls in the Place type manager swap a type's hierarchy level with its neighbour's, rather than renumbering the whole category. Default same-rank pairs (State/Province, District/Township, etc.) stay tied, and any custom gaps are left intact. A tied neighbour disables the arrow (tied types can't be ordered relative to each other — adjust one via Customize). The Customize/Edit action is now a gear/pencil icon with a tooltip to keep the row uncluttered. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Security
+
+- **Updated the bundled dompurify to 3.4.10** (a transitive dependency of jspdf, used for PDF export) to resolve advisories [GHSA-vxr8-fq34-vvx9](https://github.com/advisories/GHSA-vxr8-fq34-vvx9) and GHSA-gvmj-g25r-r7wr, both affecting dompurify `<= 3.4.8`.
+
 ## [0.22.71] - 2026-06-16
 
 A reporter-driven release focused on place type management and consistent display names. The Place type manager (Control Center → Places) gains up/down reordering for both categories and the types within them, plus a per-category "+ Add type" button with smart hierarchy-level defaults — making non-Earth and deeply nested place hierarchies far less fiddly to build. Several surfaces that showed a raw internal id now show the proper display name: the universe dynamic blocks, the Place Statistics card and place pickers, and the organization/source type in the Entity Profile pane. The Statistics date range splits universe-less fictional dates into their own "Uncategorized" bucket, and adding a member to an organization no longer silently fails when a person note carries a foreign `type` property. **1526 tests passing across 134 suites.**

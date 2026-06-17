@@ -5,7 +5,7 @@
  * with options to customize, hide, and create new types.
  */
 
-import { Notice, Modal, Setting } from 'obsidian';
+import { Notice, Modal, Setting, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../../main';
 import type { LucideIconName } from '../../ui/lucide-icons';
 import {
@@ -173,10 +173,14 @@ export function renderPlaceTypeManagerCard(
 			moveDownBtn.disabled = categoryIndex === categories.length - 1;
 			moveDownBtn.addEventListener('click', () => moveCategory('down'));
 
+			// Icon (gear for Customize, pencil for Edit) with a tooltip, to keep
+			// the action row from feeling cluttered (#734 follow-up).
+			const editCatLabel = isBuiltIn ? 'Customize' : 'Edit';
 			const editCatBtn = actionsContainer.createEl('button', {
-				text: isBuiltIn ? 'Customize' : 'Edit',
-				cls: 'crc-btn crc-btn--small'
+				cls: 'crc-btn crc-btn--small',
+				attr: { 'aria-label': editCatLabel, title: editCatLabel }
 			});
+			setIcon(editCatBtn, isBuiltIn ? 'settings' : 'pencil');
 			editCatBtn.addEventListener('click', () => {
 				openCategoryEditor(plugin, category, isBuiltIn, () => {
 					renderTypeList();
@@ -229,8 +233,13 @@ export function renderPlaceTypeManagerCard(
 						renderTypeList();
 						onRefresh();
 					}, {
-						canMoveUp: typeIndex > 0,
-						canMoveDown: typeIndex < categoryTypes.length - 1,
+						// A move only does something when the neighbour sits at a
+						// different level — swapping equal levels can't reorder tied
+						// types, so disable the arrow there rather than no-op silently.
+						canMoveUp: typeIndex > 0
+							&& categoryTypes[typeIndex - 1].hierarchyLevel !== type.hierarchyLevel,
+						canMoveDown: typeIndex < categoryTypes.length - 1
+							&& categoryTypes[typeIndex + 1].hierarchyLevel !== type.hierarchyLevel,
 						onMove: (direction) => {
 							void persistTypeOrder(plugin, categoryTypes, type.id, direction, () => {
 								renderTypeList();
@@ -364,11 +373,13 @@ function renderTypeRow(
 		});
 	}
 
-	// Edit/Customize button
+	// Edit/Customize button — icon + tooltip to reduce row clutter (#734 follow-up).
+	const editLabel = type.builtIn ? 'Customize' : 'Edit';
 	const editBtn = actionsWrapper.createEl('button', {
-		text: type.builtIn ? 'Customize' : 'Edit',
-		cls: 'crc-btn crc-btn--small'
+		cls: 'crc-btn crc-btn--small',
+		attr: { 'aria-label': editLabel, title: editLabel }
 	});
+	setIcon(editBtn, type.builtIn ? 'settings' : 'pencil');
 	editBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
 		if (type.builtIn) {

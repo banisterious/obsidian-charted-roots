@@ -439,23 +439,25 @@ export function nextHierarchyLevelForCategory(
 }
 
 /**
- * Move a place type one step up or down within its category and return the new
- * hierarchy level for every type in that category.
+ * Move a place type one step up or down within its category by swapping its
+ * hierarchy level with its display neighbour's. Returns only the two changed
+ * types (id + new level), or an empty array for a no-op.
  *
- * Reordering by hand-editing each type's level slider is tedious and easy to
- * get wrong — and types that share a level (e.g. several new types all left at
- * 0) have no defined order at all (#734). After a move the whole category is
- * renumbered to consecutive levels anchored at the category's current minimum
- * level, which both realizes the requested order and breaks any ties. Returns
- * an empty array when the move is a no-op (type not found, or already at the
- * top/bottom boundary) so callers can skip persisting.
+ * Swapping just the two levels — rather than renumbering the whole category —
+ * keeps every other type's level intact, preserving intentional ties (e.g. the
+ * built-in Province/State pair) and any gaps the user set up. Two types that
+ * already share a level can't be ordered relative to each other by level alone,
+ * so a tied neighbour is a deliberate no-op rather than forcing them apart
+ * (#734 follow-up: an earlier full-renumber broke unrelated ties). A move is
+ * also a no-op when the type isn't found or is already at the top/bottom
+ * boundary, so callers can skip persisting.
  */
 export function reorderTypeWithinCategory(
 	categoryTypes: ReadonlyArray<{ id: string; hierarchyLevel: number }>,
 	typeId: string,
 	direction: 'up' | 'down'
 ): Array<{ id: string; hierarchyLevel: number }> {
-	// Current display order: shallowest first, stable on ties.
+	// Display order: shallowest first, stable on ties.
 	const order = categoryTypes
 		.map((t, idx) => ({ id: t.id, hierarchyLevel: t.hierarchyLevel, idx }))
 		.sort((a, b) => a.hierarchyLevel - b.hierarchyLevel || a.idx - b.idx);
@@ -465,10 +467,14 @@ export function reorderTypeWithinCategory(
 	const j = direction === 'up' ? i - 1 : i + 1;
 	if (j < 0 || j >= order.length) return [];
 
-	[order[i], order[j]] = [order[j], order[i]];
+	const moved = order[i];
+	const neighbour = order[j];
+	if (moved.hierarchyLevel === neighbour.hierarchyLevel) return [];
 
-	const base = Math.min(...categoryTypes.map(t => t.hierarchyLevel));
-	return order.map((t, idx) => ({ id: t.id, hierarchyLevel: base + idx }));
+	return [
+		{ id: moved.id, hierarchyLevel: neighbour.hierarchyLevel },
+		{ id: neighbour.id, hierarchyLevel: moved.hierarchyLevel }
+	];
 }
 
 /**

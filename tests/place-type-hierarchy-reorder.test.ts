@@ -29,36 +29,46 @@ describe('nextHierarchyLevelForCategory (#734)', () => {
 	});
 });
 
-describe('reorderTypeWithinCategory (#734)', () => {
-	// A custom category whose three types were all left at level 0 (the friction case).
-	const allZero = [
-		{ id: 'space_region', hierarchyLevel: 0 },
-		{ id: 'sector', hierarchyLevel: 0 },
-		{ id: 'system', hierarchyLevel: 0 }
-	];
-
-	it('renumbers tied levels into a defined, consecutive order', () => {
-		// Moving 'system' up from the bottom of a stable all-zero list.
-		const result = reorderTypeWithinCategory(allZero, 'system', 'up');
-		expect(result).toEqual([
-			{ id: 'space_region', hierarchyLevel: 0 },
-			{ id: 'system', hierarchyLevel: 1 },
-			{ id: 'sector', hierarchyLevel: 2 }
-		]);
-	});
-
-	it('swaps order while preserving the anchored base level', () => {
+describe('reorderTypeWithinCategory (#734 swap-adjacent)', () => {
+	it('swaps the two adjacent levels and returns only the changed pair', () => {
 		const types = [
 			{ id: 'a', hierarchyLevel: 2 },
 			{ id: 'b', hierarchyLevel: 3 },
 			{ id: 'c', hierarchyLevel: 4 }
 		];
-		const result = reorderTypeWithinCategory(types, 'c', 'up');
-		expect(result).toEqual([
-			{ id: 'a', hierarchyLevel: 2 },
+		// Move 'c' up past 'b' — only c and b change levels.
+		expect(reorderTypeWithinCategory(types, 'c', 'up')).toEqual([
 			{ id: 'c', hierarchyLevel: 3 },
 			{ id: 'b', hierarchyLevel: 4 }
 		]);
+	});
+
+	it('preserves gaps by swapping the exact two levels', () => {
+		const types = [
+			{ id: 'a', hierarchyLevel: 2 },
+			{ id: 'b', hierarchyLevel: 5 },
+			{ id: 'c', hierarchyLevel: 7 }
+		];
+		expect(reorderTypeWithinCategory(types, 'b', 'up')).toEqual([
+			{ id: 'b', hierarchyLevel: 2 },
+			{ id: 'a', hierarchyLevel: 5 }
+		]);
+	});
+
+	it('leaves an unrelated tie untouched (the Province/State case)', () => {
+		const types = [
+			{ id: 'a', hierarchyLevel: 0 },
+			{ id: 'b', hierarchyLevel: 1 },
+			{ id: 'province', hierarchyLevel: 2 },
+			{ id: 'state', hierarchyLevel: 2 }
+		];
+		// Reordering a/b doesn't mention province or state at all.
+		const result = reorderTypeWithinCategory(types, 'b', 'up');
+		expect(result).toEqual([
+			{ id: 'b', hierarchyLevel: 0 },
+			{ id: 'a', hierarchyLevel: 1 }
+		]);
+		expect(result.some(r => r.id === 'province' || r.id === 'state')).toBe(false);
 	});
 
 	it('moves a type down', () => {
@@ -67,27 +77,31 @@ describe('reorderTypeWithinCategory (#734)', () => {
 			{ id: 'b', hierarchyLevel: 1 },
 			{ id: 'c', hierarchyLevel: 2 }
 		];
-		expect(reorderTypeWithinCategory(types, 'a', 'down').map(t => t.id))
-			.toEqual(['b', 'a', 'c']);
+		expect(reorderTypeWithinCategory(types, 'a', 'down')).toEqual([
+			{ id: 'a', hierarchyLevel: 1 },
+			{ id: 'b', hierarchyLevel: 0 }
+		]);
 	});
 
-	it('is a no-op at the top boundary', () => {
+	it('is a no-op when the neighbour shares the same level (preserve the tie)', () => {
+		const types = [
+			{ id: 'a', hierarchyLevel: 0 },
+			{ id: 'b', hierarchyLevel: 0 }
+		];
+		expect(reorderTypeWithinCategory(types, 'b', 'up')).toEqual([]);
+	});
+
+	it('is a no-op at the top and bottom boundaries', () => {
 		const types = [
 			{ id: 'a', hierarchyLevel: 0 },
 			{ id: 'b', hierarchyLevel: 1 }
 		];
 		expect(reorderTypeWithinCategory(types, 'a', 'up')).toEqual([]);
-	});
-
-	it('is a no-op at the bottom boundary', () => {
-		const types = [
-			{ id: 'a', hierarchyLevel: 0 },
-			{ id: 'b', hierarchyLevel: 1 }
-		];
 		expect(reorderTypeWithinCategory(types, 'b', 'down')).toEqual([]);
 	});
 
 	it('returns empty for an unknown type id', () => {
-		expect(reorderTypeWithinCategory(allZero, 'nope', 'up')).toEqual([]);
+		const types = [{ id: 'a', hierarchyLevel: 0 }, { id: 'b', hierarchyLevel: 1 }];
+		expect(reorderTypeWithinCategory(types, 'nope', 'up')).toEqual([]);
 	});
 });
