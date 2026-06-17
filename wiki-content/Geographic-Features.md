@@ -246,6 +246,34 @@ Notes about this place...
 | `mythological` | Place from mythology/religion | Asgard, Mount Olympus |
 | `fictional` | Invented for a story/world | Winterfell, Mordor |
 
+### Place type hierarchy levels
+
+Every place type has a **hierarchy level** that controls valid parent/child relationships: a lower level can be the parent of a higher one (Country at 2 can contain City at 7, but not the reverse). Types are managed in **Control Center → Places → Manage place types**, where you can customize a built-in type, add new types, and reorder types within a category. This is what makes non-Earth hierarchies possible — for example adding "Sector" and "System" above "Planet" for science-fiction worldbuilding.
+
+The built-in place types and their default levels:
+
+| Level | Type | Category |
+|---|---|---|
+| 0 | Planet | Geographic |
+| 1 | Continent | Geographic |
+| 2 | Country | Political divisions |
+| 3 | Province | Political divisions |
+| 3 | State | Political divisions |
+| 4 | Region | Political divisions |
+| 5 | County | Political divisions |
+| 6 | District | Settlements |
+| 6 | Township | Political divisions |
+| 7 | City | Settlements |
+| 8 | Town | Settlements |
+| 9 | Village | Settlements |
+| 10 | Parish | Subdivisions |
+| 11 | Castle | Structures |
+| 11 | Estate | Structures |
+| 12 | Cemetery | Structures |
+| 12 | Church | Structures |
+
+Some types intentionally **share a level** (State and Province, District and Township, Castle and Estate, Cemetery and Church) because they are regional naming variants for the same tier. The up/down reorder controls swap a type's level with its neighbour's, so these intentional ties and any gaps you have set up are left untouched. To re-rank a type — including making it match or differ from another — use its **Customize** control; resetting a customized built-in restores its default level from the table above.
+
 ### Creating Place Notes
 
 **Option 1: Control Center**
