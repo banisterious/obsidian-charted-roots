@@ -1716,6 +1716,16 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
+		new Setting(timelineContent)
+			.setName('Show marriage type')
+			.setDesc('Append the type of union (e.g. "Common-law marriage") to timeline marriage rows when set, so a row reads "Marriage to Jane Doe (Common-law marriage)". Set the type per spouse in the person editor.')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showMarriageType)
+				.onChange(async (value) => {
+					this.plugin.settings.showMarriageType = value;
+					await this.plugin.saveSettings();
+				}));
+
 		// --- Timeline layout subsection ---
 		new Setting(timelineContent).setName("Timeline layout").setHeading();
 
