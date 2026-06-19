@@ -14,6 +14,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Organization members that are person notes without an explicit `cr_type` are listed again** ([#742](https://github.com/banisterious/obsidian-charted-roots/issues/742)): a regression in 0.22.71 (from the #738 fix) made the org member scan require an explicit `cr_type: person` / `type: person`, so person notes relying on the long-supported "`cr_id` and no explicit type" shape were silently dropped from their organizations' member lists — often leaving only one member visible. The scan now uses the shared person detection (`isPersonNote`), which honours that legacy shape while keeping `cr_type` authoritative (so a foreign `type: character` is still ignored, preserving the #738 fix). Reported by [@doctorwodka](https://github.com/doctorwodka).
+
 - **Parent place dropdown no longer shows the raw type id for the highest-ranked type** ([#739](https://github.com/banisterious/obsidian-charted-roots/issues/739)): when a place's type is the highest in its hierarchy (so nothing can be its parent), the dropdown's "No valid parent types for …" message showed the internal sluggified id. It now shows the type's display name — a spot missed by #732. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Changed
