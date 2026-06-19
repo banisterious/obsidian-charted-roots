@@ -18,6 +18,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 - **Parent place dropdown no longer shows the raw type id for the highest-ranked type** ([#739](https://github.com/banisterious/obsidian-charted-roots/issues/739)): when a place's type is the highest in its hierarchy (so nothing can be its parent), the dropdown's "No valid parent types for …" message showed the internal sluggified id. It now shows the type's display name — a spot missed by #732. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
+- **Timeline no longer errors with "e.trim is not a function" when a date is a bare year** ([#741](https://github.com/banisterious/obsidian-charted-roots/issues/741)): a person note that combined an inline `events:` array with a date written as a bare number (e.g. `born: 1850`, which YAML parses as a number rather than a string) crashed the whole timeline render during de-duplication. The dedup key now coerces non-string date/place values to text. Reported by [@tenephor](https://github.com/tenephor).
+
 ### Changed
 
 - **Place type reordering now preserves intentional ties and gaps** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up): the up/down controls in the Place type manager swap a type's hierarchy level with its neighbour's, rather than renumbering the whole category. Default same-rank pairs (State/Province, District/Township, etc.) stay tied, and any custom gaps are left intact. A tied neighbour disables the arrow (tied types can't be ordered relative to each other — adjust one via Customize). The Customize/Edit action is now a gear/pencil icon with a tooltip to keep the row uncluttered. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).

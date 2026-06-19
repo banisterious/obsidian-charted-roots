@@ -73,7 +73,18 @@ export function parseLifeEvents(raw: unknown, opts: ParseLifeEventsOptions): Lif
  * (e.g. an external `cr_type: event` note describing the same event). Keys on
  * resolved type + place + the full date string when present (#692). Place is
  * expected pre-stripped of wikilink syntax by the caller.
+ *
+ * `place` and `rawDate` are coerced with `String()` because they originate from
+ * frontmatter, where a bare year (`born: 1850`) parses as a number — calling
+ * `.trim()` on it directly threw "e.trim is not a function" and broke the whole
+ * timeline render (#741).
  */
-export function lifeEventDedupKey(type: string, place: string | undefined, rawDate: string | undefined): string {
-	return `${type}|${(place || '').trim().toLowerCase()}|${(rawDate || '').trim()}`;
+export function lifeEventDedupKey(
+	type: string,
+	place: string | number | undefined,
+	rawDate: string | number | undefined
+): string {
+	const placeStr = place == null ? '' : String(place);
+	const dateStr = rawDate == null ? '' : String(rawDate);
+	return `${type}|${placeStr.trim().toLowerCase()}|${dateStr.trim()}`;
 }
