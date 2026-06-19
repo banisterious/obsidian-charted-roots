@@ -400,11 +400,13 @@ function renderTypeRow(
 		}
 	});
 
-	// Hide/Show button
+	// Hide/Show button — icon + tooltip to reduce row clutter (#734 follow-up).
+	const hideLabel = isHidden ? 'Show' : 'Hide';
 	const hideBtn = actionsWrapper.createEl('button', {
-		text: isHidden ? 'Show' : 'Hide',
-		cls: 'crc-btn crc-btn--small crc-btn--danger'
+		cls: 'crc-btn crc-btn--small',
+		attr: { 'aria-label': hideLabel, title: hideLabel }
 	});
+	setIcon(hideBtn, isHidden ? 'eye' : 'eye-off');
 	hideBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
 		void (async () => {
