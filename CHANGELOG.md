@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.72] - 2026-06-18
+
+A reporter-driven patch fixing two 0.22.71 regressions and a crash, plus place type refinements and a dependency security update. Organization member lists once again include person notes identified only by `cr_id` (no explicit `cr_type`), which 0.22.71 had silently dropped. The timeline no longer crashes when a note mixes an inline `events:` array with a bare-number date. Place type reordering now preserves intentional ties and gaps (and the Customize/Edit actions are icons), and the parent-place dropdown shows display names for the highest-ranked type. The bundled dompurify (via jspdf) is updated to 3.4.10 to clear a security advisory. **1533 tests passing across 134 suites.**
+
 ### Fixed
 
 - **Organization members that are person notes without an explicit `cr_type` are listed again** ([#742](https://github.com/banisterious/obsidian-charted-roots/issues/742)): a regression in 0.22.71 (from the #738 fix) made the org member scan require an explicit `cr_type: person` / `type: person`, so person notes relying on the long-supported "`cr_id` and no explicit type" shape were silently dropped from their organizations' member lists — often leaving only one member visible. The scan now uses the shared person detection (`isPersonNote`), which honours that legacy shape while keeping `cr_type` authoritative (so a foreign `type: character` is still ignored, preserving the #738 fix). Reported by [@doctorwodka](https://github.com/doctorwodka).
