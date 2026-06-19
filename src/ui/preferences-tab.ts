@@ -1446,6 +1446,18 @@ export function renderCanvasStylingCard(
 				new Notice(`${getSpouseCompoundLabel(plugin.settings, 'edge label format')} updated`);
 			}));
 
+	// Show marriage type (#628)
+	new Setting(content)
+		.setName('Show marriage type')
+		.setDesc('Display the type of union (e.g. "Common-law marriage") wherever marriage details appear, when set. Shown alongside marriage date and location.')
+		.addToggle(toggle => toggle
+			.setValue(plugin.settings.showMarriageType)
+			.onChange(async (value) => {
+				plugin.settings.showMarriageType = value;
+				await plugin.saveSettings();
+				new Notice('Marriage type display updated');
+			}));
+
 	container.appendChild(card);
 }
 

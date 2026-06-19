@@ -239,6 +239,8 @@ export interface CanvasRootsSettings {
 	// Marriage metadata display
 	showSpouseEdges: boolean;
 	spouseEdgeLabelFormat: SpouseEdgeLabelFormat;
+	/** Show the marriage type (e.g. "Common-law marriage") wherever marriage info is displayed (#628) */
+	showMarriageType: boolean;
 	// Bidirectional relationship sync
 	enableBidirectionalSync: boolean;
 	syncOnFileModify: boolean;
@@ -778,6 +780,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Marriage metadata display defaults
 	showSpouseEdges: false,             // Default: OFF (clean look, no spouse edges)
 	spouseEdgeLabelFormat: 'date-only', // When enabled, show just marriage date
+	showMarriageType: true,             // Default: ON - show marriage type where populated (#628)
 	// Bidirectional relationship sync defaults
 	enableBidirectionalSync: true,      // Default: ON - automatically sync relationships
 	syncOnFileModify: true,             // Default: ON - sync when files are modified

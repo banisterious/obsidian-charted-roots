@@ -42,6 +42,7 @@ import type {
 	SpousesFieldData,
 	PersonFormData,
 } from './create-person-types';
+import { MARRIAGE_TYPE_PRESETS } from '../models/marriage-type';
 
 /**
  * Modal for creating or editing person notes
@@ -2616,6 +2617,53 @@ export class CreatePersonModal extends Modal {
 					.onChange(value => {
 						spouse.marriageStatus = (value as MarriageStatus) || undefined;
 					}));
+
+			// Marriage type (#628) — preset dropdown + free-text custom
+			{
+				const marriageTypeSetting = new Setting(metadataContent)
+					.setName('Marriage type');
+				let typeCustomInput: HTMLInputElement | null = null;
+				const presetList = MARRIAGE_TYPE_PRESETS as readonly string[];
+				const startsCustom = !!spouse.marriageType && !presetList.includes(spouse.marriageType);
+
+				marriageTypeSetting.addDropdown(dropdown => {
+					dropdown.addOption('', '(Not specified)');
+					for (const preset of MARRIAGE_TYPE_PRESETS) {
+						dropdown.addOption(preset, preset);
+					}
+					dropdown.addOption('__custom__', 'Custom...');
+					dropdown.setValue(startsCustom ? '__custom__' : (spouse.marriageType || ''));
+					dropdown.onChange(value => {
+						if (value === '__custom__') {
+							if (typeCustomInput) {
+								typeCustomInput.removeClass('cr-hidden');
+								typeCustomInput.focus();
+							}
+							spouse.marriageType = typeCustomInput?.value || undefined;
+						} else {
+							if (typeCustomInput) {
+								typeCustomInput.addClass('cr-hidden');
+								typeCustomInput.value = '';
+							}
+							spouse.marriageType = value || undefined;
+						}
+					});
+				});
+
+				// Free-text input for custom marriage type (hidden unless "Custom..." is chosen)
+				marriageTypeSetting.addText(text => {
+					typeCustomInput = text.inputEl;
+					text.setPlaceholder('e.g., Handfasting')
+						.setValue(startsCustom ? (spouse.marriageType || '') : '')
+						.onChange(value => {
+							spouse.marriageType = value || undefined;
+						});
+					text.inputEl.addClass('crc-input--inline');
+					if (!startsCustom) {
+						text.inputEl.addClass('cr-hidden');
+					}
+				});
+			}
 
 			// Divorce date (only shown if status indicates it might be relevant)
 			new Setting(metadataContent)

@@ -36,6 +36,7 @@ export interface SpouseWithMetadata {
 	marriageLocation?: string;
 	marriageLocationCrId?: string;
 	marriageStatus?: MarriageStatus;
+	marriageType?: string;
 	divorceDate?: string;
 }
 

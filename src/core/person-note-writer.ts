@@ -220,6 +220,7 @@ export interface SpouseMetadata {
 	marriageLocation?: string;
 	marriageLocationCrId?: string;
 	marriageStatus?: 'current' | 'divorced' | 'widowed' | 'separated' | 'annulled';
+	marriageType?: string;
 	divorceDate?: string;
 }
 
@@ -667,6 +668,9 @@ export async function createPersonNote(
 			}
 			if (spouse.marriageStatus) {
 				frontmatter[prop(`spouse${idx}_marriage_status`)] = spouse.marriageStatus;
+			}
+			if (spouse.marriageType) {
+				frontmatter[prop(`spouse${idx}_marriage_type`)] = spouse.marriageType;
 			}
 			if (spouse.divorceDate) {
 				frontmatter[prop(`spouse${idx}_divorce_date`)] = spouse.divorceDate;
@@ -1965,7 +1969,7 @@ export async function updatePersonNote(
 		if (person.spouseCrId !== undefined || person.spouseName !== undefined || person.spouseMetadata !== undefined) {
 			// Check if any spouse has metadata
 			const hasMetadata = person.spouseMetadata?.some(s =>
-				s.marriageDate || s.marriageLocation || s.marriageStatus || s.divorceDate
+				s.marriageDate || s.marriageLocation || s.marriageStatus || s.marriageType || s.divorceDate
 			);
 
 			// First, clear any existing indexed spouse properties
@@ -1976,6 +1980,7 @@ export async function updatePersonNote(
 				delete frontmatter[`spouse${i}_marriage_location`];
 				delete frontmatter[`spouse${i}_marriage_location_id`];
 				delete frontmatter[`spouse${i}_marriage_status`];
+				delete frontmatter[`spouse${i}_marriage_type`];
 				delete frontmatter[`spouse${i}_divorce_date`];
 			}
 
@@ -2005,6 +2010,9 @@ export async function updatePersonNote(
 					// sticks (#724); no else needed here.
 					if (spouse.marriageStatus) {
 						frontmatter[`spouse${idx}_marriage_status`] = spouse.marriageStatus;
+					}
+					if (spouse.marriageType) {
+						frontmatter[`spouse${idx}_marriage_type`] = spouse.marriageType;
 					}
 					if (spouse.divorceDate) {
 						frontmatter[`spouse${idx}_divorce_date`] = spouse.divorceDate;
