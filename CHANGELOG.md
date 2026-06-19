@@ -21,6 +21,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 - **Place type hierarchy: insert above an occupied level** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. This makes the previously fiddly "add something above the current top" case (e.g. a galaxy above a region) a single action instead of renumbering the whole category by hand, while leaving intentional ties and gaps intact. The per-row Hide/Show and Reset controls are now compact icons (eye and revert arrow) with tooltips, matching the customize/edit icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
+### Fixed
+
+- **Entity Profile showed a place's raw category id** ([#745](https://github.com/banisterious/obsidian-charted-roots/issues/745)): the Category in a place's profile heading displayed the internal lowercase id (e.g. `historical`) instead of its display label ("Historical") — the label only appeared once you clicked into the field to edit it. The heading now shows the proper label, while editing still round-trips the underlying id. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
 ### Security
 
 - **Updated the bundled dompurify to 3.4.11** (transitive via jspdf) to resolve [GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882) (moderate; affects dompurify `<= 3.4.10`), a newly-disclosed follow-on to the hook-pollution issue addressed by the 3.4.10 bump in 0.22.72.

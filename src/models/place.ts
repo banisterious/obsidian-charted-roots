@@ -335,6 +335,29 @@ export type PlaceIssueType =
 export const DEFAULT_PLACE_CATEGORY: PlaceCategory = 'real';
 
 /**
+ * Human-readable labels for each place category, for display surfaces that
+ * would otherwise show the raw lowercase id (#745).
+ */
+export const PLACE_CATEGORY_LABELS: Record<PlaceCategory, string> = {
+	real: 'Real',
+	historical: 'Historical',
+	disputed: 'Disputed',
+	legendary: 'Legendary',
+	mythological: 'Mythological',
+	fictional: 'Fictional'
+};
+
+/**
+ * Display label for a place category id (e.g. "historical" -> "Historical").
+ * Returns an empty string for an unset category and falls back to the raw
+ * value for any unrecognized id.
+ */
+export function getPlaceCategoryLabel(category: string | undefined | null): string {
+	if (!category) return '';
+	return PLACE_CATEGORY_LABELS[category as PlaceCategory] ?? category;
+}
+
+/**
  * Categories that support universe grouping
  */
 export const UNIVERSE_CATEGORIES: PlaceCategory[] = ['fictional', 'mythological', 'legendary'];
