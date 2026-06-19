@@ -12,6 +12,14 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Entity Profile memberships are sorted by start date** ([#743](https://github.com/banisterious/obsidian-charted-roots/issues/743)): a person's memberships were shown in insert order (and an edited membership jumped to the bottom), leaving date ranges scattered. They now order by earliest start year — resolved era-aware, so fictional BBY/ABY dates sort by true chronology — with undated memberships last. On a tied start year an ended membership sorts above an ongoing ("Current") one, then ties break alphabetically by organization. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Security
+
+- **Updated the bundled dompurify to 3.4.11** (transitive via jspdf) to resolve [GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882) (moderate; affects dompurify `<= 3.4.10`), a newly-disclosed follow-on to the hook-pollution issue addressed by the 3.4.10 bump in 0.22.72.
+
 ## [0.22.72] - 2026-06-18
 
 A reporter-driven patch fixing two 0.22.71 regressions and a crash, plus place type refinements and a dependency security update. Organization member lists once again include person notes identified only by `cr_id` (no explicit `cr_type`), which 0.22.71 had silently dropped. The timeline no longer crashes when a note mixes an inline `events:` array with a bare-number date. Place type reordering now preserves intentional ties and gaps (and the Customize/Edit actions are icons), and the parent-place dropdown shows display names for the highest-ranked type. The bundled dompurify (via jspdf) is updated to 3.4.10 to clear a security advisory. **1533 tests passing across 134 suites.**
