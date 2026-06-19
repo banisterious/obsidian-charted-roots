@@ -12,6 +12,26 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.72] - 2026-06-18
+
+A reporter-driven patch fixing two 0.22.71 regressions and a crash, plus place type refinements and a dependency security update. Organization member lists once again include person notes identified only by `cr_id` (no explicit `cr_type`), which 0.22.71 had silently dropped. The timeline no longer crashes when a note mixes an inline `events:` array with a bare-number date. Place type reordering now preserves intentional ties and gaps (and the Customize/Edit actions are icons), and the parent-place dropdown shows display names for the highest-ranked type. The bundled dompurify (via jspdf) is updated to 3.4.10 to clear a security advisory. **1533 tests passing across 134 suites.**
+
+### Fixed
+
+- **Organization members that are person notes without an explicit `cr_type` are listed again** ([#742](https://github.com/banisterious/obsidian-charted-roots/issues/742)): a regression in 0.22.71 (from the #738 fix) made the org member scan require an explicit `cr_type: person` / `type: person`, so person notes relying on the long-supported "`cr_id` and no explicit type" shape were silently dropped from their organizations' member lists — often leaving only one member visible. The scan now uses the shared person detection (`isPersonNote`), which honours that legacy shape while keeping `cr_type` authoritative (so a foreign `type: character` is still ignored, preserving the #738 fix). Reported by [@doctorwodka](https://github.com/doctorwodka).
+
+- **Parent place dropdown no longer shows the raw type id for the highest-ranked type** ([#739](https://github.com/banisterious/obsidian-charted-roots/issues/739)): when a place's type is the highest in its hierarchy (so nothing can be its parent), the dropdown's "No valid parent types for …" message showed the internal sluggified id. It now shows the type's display name — a spot missed by #732. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+- **Timeline no longer errors with "e.trim is not a function" when a date is a bare year** ([#741](https://github.com/banisterious/obsidian-charted-roots/issues/741)): a person note that combined an inline `events:` array with a date written as a bare number (e.g. `born: 1850`, which YAML parses as a number rather than a string) crashed the whole timeline render during de-duplication. The dedup key now coerces non-string date/place values to text. Reported by [@tenephor](https://github.com/tenephor).
+
+### Changed
+
+- **Place type reordering now preserves intentional ties and gaps** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up): the up/down controls in the Place type manager swap a type's hierarchy level with its neighbour's, rather than renumbering the whole category. Default same-rank pairs (State/Province, District/Township, etc.) stay tied, and any custom gaps are left intact. A tied neighbour disables the arrow (tied types can't be ordered relative to each other — adjust one via Customize). The Customize/Edit action is now a gear/pencil icon with a tooltip to keep the row uncluttered. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Security
+
+- **Updated the bundled dompurify to 3.4.10** (a transitive dependency of jspdf, used for PDF export) to resolve advisories [GHSA-vxr8-fq34-vvx9](https://github.com/advisories/GHSA-vxr8-fq34-vvx9) and GHSA-gvmj-g25r-r7wr, both affecting dompurify `<= 3.4.8`.
+
 ## [0.22.71] - 2026-06-16
 
 A reporter-driven release focused on place type management and consistent display names. The Place type manager (Control Center → Places) gains up/down reordering for both categories and the types within them, plus a per-category "+ Add type" button with smart hierarchy-level defaults — making non-Earth and deeply nested place hierarchies far less fiddly to build. Several surfaces that showed a raw internal id now show the proper display name: the universe dynamic blocks, the Place Statistics card and place pickers, and the organization/source type in the Entity Profile pane. The Statistics date range splits universe-less fictional dates into their own "Uncategorized" bucket, and adding a member to an organization no longer silently fails when a person note carries a foreign `type` property. **1526 tests passing across 134 suites.**

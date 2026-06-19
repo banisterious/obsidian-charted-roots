@@ -1155,10 +1155,17 @@ export class CreatePlaceModal extends Modal {
 		const filteredOptions = this.getFilteredParentOptions(filterByType);
 
 		if (filteredOptions.length === 0 && filterByType) {
-			// Show message if no valid parents for this type
+			// Show message if no valid parents for this type. Resolve the type id
+			// to its display name so the highest-ranked type doesn't surface a raw
+			// slug here (#739 — a spot missed by #732).
+			const typeLabel = getPlaceTypeDisplayName(
+				filterByType,
+				this.settings?.customPlaceTypes || [],
+				this.settings?.placeTypeCustomizations || {}
+			);
 			const noOptionsEl = selectEl.createEl('option', {
 				value: '__no_options__',
-				text: `── No valid parent types for ${filterByType} ──`
+				text: `── No valid parent types for ${typeLabel} ──`
 			});
 			noOptionsEl.disabled = true;
 			return;

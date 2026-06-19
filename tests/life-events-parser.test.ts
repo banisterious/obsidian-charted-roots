@@ -87,4 +87,17 @@ describe('lifeEventDedupKey (#692)', () => {
 		expect(lifeEventDedupKey('residence', 'A', '1815')).not.toBe(lifeEventDedupKey('occupation', 'A', '1815'));
 		expect(lifeEventDedupKey('residence', 'A', '1815')).not.toBe(lifeEventDedupKey('residence', 'B', '1815'));
 	});
+
+	// #741 — frontmatter dates parse as numbers for a bare year (born: 1850),
+	// which used to throw "e.trim is not a function" and broke the whole render.
+	it('handles a numeric date without throwing, matching its string form', () => {
+		expect(() => lifeEventDedupKey('residence', 'Tatooine', 1850)).not.toThrow();
+		expect(lifeEventDedupKey('residence', 'Tatooine', 1850))
+			.toBe(lifeEventDedupKey('residence', 'Tatooine', '1850'));
+	});
+
+	it('handles a numeric place and undefined date without throwing', () => {
+		expect(() => lifeEventDedupKey('residence', 1234 as unknown as number, undefined)).not.toThrow();
+		expect(lifeEventDedupKey('residence', undefined, undefined)).toBe('residence||');
+	});
 });

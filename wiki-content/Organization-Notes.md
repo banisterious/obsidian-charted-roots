@@ -80,6 +80,10 @@ roles:
 | `seat` | wikilink | No | Primary location (link to place note) |
 | `roles` | string[] | No | Ordered list of valid role names (controls display order in members block) |
 | `universe` | string | No | Universe scope |
+| `members` | wikilink[] | Auto | Auto-maintained mirror of the org's members — **do not edit by hand** (see note below) |
+| `members_id` | string[] | Auto | Auto-maintained `cr_id` list paralleling `members` |
+
+> **`members` / `members_id` are derived, not authoritative.** Membership is stored on the **person** notes (see [Person Memberships](#person-memberships)). Charted Roots writes these two arrays onto the org as a convenience mirror and **rebuilds them from the person notes** whenever a member is added or removed. Adding names to them by hand will **not** register members — and your edits will be overwritten on the next sync. To add a member, use **Add membership** from the person, or **Manage members** from the org (both update the person note).
 
 ## Organization Types
 
@@ -102,18 +106,20 @@ In the Organizations tab, toggle "Show built-in types" to hide the default types
 
 ## Person Memberships
 
-People can have memberships in organizations through the `memberships` array in their frontmatter.
+**Membership lives on the person note**, not the organization. A person's memberships are stored as a set of flat, index-aligned arrays (one entry per membership, at the same position in each array). This flat shape is intentional — it renders as native List properties in Obsidian's properties view, unlike a nested array. The organization's own [`members` / `members_id`](#organization-properties) arrays are just a mirror generated from these.
 
 ### Membership Properties
 
+Each is a parallel array on the **person** note; entry *N* in each describes one membership.
+
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `org` | wikilink | Yes | Link to organization note |
-| `org_id` | string | No | Organization `cr_id` for robust linking |
-| `role` | string | No | Role or position within organization |
-| `from` | string | No | Start date of membership |
-| `to` | string | No | End date (leave empty if current) |
-| `notes` | string | No | Additional context |
+| `membership_orgs` | wikilink[] | Yes | Link to each organization note |
+| `membership_org_ids` | string[] | Recommended | Each organization's `cr_id`, for robust linking that survives renames |
+| `membership_roles` | string[] | No | Role or position within each organization |
+| `membership_from_dates` | string[] | No | Start date of each membership |
+| `membership_to_dates` | string[] | No | End date (leave empty if current) |
+| `membership_notes` | string[] | No | Additional context per membership |
 
 ### Example Person Frontmatter
 
@@ -121,19 +127,25 @@ People can have memberships in organizations through the `memberships` array in 
 ---
 name: Eddard Stark
 cr_id: person-eddard-stark
-memberships:
-  - org: "[[House Stark]]"
-    org_id: org-house-stark
-    role: Lord of Winterfell
-    from: "283 AC"
-    to: "298 AC"
-  - org: "[[Small Council]]"
-    org_id: org-small-council
-    role: Hand of the King
-    from: "298 AC"
-    to: "298 AC"
+membership_orgs:
+  - "[[House Stark]]"
+  - "[[Small Council]]"
+membership_org_ids:
+  - org-house-stark
+  - org-small-council
+membership_roles:
+  - Lord of Winterfell
+  - Hand of the King
+membership_from_dates:
+  - "283 AC"
+  - "298 AC"
+membership_to_dates:
+  - "298 AC"
+  - "298 AC"
 ---
 ```
+
+> **Legacy formats.** Older notes using a nested `memberships:` array (each entry an `org`/`role`/`from`/… object) or a single `house`/`organization` field are still read for backward compatibility, but new memberships are written in the flat form above.
 
 ### Adding Memberships
 
