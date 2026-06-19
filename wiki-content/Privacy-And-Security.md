@@ -20,11 +20,13 @@ Charted Roots handles sensitive genealogical data including names, dates, relati
 
 ## Data Storage Overview
 
-**All data stays local.** Charted Roots does not:
-- Transmit data over the network
-- Connect to external services
-- Upload information to cloud servers
-- Share data with third parties
+**Your family data stays local.** Charted Roots:
+- Stores all genealogical data in your own vault as plain Markdown
+- Does not upload your family data to any server
+- Does not sync to the cloud or share data with third parties
+- Has no telemetry, analytics, or account system
+
+The one exception is optional, user-initiated geographic lookups. When you use place lookup, address geocoding, or the interactive map, the plugin queries public mapping databases, sending only the place name or coordinates you are searching for. No names, dates, relationships, or other family data ever leave your vault. See [Network Privacy](#network-privacy) for the full list of services and exactly what is sent.
 
 Your family data is stored in your Obsidian vault as plain Markdown files with YAML frontmatter. This approach:
 - Follows Obsidian's local-first philosophy
@@ -43,6 +45,34 @@ Charted Roots creates and manages several types of files:
 | Organization notes | Your configured folder | Org names, types, memberships |
 | Canvas files | Your choice | Visual layouts, node references |
 | Plugin settings | `.obsidian/plugins/charted-roots/` | Configuration only (no personal data) |
+
+## Network Privacy
+
+Charted Roots is local-first: by default it makes no network requests. Network access happens only when you actively use one of the optional geographic features below, and only for the duration of that lookup. These features stay dormant until you use them, and the plugin never transmits your family data, sends telemetry, or acts on your behalf with any account.
+
+### Features That Use the Network
+
+| Feature | How to trigger | Service(s) contacted | What is sent |
+|---------|----------------|----------------------|--------------|
+| Place lookup | Looking up a place in the place tools | Wikidata (`wikidata.org`) and OpenStreetMap Nominatim (`nominatim.openstreetmap.org`) by default; GeoNames (`geonames.org`) only if you add a username | The place name you are searching for |
+| Address geocoding | Resolving a place's coordinates | OpenStreetMap Nominatim (`nominatim.openstreetmap.org`) | The place name or coordinates being looked up |
+| Interactive map | Opening a map view | OpenStreetMap tile servers (`tile.openstreetmap.org`) | The map area (tile coordinates) you are viewing |
+
+### What Is and Isn't Sent
+
+- **Sent:** only the specific place name, address, or coordinates needed for that one lookup, plus a User-Agent string that identifies the plugin (required by OpenStreetMap's usage policy).
+- **Never sent:** person names, dates, relationships, note contents, or anything else from your vault.
+- **No tracking:** no telemetry, analytics, usage reporting, or persistent identifiers.
+- **GeoNames** is the only service that involves an account, and only because the GeoNames API requires a free username. You supply it in settings, and leaving it blank skips GeoNames entirely.
+
+### Third-Party Services
+
+These public databases have their own privacy policies:
+- [OpenStreetMap Foundation Privacy Policy](https://wiki.osmfoundation.org/wiki/Privacy_Policy) (Nominatim and map tiles)
+- [Wikimedia Privacy Policy](https://foundation.wikimedia.org/wiki/Policy:Privacy_policy) (Wikidata)
+- [GeoNames](https://www.geonames.org/) (used only if you configure a username)
+
+If you prefer zero network activity, simply do not use the place-lookup, geocoding, or map features. Everything else in Charted Roots works fully offline.
 
 ## Privacy Protection for Living Persons
 
