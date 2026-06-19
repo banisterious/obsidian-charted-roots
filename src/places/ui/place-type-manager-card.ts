@@ -422,12 +422,14 @@ function renderTypeRow(
 		})();
 	});
 
-	// Reset button for customized built-in types
+	// Reset button for customized built-in types — icon + tooltip to reduce row
+	// clutter, a revert arrow alongside the gear/pencil and eye (#734 follow-up).
 	if (type.builtIn && isCustomized) {
 		const resetBtn = actionsWrapper.createEl('button', {
-			text: 'Reset',
-			cls: 'crc-btn crc-btn--small'
+			cls: 'crc-btn crc-btn--small',
+			attr: { 'aria-label': 'Reset to default', title: 'Reset to default' }
 		});
+		setIcon(resetBtn, 'rotate-ccw');
 		resetBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			void (async () => {

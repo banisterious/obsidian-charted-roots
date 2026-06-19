@@ -19,7 +19,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Changed
 
-- **Place type hierarchy: insert above an occupied level** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. This makes the previously fiddly "add something above the current top" case (e.g. a galaxy above a region) a single action instead of renumbering the whole category by hand, while leaving intentional ties and gaps intact. The per-row Hide/Show control is now a compact eye icon with a tooltip. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
+- **Place type hierarchy: insert above an occupied level** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. This makes the previously fiddly "add something above the current top" case (e.g. a galaxy above a region) a single action instead of renumbering the whole category by hand, while leaving intentional ties and gaps intact. The per-row Hide/Show and Reset controls are now compact icons (eye and revert arrow) with tooltips, matching the customize/edit icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Security
 
