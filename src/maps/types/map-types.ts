@@ -897,3 +897,30 @@ export const DEFAULT_LAYER_VISIBILITY: LayerVisibility = {
 	places: false,    // Off by default (shows all places regardless of person events)
 	childMaps: false  // Off by default (child-map markers)
 };
+
+/**
+ * Coordinate-system membership for a marker, place, or path endpoint.
+ *
+ * A pixel (custom image) map can only place things that have pixel
+ * coordinates; a geographic (real-world lat/lng) map can only place things
+ * with real lat/lng. Event markers built for pixel-only places have their
+ * lat/lng fabricated to `0,0` upstream, so a thing that carries pixel
+ * coordinates and sits at exactly `0,0` is treated as pixel-only and excluded
+ * from geographic maps. This keeps fictional (pixel-mapped) events off the
+ * real-world map and vice versa (#747).
+ */
+export function coordsBelongToCRS(
+	coords: { lat?: number; lng?: number; pixelX?: number; pixelY?: number },
+	crs: 'geographic' | 'pixel'
+): boolean {
+	const hasPixel = coords.pixelX !== undefined && coords.pixelY !== undefined;
+	if (crs === 'pixel') {
+		return hasPixel;
+	}
+	// Geographic: needs real lat/lng.
+	if (coords.lat === undefined || coords.lng === undefined) return false;
+	// A pixel-only place whose lat/lng were defaulted to 0,0 upstream is not a
+	// real-world location, so it does not belong on a geographic map.
+	if (hasPixel && coords.lat === 0 && coords.lng === 0) return false;
+	return true;
+}

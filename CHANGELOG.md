@@ -23,6 +23,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Fixed
 
+- **Fictional events appeared on the real-world map at 0,0** ([#747](https://github.com/banisterious/obsidian-charted-roots/issues/747)): in a mixed vault, events tied to fictional places (which use pixel coordinates on a custom map) leaked onto the real-world map, clustering at latitude/longitude 0,0 off the coast of Africa, because their lat/long defaulted to zero. Markers, place markers, heat map, and migration paths now render only the locations that belong to the active map's coordinate system, so real-world and fictional maps each show only their own places. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 - **Entity Profile showed a place's raw category id** ([#745](https://github.com/banisterious/obsidian-charted-roots/issues/745)): the Category in a place's profile heading displayed the internal lowercase id (e.g. `historical`) instead of its display label ("Historical") — the label only appeared once you clicked into the field to edit it. The heading now shows the proper label, while editing still round-trips the underlying id. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Security
