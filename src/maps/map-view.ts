@@ -2431,8 +2431,17 @@ export class MapView extends ItemView {
 				personLifeSpans: data.personLifeSpans.length
 			});
 		} catch (error) {
-			logger.error('refresh-error', 'Failed to refresh map data', { error });
-			this.showError('Failed to load map data');
+			// An Error instance serializes to {} through the logger (message/stack
+			// are non-enumerable), which hid the real cause on hard-to-reproduce
+			// reports (#746). Extract the message/stack and surface the message to
+			// the user so the failure is diagnosable from the notice alone.
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			const errorStack = error instanceof Error ? error.stack : undefined;
+			logger.error('refresh-error', 'Failed to refresh map data', {
+				message: errorMessage,
+				stack: errorStack
+			});
+			this.showError(`Failed to load map data: ${errorMessage}`);
 		}
 	}
 
