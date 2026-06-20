@@ -4,6 +4,9 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.73 Release Cohort](#v02273-release-cohort-2026-06-20)
+- [v0.22.72 Release Cohort](#v02272-release-cohort-2026-06-18)
+- [v0.22.71 Release Cohort](#v02271-release-cohort-2026-06-16)
 - [v0.22.70 Release Cohort](#v02270-release-cohort-2026-06-14)
 - [v0.22.69 Release Cohort](#v02269-release-cohort-2026-06-12)
 - [v0.22.68 Release Cohort](#v02268-release-cohort-2026-06-10)
@@ -23,6 +26,68 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.73 Release Cohort (2026-06-20)
+
+A worldbuilding-and-maps cohort: a new marriage type field, friendlier place-type hierarchy editing, and a cluster of map and Entity Profile fixes for mixed real-world/fictional vaults, with a dependency security bump alongside. Notable implementation work:
+
+**Marriage type field ([#628](https://github.com/banisterious/obsidian-charted-roots/issues/628)).** Spouse relationships gain a new `spouseN_marriage_type` property recording the kind of union (Common-law marriage, Cohabitation, Domestic (civil) partnership, Putative marriage, Concubinage) alongside the existing marriage date, location, and status. A new `src/models/marriage-type.ts` holds the `MARRIAGE_TYPE_PRESETS` quick-pick list and a pure `withMarriageType` that composes a marriage label with its type in parentheses (e.g. "Marriage to Jane Doe (Common-law marriage)"). The Add / Edit Person modal (`src/ui/create-person-modal.ts`) offers the presets plus a "Custom..." option for any free-text value, with the model and writer plumbing landing through `src/models/person.ts`, `src/core/person-note-writer.ts`, `src/core/family-graph.ts`, `src/plugin/relationship-loader.ts`, and `src/ui/create-person-types.ts`. The value is mirrored to both partners via `src/core/bidirectional-linker.ts`. The type renders on Dynamic Timeline marriage rows only (`src/dynamic-content/renderers/timeline-renderer.ts`), gated behind a new `showMarriageType` setting (default on) that lives in the Timeline settings section (`src/settings.ts`). Requested by [@Vericia](https://github.com/Vericia).
+
+**Membership sort by start date ([#743](https://github.com/banisterious/obsidian-charted-roots/issues/743)).** A person's memberships rendered in insert order in the Entity Profile pane, and an edited membership jumped to the bottom. A new pure `compareMembershipsByStartDate` in `src/organizations/membership-sort.ts` orders by earliest start year — resolved era-aware so fictional BBY/ABY dates sort by true chronology — with undated memberships last; on a tied start year an ended membership sorts above an ongoing ("Current") one, then ties break alphabetically by organization. `src/profile-view/profile-data-loader.ts` feeds the comparator. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Ensure `cr_type: person` on Edit Person save ([#744](https://github.com/banisterious/obsidian-charted-roots/issues/744)).** A note that gained a `cr_id` but never ran "Add essential person properties" could be edited indefinitely without ever being tagged as a person, leaving type detection guessing (the root cause behind #742). `updatePersonNote` in `src/core/person-note-writer.ts` now fills in a missing `cr_type: person` on save; an existing `cr_type` is never overwritten. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
+**Place category label in the profile heading ([#745](https://github.com/banisterious/obsidian-charted-roots/issues/745)).** The Category in a place's profile heading showed the internal lowercase id (e.g. `historical`) rather than its display label, which only appeared once the field was clicked into for editing. A new `PLACE_CATEGORY_LABELS` map and `getPlaceCategoryLabel` helper in `src/models/place.ts` resolve the proper label; `src/profile-view/sections/identity-section.ts` shows it in the heading while editing still round-trips the underlying id. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Surface the real map-refresh error ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)).** When the map failed to refresh, `src/maps/map-view.ts` showed only a generic "Failed to load map data" and logged the error as an empty object, making platform-specific failures impossible to diagnose. The specific error message now appears in both the notice and the log. Reported by [@tenephor](https://github.com/tenephor).
+
+**Fictional events off the real-world map ([#747](https://github.com/banisterious/obsidian-charted-roots/issues/747)).** In a mixed vault, events tied to fictional places (which use pixel coordinates on a custom map) leaked onto the real-world map, clustering at lat/long 0,0 off the coast of Africa because their coordinates defaulted to zero. A new pure `coordsBelongToCRS` in `src/maps/types/map-types.ts` decides whether a location belongs to the active map's coordinate reference system; `src/maps/map-controller.ts` applies it to markers, place markers, the heat map, and migration paths, so real-world and fictional maps each render only their own places. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Insert place types above an occupied level ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up).** Creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. New pure helpers `findTypeAtLevel` and `computeInsertPushDown` in `src/places/constants/default-place-types.ts` detect the collision and compute the push-down; `src/places/ui/place-type-editor-modal.ts` prompts and applies it, leaving intentional ties and gaps intact. The per-row Hide/Show and Reset controls in `src/places/ui/place-type-manager-card.ts` become compact eye and revert-arrow icons with tooltips, matching the customize/edit icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Security.** The bundled dompurify (transitive via jspdf for PDF export) was bumped to 3.4.11 to resolve [GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882) (moderate; affects dompurify `<= 3.4.10`), a follow-on to the hook-pollution issue addressed by the 3.4.10 bump in v0.22.72.
+
+**Files created:** `src/models/marriage-type.ts`, `src/organizations/membership-sort.ts`. Suite total 1569 across 139 suites.
+
+---
+
+## v0.22.72 Release Cohort (2026-06-18)
+
+A reporter-driven patch fixing two v0.22.71 regressions and a crash, plus place-type refinements and a dependency security bump. Notable implementation work:
+
+**Org members without an explicit `cr_type` listed again ([#742](https://github.com/banisterious/obsidian-charted-roots/issues/742)).** A regression from the #738 fix made the org member scan in `src/organizations/services/membership-service.ts` require an explicit `cr_type: person` / `type: person`, so person notes relying on the long-supported "`cr_id` and no explicit type" shape were silently dropped — often leaving only one member visible. The scan now uses the shared `isPersonNote` detection, which honours that legacy shape while keeping `cr_type` authoritative (a foreign `type: character` is still ignored, preserving the #738 fix). Reported by [@doctorwodka](https://github.com/doctorwodka).
+
+**Timeline crash on a bare-number date ([#741](https://github.com/banisterious/obsidian-charted-roots/issues/741)).** A person note combining an inline `events:` array with a date written as a bare number (e.g. `born: 1850`, which YAML parses as a number rather than a string) crashed the whole timeline render during de-duplication with "e.trim is not a function". `lifeEventDedupKey` in `src/events/life-events-parser.ts` now coerces non-string date/place values to text before keying. Reported by [@tenephor](https://github.com/tenephor).
+
+**Parent-place dropdown display name ([#739](https://github.com/banisterious/obsidian-charted-roots/issues/739)).** When a place's type is the highest in its hierarchy (so nothing can be its parent), the dropdown's "No valid parent types for …" message in `src/ui/create-place-modal.ts` showed the internal sluggified id; it now resolves the type's display name — a spot missed by #732. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Place type reordering preserves ties and gaps ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up).** The up/down controls in the Place type manager (`src/places/ui/place-type-manager-card.ts`, helpers in `src/places/constants/default-place-types.ts`) now swap a type's hierarchy level with its adjacent neighbour rather than renumbering the whole category, so default same-rank pairs (State/Province, District/Township) stay tied and any custom gaps are left intact. A tied neighbour disables the arrow. The Customize/Edit action becomes a gear/pencil icon with a tooltip to keep the row uncluttered. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Security.** The bundled dompurify (transitive via jspdf) was bumped to 3.4.10 to resolve [GHSA-vxr8-fq34-vvx9](https://github.com/advisories/GHSA-vxr8-fq34-vvx9) and GHSA-gvmj-g25r-r7wr, both affecting dompurify `<= 3.4.8`.
+
+**Files created:** none new beyond tests. Suite total 1533 across 134 suites.
+
+---
+
+## v0.22.71 Release Cohort (2026-06-16)
+
+A reporter-driven cohort focused on place type management and consistent display names. Notable implementation work:
+
+**Smarter hierarchy ranks for place types ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)).** Building a multi-level place hierarchy (e.g. Region (space) → Sector → System) was fiddly because every add landed at the same level. Each category in the Place type manager (`src/places/ui/place-type-manager-card.ts`) now has a **"+ Add type"** button that pre-selects that category and, via `src/places/ui/place-type-editor-modal.ts`, defaults the new type one hierarchy level deeper than the deepest existing type — so successive adds auto-increment. Each type row also gains **up/down arrows** that renumber the category's levels (anchored at its current minimum), realizing the chosen order and breaking ties; the reorder logic lives as pure helpers in `src/places/constants/default-place-types.ts` (re-exported through `src/places/index.ts`). Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Reorder place type categories ([#733](https://github.com/banisterious/obsidian-charted-roots/issues/733)).** A custom category couldn't be sorted above the built-in categories — they occupy fixed sort positions a numeric order couldn't out-rank — so e.g. an "Astrographical" category was stuck below Geographic and Political divisions. The Place type manager now has move-up/move-down buttons on each category (`src/places/ui/place-type-manager-card.ts`, helper in `src/places/constants/default-place-types.ts`); moving renumbers the whole list, so any category, custom or built-in, can be placed anywhere including the very top. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Place type display names across surfaces ([#732](https://github.com/banisterious/obsidian-charted-roots/issues/732), [#731](https://github.com/banisterious/obsidian-charted-roots/issues/731), [#735](https://github.com/banisterious/obsidian-charted-roots/issues/735)).** Several surfaces rendered a place/organization/source type's raw sluggified id (e.g. `space_region`, `astro_system`, `noble_house`, `plot_point`) instead of its display name. A shared resolver in `src/places/constants/default-place-types.ts` honors built-in names and customizations, falling back to a humanized slug for an unknown id. It now feeds the Place Statistics card type breakdown, the Places list Type column, and the Create/Edit place modal's Parent place dropdown headers (`src/ui/places-tab.ts`, `src/ui/create-place-modal.ts`); the universe dynamic blocks' Type column (`src/dynamic-content/renderers/universe-entities-renderer.ts` for the `charted-roots-universe-places`, `-events`, and `-organizations` blocks); and the organization/source type in the Entity Profile pane (`src/profile-view/profile-view.ts`, `src/profile-view/sections/identity-section.ts`) — the same class as #665, which fixed it for event types in that pane. Surfaced in discussions #728 and #730 by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Org member scan ignored people with a foreign `type` ([#738](https://github.com/banisterious/obsidian-charted-roots/issues/738)).** If a person note carried a `type` key (e.g. `type: character` from a user's own data model) alongside `cr_type: person`, adding them to an organization updated the person's memberships but left the organization's member list empty with no error. The scan in `src/organizations/services/membership-service.ts` used an ad-hoc check that excluded any note whose `type` wasn't exactly "person"; it now uses the shared note-type detection where `cr_type` is authoritative and `type` is only a fallback. Reported by [@prayidae](https://github.com/prayidae).
+
+**Universe-less fictional dates in the Statistics range ([#719](https://github.com/banisterious/obsidian-charted-roots/issues/719) follow-up).** A person with a BBY/ABY (or other era) date but no universe link still resolves to a signed canonical year, which the per-universe Entity overview pooled into the real-world span — showing a bare `-33 — 9` where Gregorian years belong. `src/core/collection-date-range.ts` (fed through `src/core/family-graph.ts`) now groups such dates under their own **Uncategorized** range instead of dragging the real-world, Collections, and folder-statistics spans into nonsense. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Preset spacing polish (#728).** The Create/Edit place type modal's quick level presets gained breathing room from the dynamic hierarchy text above them (`styles/place-modals.css`), instead of sitting flush against it. No behavior change. Raised in discussion #728 by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Files created:** none new beyond tests. Suite total 1526 across 134 suites.
 
 ---
 
