@@ -4,8 +4,8 @@
 
 **Target page:** `/changelog/_index.md` on chartedroots.com
 **Source material:** [wiki Release-History.md](../../../wiki-content/Release-History.md) (canonical longer-form), [CHANGELOG.md](../../../CHANGELOG.md) (per-release detail).
-**Last ported:** 2026-06-20, commit `7938994` on chartedroots.com@main (v0.22.58 through v0.22.68 Round-Up spotlights + cluster-intro metric bumps to sixty-nine releases / 1420 tests at v0.22.68; scanner-streak prose carried through v0.22.66's clean post-release scan).
-**Pending port (next session):** v0.22.69 through v0.22.73 Round-Up spotlights AND the cluster-intro extension (release count to seventy-four, tests to 1569 at v0.22.73, per-release clauses for v0.22.69-73, and the scanner-streak sentence carried through v0.22.73's clean post-release scan) are all drafted below and ready for the chartedroots.com port. chartedroots.com `/changelog/` is current through v0.22.68. **Verify before publish:** the stability-window anchor (drafted as still v0.22.59, no resets through v0.22.73) and the scanner-streak prose against the #411 tracking (v0.22.68's own post-release scan result wasn't recorded on the plugin side — confirm it before relying on the 67-to-69 streak bridge).
+**Last ported:** 2026-06-20, commit `59f3059` on chartedroots.com@main (v0.22.69 through v0.22.73 Round-Up spotlights + cluster-intro metric bumps to seventy-four releases / 1569 tests at v0.22.73; scanner-streak prose carried through v0.22.73's clean post-release scan).
+**Pending port (next session):** None — chartedroots.com `/changelog/` is current through v0.22.73 (the drafts below are all live). The next port begins when the next release ships and its Round-Up is drafted below. Standing **verify-before-publish** reminders for the next cycle: the stability-window anchor (still v0.22.59, no resets through v0.22.73) and the scanner-streak prose against the #411 tracking.
 
 ---
 
