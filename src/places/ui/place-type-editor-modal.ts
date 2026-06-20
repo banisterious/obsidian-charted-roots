@@ -177,12 +177,21 @@ export class PlaceTypeEditorModal extends Modal {
 		const updateHierarchyInfo = () => {
 			hierarchyInfo.empty();
 
-			// Show example parents/children
-			const exampleParents = DEFAULT_PLACE_TYPES.filter(t =>
-				t.hierarchyLevel < this.hierarchyLevel
+			// Show example parents/children across ALL types (built-in,
+			// customized, and custom), ordered by level, so custom types in a
+			// worldbuilding hierarchy appear too (#734 follow-up).
+			const allTypes = getAllPlaceTypesWithCustomizations(
+				this.plugin.settings.customPlaceTypes || [],
+				this.plugin.settings.showBuiltInPlaceTypes !== false,
+				this.plugin.settings.placeTypeCustomizations,
+				[]
+			).slice().sort((a, b) => a.hierarchyLevel - b.hierarchyLevel);
+
+			const exampleParents = allTypes.filter(t =>
+				t.id !== this.id && t.hierarchyLevel < this.hierarchyLevel
 			).slice(-3);
-			const exampleChildren = DEFAULT_PLACE_TYPES.filter(t =>
-				t.hierarchyLevel > this.hierarchyLevel
+			const exampleChildren = allTypes.filter(t =>
+				t.id !== this.id && t.hierarchyLevel > this.hierarchyLevel
 			).slice(0, 3);
 
 			if (exampleParents.length > 0) {
@@ -352,6 +361,18 @@ export class PlaceTypeEditorModal extends Modal {
 		level: number
 	): Promise<'insert-above' | 'tied' | 'cancel'> {
 		return new Promise(resolve => {
+			// close() fires onClose synchronously, so a button handler that calls
+			// close() before resolving would let onClose's cancel win first. Guard
+			// so the first settle wins, and settle the real choice before close()
+			// (#734 follow-up: every choice was resolving as cancel, making the
+			// prompt a no-op).
+			let settled = false;
+			const settle = (choice: 'insert-above' | 'tied' | 'cancel') => {
+				if (settled) return;
+				settled = true;
+				resolve(choice);
+			};
+
 			const modal = new Modal(this.app);
 			modal.titleEl.setText('Level already in use');
 			modal.contentEl.createEl('p', {
@@ -363,17 +384,16 @@ export class PlaceTypeEditorModal extends Modal {
 				text: 'Insert above (push lower types down)',
 				cls: 'mod-cta'
 			});
-			insertBtn.addEventListener('click', () => { modal.close(); resolve('insert-above'); });
+			insertBtn.addEventListener('click', () => { settle('insert-above'); modal.close(); });
 
 			const tieBtn = buttons.createEl('button', { text: `Keep at level ${level} (tie)` });
-			tieBtn.addEventListener('click', () => { modal.close(); resolve('tied'); });
+			tieBtn.addEventListener('click', () => { settle('tied'); modal.close(); });
 
 			const cancelBtn = buttons.createEl('button', { text: 'Cancel' });
-			cancelBtn.addEventListener('click', () => { modal.close(); resolve('cancel'); });
+			cancelBtn.addEventListener('click', () => { settle('cancel'); modal.close(); });
 
-			// Dismissing via Escape / click-outside resolves cancel; the explicit
-			// button resolves run first, so this is a no-op after a real choice.
-			modal.onClose = () => resolve('cancel');
+			// Dismissing via Escape / click-outside settles cancel.
+			modal.onClose = () => settle('cancel');
 			modal.open();
 		});
 	}

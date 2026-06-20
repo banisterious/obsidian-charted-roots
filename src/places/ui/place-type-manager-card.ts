@@ -188,10 +188,12 @@ export function renderPlaceTypeManagerCard(
 				});
 			});
 
+			const deleteCatLabel = isBuiltIn ? 'Hide' : 'Delete';
 			const deleteCatBtn = actionsContainer.createEl('button', {
-				text: isBuiltIn ? 'Hide' : 'Delete',
-				cls: 'crc-btn crc-btn--small crc-btn--danger'
+				cls: 'crc-btn crc-btn--small',
+				attr: { 'aria-label': deleteCatLabel, title: deleteCatLabel }
 			});
+			setIcon(deleteCatBtn, isBuiltIn ? 'eye-off' : 'trash-2');
 			deleteCatBtn.addEventListener('click', () => {
 				confirmDeleteCategory(plugin, category, isBuiltIn, categoryTypes.length, () => {
 					renderTypeList();
@@ -442,12 +444,14 @@ function renderTypeRow(
 		});
 	}
 
-	// Delete button for custom types
+	// Delete button for custom types — trash icon + tooltip to match the row's
+	// other icon controls (#734 follow-up).
 	if (!type.builtIn) {
 		const deleteBtn = actionsWrapper.createEl('button', {
-			text: 'Delete',
-			cls: 'crc-btn crc-btn--small crc-btn--danger'
+			cls: 'crc-btn crc-btn--small',
+			attr: { 'aria-label': 'Delete', title: 'Delete' }
 		});
+		setIcon(deleteBtn, 'trash-2');
 		deleteBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			confirmDeleteType(plugin, type, onUpdate);
