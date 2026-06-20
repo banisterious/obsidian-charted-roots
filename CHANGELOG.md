@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.73] - 2026-06-20
+
+A worldbuilding-and-maps release: a new marriage type field, friendlier place-type hierarchy editing, and a cluster of map and Entity Profile fixes for mixed real-world/fictional vaults. Also bumps the bundled dompurify to clear a fresh security advisory.
+
 ### Added
 
 - **Marriage type field** ([#628](https://github.com/banisterious/obsidian-charted-roots/issues/628)): spouse relationships can now record the type of union (e.g. Common-law marriage, Cohabitation, Domestic (civil) partnership, Putative marriage, Concubinage) alongside the existing marriage date, location, and status. The person modal offers these as quick-pick presets plus a "Custom..." option for any free-text value, and the type is mirrored to both partners. When set, it appears on Dynamic Timeline marriage rows — e.g. "Marriage to Jane Doe (Common-law marriage)" — controlled by a new "Show marriage type" setting (on by default). Requested by [@Vericia](https://github.com/Vericia).
@@ -26,6 +30,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 - **Fictional events appeared on the real-world map at 0,0** ([#747](https://github.com/banisterious/obsidian-charted-roots/issues/747)): in a mixed vault, events tied to fictional places (which use pixel coordinates on a custom map) leaked onto the real-world map, clustering at latitude/longitude 0,0 off the coast of Africa, because their lat/long defaulted to zero. Markers, place markers, heat map, and migration paths now render only the locations that belong to the active map's coordinate system, so real-world and fictional maps each show only their own places. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 - **Entity Profile showed a place's raw category id** ([#745](https://github.com/banisterious/obsidian-charted-roots/issues/745)): the Category in a place's profile heading displayed the internal lowercase id (e.g. `historical`) instead of its display label ("Historical") — the label only appeared once you clicked into the field to edit it. The heading now shows the proper label, while editing still round-trips the underlying id. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+- **Map data failures now show the actual error** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): when the map failed to refresh, it showed only a generic "Failed to load map data" and logged the error as an empty object, making platform-specific failures impossible to diagnose. The specific error message now appears in both the notice and the log. Reported by [@tenephor](https://github.com/tenephor).
 
 ### Security
 
