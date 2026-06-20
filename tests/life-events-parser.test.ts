@@ -3,6 +3,7 @@ import {
 	parseLifeEvents,
 	lifeEventDedupKey,
 	coerceLifeEventDate,
+	coerceLifeEventText,
 	LIFE_EVENT_TYPES,
 } from '../src/events/life-events-parser';
 import type { EventType } from '../src/maps/types/map-types';
@@ -69,6 +70,64 @@ describe('parseLifeEvents (#692)', () => {
 		expect(coerceLifeEventDate(new Date('1815-03-12T00:00:00Z'))).toBe('1815-03-12');
 		expect(coerceLifeEventDate({})).toBeUndefined();
 		expect(coerceLifeEventDate(null)).toBeUndefined();
+	});
+
+	it('coerces a bare-number place to a string instead of crashing downstream (#746)', () => {
+		// YAML parses `place: 1850` into a number; the old `as string` cast let it
+		// flow through as a number and break a downstream `.toLowerCase()`/`.trim()`.
+		const out = parseLifeEvents(
+			[{ event_type: 'residence', place: 1850 }],
+			{ resolveEventType }
+		);
+		expect(out).toHaveLength(1);
+		expect(out[0].place).toBe('1850');
+		expect(typeof out[0].place).toBe('string');
+	});
+
+	it('coerces a bare-number event_type so customLabel stays a string (#746)', () => {
+		// A numeric event_type would reach ValueAliasService.resolve as a number
+		// and crash its .toLowerCase(); coerced to a string it resolves to custom.
+		const out = parseLifeEvents(
+			[{ event_type: 1, place: '[[A]]' }],
+			{ resolveEventType }
+		);
+		expect(out).toHaveLength(1);
+		expect(out[0].event_type).toBe('custom');
+		expect(out[0].customLabel).toBe('1');
+		expect(typeof out[0].customLabel).toBe('string');
+	});
+
+	it('skips entries whose place is a non-coercible value (#746)', () => {
+		const out = parseLifeEvents(
+			[
+				{ event_type: 'residence', place: {} },
+				{ event_type: 'residence', place: ['[[A]]'] },
+				{ event_type: 'residence', place: null },
+			],
+			{ resolveEventType }
+		);
+		expect(out).toEqual([]);
+	});
+});
+
+describe('coerceLifeEventText (#746)', () => {
+	it('passes strings through unchanged', () => {
+		expect(coerceLifeEventText('[[Tatooine]]')).toBe('[[Tatooine]]');
+		expect(coerceLifeEventText('')).toBe('');
+	});
+
+	it('stringifies finite numbers', () => {
+		expect(coerceLifeEventText(1850)).toBe('1850');
+		expect(coerceLifeEventText(0)).toBe('0');
+	});
+
+	it('returns undefined for non-string/non-finite-number input', () => {
+		expect(coerceLifeEventText(undefined)).toBeUndefined();
+		expect(coerceLifeEventText(null)).toBeUndefined();
+		expect(coerceLifeEventText({})).toBeUndefined();
+		expect(coerceLifeEventText(['[[A]]'])).toBeUndefined();
+		expect(coerceLifeEventText(NaN)).toBeUndefined();
+		expect(coerceLifeEventText(Infinity)).toBeUndefined();
 	});
 });
 

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Map refresh could crash on an event with a non-text type** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): if a `cr_type: event` note had an `event_type` that wasn't plain text — for example a bare number like `event_type: 1850`, which YAML reads as a number — opening the map failed to load any data ("Failed to refresh map data"). Event type, title, and id values are now read as text wherever they're used, so a stray non-text value is handled gracefully instead of breaking the whole map. Surfaced by the improved error reporting added in 0.22.73; reported by [@tenephor](https://github.com/tenephor).
+
 ## [0.22.73] - 2026-06-20
 
 A worldbuilding-and-maps release: a new marriage type field, friendlier place-type hierarchy editing, and a cluster of map and Entity Profile fixes for mixed real-world/fictional vaults. Also bumps the bundled dompurify to clear a fresh security advisory.

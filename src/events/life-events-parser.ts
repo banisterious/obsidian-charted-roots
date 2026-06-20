@@ -25,6 +25,20 @@ export function coerceLifeEventDate(value: unknown): string | number | undefined
 	return undefined;
 }
 
+/**
+ * Coerce a raw frontmatter string-ish value (e.g. `place`, `event_type`) to a
+ * string, or undefined. A bare number (`place: 1850` / `event_type: 1`, which
+ * YAML parses into a number) is stringified rather than left as a number to
+ * crash a downstream string method — the non-string-reaches-a-string-method
+ * class behind #741 and #746. Objects/arrays/null/non-finite return undefined so
+ * the entry is skipped.
+ */
+export function coerceLifeEventText(value: unknown): string | undefined {
+	if (typeof value === 'string') return value;
+	if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+	return undefined;
+}
+
 export interface ParseLifeEventsOptions {
 	/**
 	 * Resolve a raw `event_type` string to a canonical `EventType`, applying the
@@ -48,8 +62,8 @@ export function parseLifeEvents(raw: unknown, opts: ParseLifeEventsOptions): Lif
 		if (typeof event !== 'object' || event === null) continue;
 
 		const obj = event as Record<string, unknown>;
-		const rawType = obj.event_type as string;
-		const place = obj.place as string;
+		const rawType = coerceLifeEventText(obj.event_type);
+		const place = coerceLifeEventText(obj.place);
 		if (!rawType || !place) continue;
 
 		const resolved = opts.resolveEventType(rawType);

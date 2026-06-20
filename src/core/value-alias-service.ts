@@ -332,10 +332,19 @@ export class ValueAliasService {
 	 * @param userValue - The value from frontmatter
 	 * @returns The canonical value
 	 */
-	resolve(field: ValueAliasField, userValue: string): string {
-		if (!userValue) return userValue;
+	resolve(field: ValueAliasField, userValue: unknown): string {
+		// Coerce defensively: frontmatter values arrive untyped, and a bare
+		// number (`event_type: 1`, `sex: 1`) parsed by YAML would otherwise crash
+		// the `.toLowerCase()` below — the same class as #741 (#746). Non-string,
+		// non-finite-number input collapses to '' and is treated as empty.
+		const value = typeof userValue === 'string'
+			? userValue
+			: typeof userValue === 'number' && Number.isFinite(userValue)
+				? String(userValue)
+				: '';
+		if (!value) return value;
 
-		const normalized = userValue.toLowerCase().trim();
+		const normalized = value.toLowerCase().trim();
 		const canonicalValues = this.getCanonicalValues(field);
 
 		// Check if already canonical (case-insensitive)
@@ -365,7 +374,7 @@ export class ValueAliasService {
 		}
 
 		// For gender and placeCategory, pass through (may cause validation warning)
-		return userValue;
+		return value;
 	}
 
 	/**

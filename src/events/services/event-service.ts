@@ -817,10 +817,14 @@ export class EventService {
 		// Get property aliases for resolving aliased property names
 		const aliases = this.settings.propertyAliases || {};
 
-		// Must have required fields
-		const crId = frontmatter.cr_id as string;
-		const title = frontmatter.title as string;
-		const eventType = frontmatter.event_type as string;
+		// Must have required fields. Coerce defensively — YAML parses a bare
+		// number (`event_type: 1`) into a number, and an uncoerced `event_type`
+		// later crashed `ValueAliasService.resolve`'s `.toLowerCase()` on map
+		// refresh (#746, same class as #741). `fmToString` returns '' for
+		// missing values, so the falsy guard below still rejects them.
+		const crId = fmToString(frontmatter.cr_id);
+		const title = fmToString(frontmatter.title);
+		const eventType = fmToString(frontmatter.event_type);
 
 		if (!crId || !title || !eventType) {
 			return null;
