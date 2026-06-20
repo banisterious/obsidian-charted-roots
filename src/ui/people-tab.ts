@@ -1561,6 +1561,7 @@ function renderPersonTableRow(
 					marriageDate: fm[`spouse${i}_marriage_date`] as string | undefined,
 					marriageLocation: normalizeMarriageLocation(fm[`spouse${i}_marriage_location`]),
 					marriageStatus: fm[`spouse${i}_marriage_status`] as SpouseMetadata['marriageStatus'],
+					marriageType: fm[`spouse${i}_marriage_type`] as string | undefined,
 					divorceDate: fm[`spouse${i}_divorce_date`] as string | undefined
 				});
 			}

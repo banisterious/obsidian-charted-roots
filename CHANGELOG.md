@@ -12,6 +12,30 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.73] - 2026-06-20
+
+A worldbuilding-and-maps release: a new marriage type field, friendlier place-type hierarchy editing, and a cluster of map and Entity Profile fixes for mixed real-world/fictional vaults. Also bumps the bundled dompurify to clear a fresh security advisory.
+
+### Added
+
+- **Marriage type field** ([#628](https://github.com/banisterious/obsidian-charted-roots/issues/628)): spouse relationships can now record the type of union (e.g. Common-law marriage, Cohabitation, Domestic (civil) partnership, Putative marriage, Concubinage) alongside the existing marriage date, location, and status. The person modal offers these as quick-pick presets plus a "Custom..." option for any free-text value, and the type is mirrored to both partners. When set, it appears on Dynamic Timeline marriage rows — e.g. "Marriage to Jane Doe (Common-law marriage)" — controlled by a new "Show marriage type" setting (on by default). Requested by [@Vericia](https://github.com/Vericia).
+- **Entity Profile memberships are sorted by start date** ([#743](https://github.com/banisterious/obsidian-charted-roots/issues/743)): a person's memberships were shown in insert order (and an edited membership jumped to the bottom), leaving date ranges scattered. They now order by earliest start year — resolved era-aware, so fictional BBY/ABY dates sort by true chronology — with undated memberships last. On a tied start year an ended membership sorts above an ongoing ("Current") one, then ties break alphabetically by organization. Raised by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Changed
+
+- **Editing a person now ensures `cr_type: person`** ([#744](https://github.com/banisterious/obsidian-charted-roots/issues/744)): saving in the Edit Person modal fills in a missing `cr_type: person` automatically. A note that gained a `cr_id` but never ran "Add essential person properties" could be edited indefinitely without ever being tagged as a person, which left type detection guessing and caused issues like #742. An existing `cr_type` is never overwritten. Requested by [@doctorwodka](https://github.com/doctorwodka).
+- **Place type hierarchy: insert above an occupied level** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. This makes the previously fiddly "add something above the current top" case (e.g. a galaxy above a region) a single action instead of renumbering the whole category by hand, while leaving intentional ties and gaps intact. The per-row Hide/Show and Reset controls are now compact icons (eye and revert arrow) with tooltips, matching the customize/edit icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+### Fixed
+
+- **Fictional events appeared on the real-world map at 0,0** ([#747](https://github.com/banisterious/obsidian-charted-roots/issues/747)): in a mixed vault, events tied to fictional places (which use pixel coordinates on a custom map) leaked onto the real-world map, clustering at latitude/longitude 0,0 off the coast of Africa, because their lat/long defaulted to zero. Markers, place markers, heat map, and migration paths now render only the locations that belong to the active map's coordinate system, so real-world and fictional maps each show only their own places. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+- **Entity Profile showed a place's raw category id** ([#745](https://github.com/banisterious/obsidian-charted-roots/issues/745)): the Category in a place's profile heading displayed the internal lowercase id (e.g. `historical`) instead of its display label ("Historical") — the label only appeared once you clicked into the field to edit it. The heading now shows the proper label, while editing still round-trips the underlying id. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+- **Map data failures now show the actual error** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): when the map failed to refresh, it showed only a generic "Failed to load map data" and logged the error as an empty object, making platform-specific failures impossible to diagnose. The specific error message now appears in both the notice and the log. Reported by [@tenephor](https://github.com/tenephor).
+
+### Security
+
+- **Updated the bundled dompurify to 3.4.11** (transitive via jspdf) to resolve [GHSA-cmwh-pvxp-8882](https://github.com/advisories/GHSA-cmwh-pvxp-8882) (moderate; affects dompurify `<= 3.4.10`), a newly-disclosed follow-on to the hook-pollution issue addressed by the 3.4.10 bump in 0.22.72.
+
 ## [0.22.72] - 2026-06-18
 
 A reporter-driven patch fixing two 0.22.71 regressions and a crash, plus place type refinements and a dependency security update. Organization member lists once again include person notes identified only by `cr_id` (no explicit `cr_type`), which 0.22.71 had silently dropped. The timeline no longer crashes when a note mixes an inline `events:` array with a bare-number date. Place type reordering now preserves intentional ties and gaps (and the Customize/Edit actions are icons), and the parent-place dropdown shows display names for the highest-ranked type. The bundled dompurify (via jspdf) is updated to 3.4.10 to clear a security advisory. **1533 tests passing across 134 suites.**

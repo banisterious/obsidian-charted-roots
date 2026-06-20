@@ -16,6 +16,7 @@ import type { LucideIconName } from '../../ui/lucide-icons';
 import { capitalize } from '../../utils/format-utils';
 import { extractWikilinkPath } from '../../utils/wikilink-resolver';
 import { qualifyPlaceWithAncestors, resolvePlaceContext } from './place-context';
+import { withMarriageType } from '../../models/marriage-type';
 
 /**
  * Event types that should ALWAYS show title, never description (#157)
@@ -1431,11 +1432,11 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.marriageDate),
 						year,
 						type: 'family_parent_marriage',
-						title: this.applyLabel(
+						title: withMarriageType(this.applyLabel(
 							settings.timelineParentMarriageLabel || 'Marriage of {name} to {spouse}',
 							parent.name,
 							{ spouse: spouseName }
-						),
+						), spouse.marriageType, settings.showMarriageType),
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: parent.file?.basename,
 						isFamilyEvent: true,
@@ -1472,11 +1473,11 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.marriageDate),
 						year,
 						type: 'family_sibling_marriage',
-						title: this.applyLabel(
+						title: withMarriageType(this.applyLabel(
 							settings.timelineSiblingMarriageLabel || 'Marriage of {name} to {spouse}',
 							sibling.name,
 							{ spouse: spouseName }
-						),
+						), spouse.marriageType, settings.showMarriageType),
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: sibling.file?.basename,
 						isFamilyEvent: true,
@@ -1513,11 +1514,11 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.marriageDate),
 						year,
 						type: 'family_child_marriage',
-						title: this.applyLabel(
+						title: withMarriageType(this.applyLabel(
 							settings.timelineChildMarriageLabel || 'Marriage of {name} to {spouse}',
 							child.name,
 							{ spouse: spouseName }
-						),
+						), spouse.marriageType, settings.showMarriageType),
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: child.file?.basename,
 						isFamilyEvent: true,
@@ -1739,7 +1740,7 @@ export class TimelineRenderer {
 						date: this.service.formatDate(spouse.marriageDate),
 						year: this.service.extractYear(spouse.marriageDate),
 						type: 'marriage',
-						title: `Marriage to ${spouseName}`,
+						title: withMarriageType(`Marriage to ${spouseName}`, spouse.marriageType, settings.showMarriageType),
 						place: spouse.marriageLocation ? this.service.stripWikilink(spouse.marriageLocation) : undefined,
 						eventFile: spouseNode?.file?.basename,
 						rawDate: spouse.marriageDate

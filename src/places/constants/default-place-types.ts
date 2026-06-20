@@ -478,6 +478,46 @@ export function reorderTypeWithinCategory(
 }
 
 /**
+ * The first other type in the category sitting exactly at `targetLevel`, or
+ * undefined when the level is free. `excludeId` skips the type being placed
+ * (so re-levelling a type onto its own current level doesn't count as a clash).
+ *
+ * Used to decide whether to offer the "insert above (push lower types down)"
+ * vs "keep tied" choice when a type is created or re-levelled onto an occupied
+ * level (#734).
+ */
+export function findTypeAtLevel<T extends { id: string; hierarchyLevel: number }>(
+	categoryTypes: ReadonlyArray<T>,
+	targetLevel: number,
+	excludeId?: string
+): T | undefined {
+	return categoryTypes.find(t => t.id !== excludeId && t.hierarchyLevel === targetLevel);
+}
+
+/**
+ * Level changes needed to "insert above" at `targetLevel`: every other type in
+ * the category at or below that level (i.e. hierarchyLevel >= targetLevel) is
+ * pushed down by one, opening a single slot. `excludeId` skips the type being
+ * placed. Returns only the changed types (id + new level).
+ *
+ * Shifting the affected block by exactly one preserves the relative spacing
+ * among those types, so intentional ties (a shared level moves to a shared
+ * level) and gaps survive — unlike a full sequential renumber. This is the
+ * opt-in counterpart to {@link reorderTypeWithinCategory}'s neighbour-swap:
+ * the swap can't make room above the current top, so inserting there needs a
+ * deliberate push-down (#734).
+ */
+export function computeInsertPushDown(
+	categoryTypes: ReadonlyArray<{ id: string; hierarchyLevel: number }>,
+	targetLevel: number,
+	excludeId?: string
+): Array<{ id: string; hierarchyLevel: number }> {
+	return categoryTypes
+		.filter(t => t.id !== excludeId && t.hierarchyLevel >= targetLevel)
+		.map(t => ({ id: t.id, hierarchyLevel: t.hierarchyLevel + 1 }));
+}
+
+/**
  * Move a category one step up or down within the given display order and return
  * a flat, sequential renumbering (0, 1, 2, …) for every category.
  *

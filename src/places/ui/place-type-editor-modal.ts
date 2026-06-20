@@ -10,7 +10,10 @@ import type CanvasRootsPlugin from '../../../main';
 import type { PlaceTypeDefinition } from '../types/place-types';
 import {
 	DEFAULT_PLACE_TYPES,
-	getAllPlaceTypeCategories
+	getAllPlaceTypeCategories,
+	getAllPlaceTypesWithCustomizations,
+	findTypeAtLevel,
+	computeInsertPushDown
 } from '../constants/default-place-types';
 
 interface PlaceTypeEditorModalOptions {
@@ -294,6 +297,19 @@ export class PlaceTypeEditorModal extends Modal {
 			return;
 		}
 
+		// When the chosen level is already taken by another type in the same
+		// category, let the user decide: keep them tied, or insert above and
+		// push the lower types down (#734). A free level saves straight through.
+		const siblings = this.resolveCategorySiblings();
+		const collision = findTypeAtLevel(siblings, this.hierarchyLevel, this.originalId);
+		if (collision) {
+			const choice = await this.promptLevelChoice(collision.name, this.hierarchyLevel);
+			if (choice === 'cancel') return;
+			if (choice === 'insert-above') {
+				this.applyPushDown(siblings);
+			}
+		}
+
 		try {
 			if (this.customizeMode) {
 				// Save as customization of built-in type
@@ -311,6 +327,85 @@ export class PlaceTypeEditorModal extends Modal {
 		} catch (error) {
 			new Notice(`Failed to save place type: ${error}`);
 		}
+	}
+
+	/**
+	 * All types currently in the chosen category, with customizations applied.
+	 * Hidden types are kept (they still occupy their level) but built-ins are
+	 * dropped when the user has turned built-in place types off entirely.
+	 */
+	private resolveCategorySiblings(): PlaceTypeDefinition[] {
+		return getAllPlaceTypesWithCustomizations(
+			this.plugin.settings.customPlaceTypes || [],
+			this.plugin.settings.showBuiltInPlaceTypes !== false,
+			this.plugin.settings.placeTypeCustomizations,
+			[] // include hidden — a hidden type still occupies its level
+		).filter(t => t.category === this.category);
+	}
+
+	/**
+	 * Ask whether to insert above an occupied level (pushing lower types down)
+	 * or keep the two tied. Resolves 'cancel' if dismissed.
+	 */
+	private promptLevelChoice(
+		occupantName: string,
+		level: number
+	): Promise<'insert-above' | 'tied' | 'cancel'> {
+		return new Promise(resolve => {
+			const modal = new Modal(this.app);
+			modal.titleEl.setText('Level already in use');
+			modal.contentEl.createEl('p', {
+				text: `Level ${level} is already used by "${occupantName}" in this category. How should this type's level be applied?`
+			});
+			const buttons = modal.contentEl.createDiv({ cls: 'cr-modal-buttons' });
+
+			const insertBtn = buttons.createEl('button', {
+				text: 'Insert above (push lower types down)',
+				cls: 'mod-cta'
+			});
+			insertBtn.addEventListener('click', () => { modal.close(); resolve('insert-above'); });
+
+			const tieBtn = buttons.createEl('button', { text: `Keep at level ${level} (tie)` });
+			tieBtn.addEventListener('click', () => { modal.close(); resolve('tied'); });
+
+			const cancelBtn = buttons.createEl('button', { text: 'Cancel' });
+			cancelBtn.addEventListener('click', () => { modal.close(); resolve('cancel'); });
+
+			// Dismissing via Escape / click-outside resolves cancel; the explicit
+			// button resolves run first, so this is a no-op after a real choice.
+			modal.onClose = () => resolve('cancel');
+			modal.open();
+		});
+	}
+
+	/**
+	 * Shift the lower types in the category down by one to open a slot at the
+	 * chosen level, writing each new level back to its store (built-ins via a
+	 * customization, custom types on their own definition). Persisted by the
+	 * subsequent save path's saveSettings().
+	 */
+	private applyPushDown(siblings: PlaceTypeDefinition[]): void {
+		const changes = computeInsertPushDown(siblings, this.hierarchyLevel, this.originalId);
+		if (changes.length === 0) return;
+
+		const builtInById = new Map(siblings.map(t => [t.id, t.builtIn]));
+		const customizations = this.plugin.settings.placeTypeCustomizations ?? {};
+		const customTypes = this.plugin.settings.customPlaceTypes ?? [];
+		const customById = new Map(customTypes.map(t => [t.id, t]));
+
+		for (const { id, hierarchyLevel } of changes) {
+			if (builtInById.get(id)) {
+				const existing = { ...(customizations[id] ?? {}) };
+				existing.hierarchyLevel = hierarchyLevel;
+				customizations[id] = existing;
+			} else {
+				const custom = customById.get(id);
+				if (custom) custom.hierarchyLevel = hierarchyLevel;
+			}
+		}
+
+		this.plugin.settings.placeTypeCustomizations = customizations;
+		this.plugin.settings.customPlaceTypes = customTypes;
 	}
 
 	private async saveCustomization(): Promise<void> {

@@ -22,6 +22,8 @@ import type { MediaItem } from '../core/media-service';
 import { RelationshipService } from '../relationships';
 import { MembershipService } from '../organizations/services/membership-service';
 import { OrganizationService } from '../organizations/services/organization-service';
+import { compareMembershipsByStartDate } from '../organizations/membership-sort';
+import type { PersonMembership } from '../organizations/types/organization-types';
 import { EvidenceService } from '../sources/services/evidence-service';
 import { SOURCED_PROPERTY_NAMES, SOURCED_PROPERTY_TO_FACT_KEY } from '../sources/types/source-types';
 import type { SourceNote } from '../sources/types/source-types';
@@ -128,7 +130,7 @@ export class ProfileDataLoader {
 		// Memberships
 		const orgService = new OrganizationService(this.plugin);
 		const membershipService = new MembershipService(this.plugin, orgService);
-		const memberships = membershipService.getPersonMemberships(crId);
+		const memberships = this.sortMemberships(membershipService.getPersonMemberships(crId));
 
 		// Research coverage
 		const evidenceService = new EvidenceService(app, settings);
@@ -440,6 +442,41 @@ export class ProfileDataLoader {
 	private looksLikePersonNote(fm: Record<string, unknown>): boolean {
 		// Heuristic: has typical person properties
 		return 'born' in fm || 'died' in fm || 'father' in fm || 'mother' in fm;
+	}
+
+	/**
+	 * Order a person's memberships by earliest start date for the profile
+	 * (#743). Resolves each start date to an era-aware canonical year via the
+	 * DateService (using the org's universe), falling back to a leading-4-digit
+	 * read when no DateService is wired. The raw date is coerced to a string
+	 * first — a bare-year frontmatter value is a number, and passing it straight
+	 * to the parser would throw (cf. #741).
+	 */
+	private sortMemberships(memberships: PersonMembership[]): PersonMembership[] {
+		const dateService = this.plugin.getDateService?.() ?? null;
+		const fallbackYear = (d: string): number | undefined => {
+			const m = d.match(/^\s*(\d{4})/);
+			return m ? parseInt(m[1], 10) : undefined;
+		};
+		return memberships
+			.map(memb => {
+				const from = memb.from == null ? '' : String(memb.from);
+				const fromYear = from
+					? (dateService
+						? dateService.getCanonicalYear(from, memb.org?.universe) ?? undefined
+						: fallbackYear(from))
+					: undefined;
+				return {
+					memb,
+					key: {
+						fromYear,
+						hasEnd: !!(memb.to && String(memb.to).trim()),
+						name: memb.org?.name ?? memb.orgLink ?? ''
+					}
+				};
+			})
+			.sort((a, b) => compareMembershipsByStartDate(a.key, b.key))
+			.map(x => x.memb);
 	}
 
 	private resolveMedia(mediaRefs: string[] | undefined, frontmatter?: Record<string, unknown>): MediaItem[] {

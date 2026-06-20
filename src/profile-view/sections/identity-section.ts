@@ -18,6 +18,7 @@ import type {
 import { createEditableField, createMetaSeparator, commitActiveEdit } from '../inline-edit';
 import { capitalize } from '../../utils/format-utils';
 import { stripDateTimeSuffix } from '../../dates/utils/date-display';
+import { getPlaceCategoryLabel } from '../../models/place';
 
 export interface IdentityHeaderOptions {
 	pinned: boolean;
@@ -293,7 +294,9 @@ function getPlaceFields(data: ProfileEntityData & { entityType: 'place' }): Edit
 	fields.push({
 		property: 'place_category',
 		label: 'Category',
-		displayValue: data.node.category || '',
+		// Show the human label (e.g. "Historical"), keeping the raw id as the
+		// editable value so the select round-trips (#745, like #665).
+		displayValue: getPlaceCategoryLabel(data.node.category),
 		rawValue: data.node.category || '',
 		inputType: 'select',
 		selectOptions: [

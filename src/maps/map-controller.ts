@@ -90,7 +90,7 @@ import type {
 	CRPolyline,
 	CustomMapConfig
 } from './types/map-types';
-import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange } from './types/map-types';
+import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange, coordsBelongToCRS } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
@@ -530,6 +530,13 @@ export class MapController {
 		this.eventClusterGroup?.clearLayers();
 
 		for (const marker of markers) {
+			// Skip markers that don't belong to the active map's coordinate
+			// system, so fictional pixel-mapped events don't land at 0,0 on the
+			// real-world map (and vice versa) (#747).
+			if (!coordsBelongToCRS(marker, this.currentCRS)) {
+				continue;
+			}
+
 			// Check if this marker type is visible before creating it
 			if (!isMarkerTypeVisible(marker.type, this.currentLayers)) {
 				continue;
@@ -554,6 +561,10 @@ export class MapController {
 		}
 
 		for (const place of placeMarkers) {
+			// Skip places that don't belong to the active coordinate system (#747).
+			if (!coordsBelongToCRS(place, this.currentCRS)) {
+				continue;
+			}
 			const leafletMarker = this.createPlaceMarker(place);
 			this.placesClusterGroup?.addLayer(leafletMarker);
 		}
@@ -1062,6 +1073,13 @@ export class MapController {
 		this.pathLabelEntries = this.pathLabelEntries.filter(e => e.layer !== this.pathLayer);
 
 		for (const path of paths) {
+			// Skip paths whose endpoints don't belong to the active coordinate
+			// system, so fictional routes don't draw to 0,0 on the real-world
+			// map (#747).
+			if (!coordsBelongToCRS(path.origin, this.currentCRS)
+				|| !coordsBelongToCRS(path.destination, this.currentCRS)) {
+				continue;
+			}
 			const polyline = this.createPath(path);
 			this.pathLayer.addLayer(polyline);
 		}
@@ -1391,12 +1409,7 @@ export class MapController {
 
 		// Use per-point intensity of 1 — let leaflet.heat handle relative density
 		const heatData: [number, number, number][] = filteredMarkers
-			.filter(m => {
-				if (this.currentCRS === 'pixel') {
-					return m.pixelX !== undefined && m.pixelY !== undefined;
-				}
-				return m.lat !== undefined && m.lng !== undefined;
-			})
+			.filter(m => coordsBelongToCRS(m, this.currentCRS))
 			.map(m => {
 				if (this.currentCRS === 'pixel') {
 					return [m.pixelY!, m.pixelX!, 1] as [number, number, number];

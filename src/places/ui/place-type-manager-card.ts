@@ -400,11 +400,13 @@ function renderTypeRow(
 		}
 	});
 
-	// Hide/Show button
+	// Hide/Show button — icon + tooltip to reduce row clutter (#734 follow-up).
+	const hideLabel = isHidden ? 'Show' : 'Hide';
 	const hideBtn = actionsWrapper.createEl('button', {
-		text: isHidden ? 'Show' : 'Hide',
-		cls: 'crc-btn crc-btn--small crc-btn--danger'
+		cls: 'crc-btn crc-btn--small',
+		attr: { 'aria-label': hideLabel, title: hideLabel }
 	});
+	setIcon(hideBtn, isHidden ? 'eye' : 'eye-off');
 	hideBtn.addEventListener('click', (e) => {
 		e.stopPropagation();
 		void (async () => {
@@ -420,12 +422,14 @@ function renderTypeRow(
 		})();
 	});
 
-	// Reset button for customized built-in types
+	// Reset button for customized built-in types — icon + tooltip to reduce row
+	// clutter, a revert arrow alongside the gear/pencil and eye (#734 follow-up).
 	if (type.builtIn && isCustomized) {
 		const resetBtn = actionsWrapper.createEl('button', {
-			text: 'Reset',
-			cls: 'crc-btn crc-btn--small'
+			cls: 'crc-btn crc-btn--small',
+			attr: { 'aria-label': 'Reset to default', title: 'Reset to default' }
 		});
+		setIcon(resetBtn, 'rotate-ccw');
 		resetBtn.addEventListener('click', (e) => {
 			e.stopPropagation();
 			void (async () => {

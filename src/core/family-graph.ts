@@ -2221,6 +2221,7 @@ export class FamilyGraphService {
 				divorceDate: this.getStringValue(fm[`spouse${index}_divorce_date`]),
 				marriageStatus,
 				marriageLocation: this.getStringValue(fm[`spouse${index}_marriage_location`]),
+				marriageType: this.getStringValue(fm[`spouse${index}_marriage_type`]),
 				marriageOrder: index, // Index naturally provides ordering
 			};
 

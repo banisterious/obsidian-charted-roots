@@ -20,6 +20,7 @@ interface MarriageDetails {
 	marriageLocation?: string | string[];
 	marriageLocationId?: string;
 	marriageStatus?: string;
+	marriageType?: string;
 	divorceDate?: string;
 }
 
@@ -885,11 +886,12 @@ export class BidirectionalLinker {
 		const location = fm[`${prefix}marriage_location`];
 		const locationId = fm[`${prefix}marriage_location_id`];
 		const status = fm[`${prefix}marriage_status`];
+		const type = fm[`${prefix}marriage_type`];
 		const divorceDate = fm[`${prefix}divorce_date`];
 
 		if (
 			date === undefined && location === undefined && locationId === undefined &&
-			status === undefined && divorceDate === undefined
+			status === undefined && type === undefined && divorceDate === undefined
 		) {
 			return undefined;
 		}
@@ -901,6 +903,7 @@ export class BidirectionalLinker {
 				: undefined,
 			marriageLocationId: typeof locationId === 'string' ? locationId : undefined,
 			marriageStatus: typeof status === 'string' ? status : undefined,
+			marriageType: typeof type === 'string' ? type : undefined,
 			divorceDate: typeof divorceDate === 'string' ? divorceDate : undefined
 		};
 	}
@@ -1024,6 +1027,9 @@ export class BidirectionalLinker {
 		}
 		if (details.marriageStatus !== undefined) {
 			await this.setField(spouseFile, `${prefix}marriage_status`, details.marriageStatus);
+		}
+		if (details.marriageType !== undefined) {
+			await this.setField(spouseFile, `${prefix}marriage_type`, details.marriageType);
 		}
 		if (details.divorceDate !== undefined) {
 			await this.setField(spouseFile, `${prefix}divorce_date`, details.divorceDate);
@@ -2051,6 +2057,7 @@ export class BidirectionalLinker {
 				await this.removeField(spouseFile, `${key}_marriage_location`);
 				await this.removeField(spouseFile, `${key}_marriage_location_id`);
 				await this.removeField(spouseFile, `${key}_marriage_status`);
+				await this.removeField(spouseFile, `${key}_marriage_type`);
 				await this.removeField(spouseFile, `${key}_divorce_date`);
 
 				logger.info('bidirectional-linking', 'Removed indexed spouse bidirectional link (deletion sync)', {

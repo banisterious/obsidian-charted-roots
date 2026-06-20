@@ -56,6 +56,9 @@ export interface SpouseRelationship {
 	/** Location of marriage (can be wikilink) */
 	marriageLocation?: string;
 
+	/** Type of union (e.g. "Common-law marriage"); free-text, optional (#628) */
+	marriageType?: string;
+
 	/** Explicit ordering for layout (1, 2, 3...) */
 	marriageOrder?: number;
 }
