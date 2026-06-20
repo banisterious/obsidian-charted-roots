@@ -19,6 +19,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Changed
 
+- **Editing a person now ensures `cr_type: person`** ([#744](https://github.com/banisterious/obsidian-charted-roots/issues/744)): saving in the Edit Person modal fills in a missing `cr_type: person` automatically. A note that gained a `cr_id` but never ran "Add essential person properties" could be edited indefinitely without ever being tagged as a person, which left type detection guessing and caused issues like #742. An existing `cr_type` is never overwritten. Requested by [@doctorwodka](https://github.com/doctorwodka).
 - **Place type hierarchy: insert above an occupied level** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734)): creating or re-levelling a place type onto a level another type already holds now offers a choice — keep them tied, or insert above and push the lower types down by one. This makes the previously fiddly "add something above the current top" case (e.g. a galaxy above a region) a single action instead of renumbering the whole category by hand, while leaving intentional ties and gaps intact. The per-row Hide/Show and Reset controls are now compact icons (eye and revert arrow) with tooltips, matching the customize/edit icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ### Fixed

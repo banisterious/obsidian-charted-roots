@@ -1603,6 +1603,15 @@ export async function updatePersonNote(
 	const beforeChildIds = collectIdsFromField(beforeFm, 'children_id');
 
 	await app.fileManager.processFrontMatter(file, (frontmatter) => {
+		// Ensure the note carries cr_type: person. A note that gained a cr_id but
+		// never ran "Add essential person properties" can be edited through this
+		// path (e.g. the Edit Person modal) without one, leaving type detection
+		// to infer it and causing bugs like #742. Set it only when absent so a
+		// deliberate type is never overwritten (#744).
+		if (frontmatter.cr_type === undefined || frontmatter.cr_type === null || frontmatter.cr_type === '') {
+			frontmatter.cr_type = 'person';
+		}
+
 		// Update basic fields if provided
 		if (person.name !== undefined) frontmatter.name = person.name;
 		if (person.personType !== undefined) {

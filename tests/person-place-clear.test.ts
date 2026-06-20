@@ -204,6 +204,36 @@ describe('updatePersonNote — burial date (#682)', () => {
 	});
 });
 
+describe('updatePersonNote — heals missing cr_type (#744)', () => {
+	it('adds cr_type: person when the note has none (the #742 footgun)', async () => {
+		const app = new App();
+		// A note that got a cr_id but never ran "Add essential person properties".
+		const file = seedPerson(app, { cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, { name: 'Anakin Skywalker' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).cr_type).toBe('person');
+	});
+
+	it('adds cr_type: person when the value is present but empty', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: '', cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, { name: 'Anakin Skywalker' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).cr_type).toBe('person');
+	});
+
+	it('leaves an existing cr_type untouched (never clobbers a deliberate type)', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'character', cr_id: 'person-anakin', name: 'Anakin Skywalker' });
+
+		await updatePersonNote(app, file, { name: 'Anakin Skywalker' } as Partial<PersonData>);
+
+		expect(frontmatterOf(app, file).cr_type).toBe('character');
+	});
+});
+
 describe('updatePersonNote — name parts (#709)', () => {
 	it('writes a provided name prefix, suffix, and surname prefix', async () => {
 		const app = new App();
