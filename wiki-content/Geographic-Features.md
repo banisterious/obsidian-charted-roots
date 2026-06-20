@@ -261,8 +261,8 @@ The built-in place types and their default levels:
 | 3 | State | Political divisions |
 | 4 | Region | Political divisions |
 | 5 | County | Political divisions |
-| 6 | District | Settlements |
 | 6 | Township | Political divisions |
+| 6 | District | Settlements |
 | 7 | City | Settlements |
 | 8 | Town | Settlements |
 | 9 | Village | Settlements |
