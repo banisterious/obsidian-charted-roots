@@ -12,6 +12,8 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.74] - 2026-06-21
+
 ### Added
 
 - **Default universe setting** ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751)): a new "Default universe" setting (Settings → Places) applies a chosen universe to new people, places, events, and organizations when their universe field is left empty — so working in a single universe no longer means typing it on every note. For places it applies only to fictional categories, and you can still change or clear it per note. Defaults to none. Requested by [@doctorwodka](https://github.com/doctorwodka).
