@@ -279,3 +279,33 @@ describe('updatePersonNote — name parts (#709)', () => {
 		expect(frontmatterOf(app, file).name_prefix).toBe('Dr.');
 	});
 });
+
+describe('updatePersonNote — gender-neutral parents (#754)', () => {
+	it('writes parents and parents_id for a single sex-unknown parent', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-child', name: 'Child' });
+
+		await updatePersonNote(app, file, {
+			parentCrId: ['person-central'],
+			parentName: ['[[Central]]'],
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		expect(fm.parents).toBe('[[Central]]');
+		expect(fm.parents_id).toBe('person-central');
+	});
+
+	it('writes parents and parents_id as arrays for multiple parents', async () => {
+		const app = new App();
+		const file = seedPerson(app, { cr_type: 'person', cr_id: 'person-child', name: 'Child' });
+
+		await updatePersonNote(app, file, {
+			parentCrId: ['person-a', 'person-b'],
+			parentName: ['[[Parent A]]', '[[Parent B]]'],
+		} as Partial<PersonData>);
+
+		const fm = frontmatterOf(app, file);
+		expect(fm.parents).toEqual(['[[Parent A]]', '[[Parent B]]']);
+		expect(fm.parents_id).toEqual(['person-a', 'person-b']);
+	});
+});

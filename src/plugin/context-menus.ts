@@ -21,7 +21,7 @@ import {
 } from './context-menu-helpers';
 import { RegenerateOptionsModal } from '../ui/regenerate-options-modal';
 import { TreeStatisticsModal } from '../ui/tree-statistics-modal';
-import { PersonPickerModal } from '../ui/person-picker';
+import { PersonPickerModal, type PersonInfo } from '../ui/person-picker';
 import type { RelationshipContext } from '../ui/quick-create-person-modal';
 import { FolderScanModal } from '../ui/folder-scan-modal';
 import { getErrorMessage } from '../core/error-utils';
@@ -834,6 +834,36 @@ function buildPersonContextMenu(
 					.setTitle('Relationships')
 					.setIcon('users')
 					.setSubmenu();
+
+				// Create family — open the wizard pre-anchored on this person (#754).
+				relationshipSubmenu.addItem((relItem) => {
+					relItem
+						.setTitle('Create family...')
+						.setIcon('users')
+						.onClick(() => {
+							const cache = plugin.app.metadataCache.getFileCache(file);
+							const fm = cache?.frontmatter;
+							if (!fm?.cr_id) {
+								new Notice('Add a person ID to this note before building a family around it.');
+								return;
+							}
+							const rawName = fm.name;
+							const centralPerson: PersonInfo = {
+								name: typeof rawName === 'string' ? rawName : (Array.isArray(rawName) ? rawName.join(' ') : file.basename),
+								crId: fm.cr_id,
+								birthDate: fm.born instanceof Date ? fm.born.toISOString().split('T')[0] : fm.born,
+								deathDate: fm.died instanceof Date ? fm.died.toISOString().split('T')[0] : fm.died,
+								sex: fm.sex || fm.gender,
+								pronouns: fm.pronouns,
+								file
+							};
+							void import('../ui/family-creation-wizard').then(({ FamilyCreationWizardModal }) => {
+								new FamilyCreationWizardModal(plugin.app, plugin, file.parent?.path, centralPerson).open();
+							});
+						});
+				});
+
+				relationshipSubmenu.addSeparator();
 
 				relationshipSubmenu.addItem((relItem) => {
 					relItem

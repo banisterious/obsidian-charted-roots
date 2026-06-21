@@ -1899,6 +1899,29 @@ export async function updatePersonNote(
 			}
 		}
 
+		// Handle gender-neutral parents relationship (#754). Mirrors the
+		// create-note path so the family wizard can record a child's parent(s)
+		// when sex is unknown (and father/mother can't be assigned).
+		if (person.parentCrId !== undefined || person.parentName !== undefined) {
+			const ids = person.parentCrId ?? [];
+			const names = person.parentName ?? [];
+			if (ids.length > 0 && names.length === ids.length) {
+				const links = names.map((n, i) => `${createSmartWikilink(n, app, ids[i])}`);
+				frontmatter.parents = links.length === 1 ? links[0] : links;
+				if (ids.some(id => id)) {
+					frontmatter.parents_id = ids.length === 1 ? ids[0] : ids;
+				} else {
+					delete frontmatter.parents_id;
+				}
+			} else if (ids.length > 0) {
+				frontmatter.parents_id = ids.length === 1 ? ids[0] : ids;
+			} else {
+				// Clear parents
+				delete frontmatter.parents;
+				delete frontmatter.parents_id;
+			}
+		}
+
 		// Handle adoptive father relationship (#390)
 		if (person.adoptiveFatherCrId !== undefined || person.adoptiveFatherName !== undefined) {
 			if (person.adoptiveFatherCrId && person.adoptiveFatherName) {

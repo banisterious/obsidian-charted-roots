@@ -15,6 +15,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 ### Added
 
 - **Default universe setting** ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751)): a new "Default universe" setting (Settings → Places) applies a chosen universe to new people, places, events, and organizations when their universe field is left empty — so working in a single universe no longer means typing it on every note. For places it applies only to fictional categories, and you can still change or clear it per note. Defaults to none. Requested by [@doctorwodka](https://github.com/doctorwodka).
+- **"Create family" in the person right-click menu** ([#754](https://github.com/banisterious/obsidian-charted-roots/issues/754)): the Relationships submenu on a person note now includes a "Create family..." entry that opens the family-creation wizard pre-anchored on that person — skipping the mode picker so you go straight to adding their spouses, children, and parents. Requested by [@pawel-k1200](https://github.com/pawel-k1200).
 
 ### Fixed
 

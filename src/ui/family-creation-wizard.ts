@@ -19,6 +19,7 @@
 import { App, ButtonComponent, Modal, Notice, Setting, setIcon, TFile, normalizePath } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { createPersonNote, updatePersonNote, PersonData } from '../core/person-note-writer';
+import { ValueAliasService } from '../core/value-alias-service';
 import { generateCrId } from '../core/uuid';
 import { createLucideIcon } from './lucide-icons';
 import { PersonPickerModal, PersonInfo } from './person-picker';
@@ -116,8 +117,11 @@ export class FamilyCreationWizardModal extends Modal {
 	// Persistence
 	private persistence: ModalStatePersistence<SerializableWizardState>;
 	private completedSuccessfully: boolean = false;
+	// Set when opened pre-anchored on a person (e.g. from a person's right-click
+	// menu, #754) so we skip the saved-draft resume prompt and the mode picker.
+	private seededFromPerson: boolean = false;
 
-	constructor(app: App, plugin: CanvasRootsPlugin, directory?: string) {
+	constructor(app: App, plugin: CanvasRootsPlugin, directory?: string, initialPerson?: PersonInfo) {
 		super(app);
 		this.plugin = plugin;
 		this.directory = directory || plugin.settings.peopleFolder || 'People';
@@ -136,13 +140,23 @@ export class FamilyCreationWizardModal extends Modal {
 			mother: null,
 			createdFiles: []
 		};
+
+		// Seed from an existing person (#754): build the family around them,
+		// skipping the mode picker and the "create yourself" step (step 1).
+		if (initialPerson) {
+			this.state.mode = 'existing';
+			this.state.existingCentralPerson = initialPerson;
+			this.currentStep = 'step2';
+			this.seededFromPerson = true;
+		}
 	}
 
 	onOpen(): void {
 		this.modalEl.addClass('crc-family-wizard-modal');
 
-		// Check for existing state to resume
-		const existingState = this.persistence.getValidState();
+		// Check for existing state to resume — but not when we were seeded with a
+		// specific person, in which case we start fresh around them (#754).
+		const existingState = this.seededFromPerson ? null : this.persistence.getValidState();
 		if (existingState && this.hasContent(existingState.formData as unknown as SerializableWizardState)) {
 			// Store the state for rendering the banner
 			this.pendingResumeState = existingState;
@@ -1504,6 +1518,9 @@ export class FamilyCreationWizardModal extends Modal {
 			return person.name;
 		};
 
+		// Normalizes sex values (word forms and GEDCOM markers) for parent slotting.
+		const valueAlias = new ValueAliasService(this.plugin);
+
 		// Get central person info
 		let centralCrId: string;
 		let centralName: string;
@@ -1537,18 +1554,30 @@ export class FamilyCreationWizardModal extends Modal {
 			.filter(c => c.crId)
 			.map(c => getLinkName(c));
 
-		// Link spouses (bidirectional)
+		// Link spouses (bidirectional). The spouse note is written ONCE with both
+		// the central person as a spouse and the shared children, so two rapid
+		// writes on the same file can't race and drop a reciprocal (#754).
 		for (const spouse of this.state.spouses) {
 			if (spouse.file && spouse.crId) {
 				const spouseLinkName = getLinkName(spouse);
 
-				// Add central person as spouse of spouse (merge with existing)
-				const existingSpousesOnSpouse = getExistingArray(spouse.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnSpouse = mergeArrays(existingSpousesOnSpouse, [centralCrId], [centralLinkName]);
-				await updatePersonNote(this.app, spouse.file, {
-					spouseCrId: mergedSpousesOnSpouse.ids,
-					spouseName: mergedSpousesOnSpouse.names
-				});
+				// Spouse note: central as spouse + shared children — single write.
+				const spouseFields: Partial<PersonData> = {};
+				const mergedSpousesOnSpouse = mergeArrays(
+					getExistingArray(spouse.file, 'spouse_id', 'spouse'),
+					[centralCrId], [centralLinkName]
+				);
+				spouseFields.spouseCrId = mergedSpousesOnSpouse.ids;
+				spouseFields.spouseName = mergedSpousesOnSpouse.names;
+				if (childCrIds.length > 0) {
+					const mergedChildrenOnSpouse = mergeArrays(
+						getExistingArray(spouse.file, 'children_id', 'children'),
+						childCrIds, childNames
+					);
+					spouseFields.childCrId = mergedChildrenOnSpouse.ids;
+					spouseFields.childName = mergedChildrenOnSpouse.names;
+				}
+				await updatePersonNote(this.app, spouse.file, spouseFields);
 
 				// Add spouse to central person (merge with existing)
 				if (centralFile) {
@@ -1559,16 +1588,6 @@ export class FamilyCreationWizardModal extends Modal {
 						spouseName: mergedSpousesOnCentral.names
 					});
 				}
-
-				// Add children to spouse (merge with existing)
-				if (childCrIds.length > 0 && spouse.file) {
-					const existingChildrenOnSpouse = getExistingArray(spouse.file, 'children_id', 'children');
-					const mergedChildrenOnSpouse = mergeArrays(existingChildrenOnSpouse, childCrIds, childNames);
-					await updatePersonNote(this.app, spouse.file, {
-						childCrId: mergedChildrenOnSpouse.ids,
-						childName: mergedChildrenOnSpouse.names
-					});
-				}
 			}
 		}
 
@@ -1577,28 +1596,41 @@ export class FamilyCreationWizardModal extends Modal {
 		for (const child of this.state.children) {
 			if (child.file && child.crId) {
 				const parentFields: Partial<PersonData> = {};
+				const neutralParentCrIds: string[] = [];
+				const neutralParentNames: string[] = [];
 
-				// Central person as parent
-				if (centralSex === 'male') {
-					parentFields.fatherCrId = centralCrId;
-					parentFields.fatherName = centralLinkName;
-				} else if (centralSex === 'female') {
-					parentFields.motherCrId = centralCrId;
-					parentFields.motherName = centralLinkName;
-				}
+				// Place a parent into the father/mother slot by sex; when the sex is
+				// unknown (or the matching slot is already filled, e.g. a same-sex
+				// couple) fall back to the gender-neutral `parents` field so the link
+				// is never silently dropped (#754). Sex is normalized first so both
+				// word forms ("male") and GEDCOM markers ("M", #629) are recognized.
+				const assignParent = (crId: string, linkName: string, sex: string | undefined) => {
+					const canonical = sex ? valueAlias.resolve('sex', sex) : '';
+					if (canonical === 'M' && !parentFields.fatherCrId) {
+						parentFields.fatherCrId = crId;
+						parentFields.fatherName = linkName;
+					} else if (canonical === 'F' && !parentFields.motherCrId) {
+						parentFields.motherCrId = crId;
+						parentFields.motherName = linkName;
+					} else {
+						neutralParentCrIds.push(crId);
+						neutralParentNames.push(linkName);
+					}
+				};
 
-				// First spouse of opposite sex as the other parent
+				// The central person plus each spouse co-parent — the children were
+				// written onto the central and every spouse above, so mirror that on
+				// the up-direction instead of capping at one father + one mother.
+				assignParent(centralCrId, centralLinkName, centralSex);
 				for (const spouse of this.state.spouses) {
 					if (spouse.crId) {
-						const spouseLinkName = getLinkName(spouse);
-						if (spouse.sex === 'male' && !parentFields.fatherCrId) {
-							parentFields.fatherCrId = spouse.crId;
-							parentFields.fatherName = spouseLinkName;
-						} else if (spouse.sex === 'female' && !parentFields.motherCrId) {
-							parentFields.motherCrId = spouse.crId;
-							parentFields.motherName = spouseLinkName;
-						}
+						assignParent(spouse.crId, getLinkName(spouse), spouse.sex);
 					}
+				}
+
+				if (neutralParentCrIds.length > 0) {
+					parentFields.parentCrId = neutralParentCrIds;
+					parentFields.parentName = neutralParentNames;
 				}
 
 				await updatePersonNote(this.app, child.file, parentFields);
@@ -1615,70 +1647,69 @@ export class FamilyCreationWizardModal extends Modal {
 			});
 		}
 
-		// Link parents (bidirectional)
-		if (this.state.father?.crId) {
-			const fatherLinkName = getLinkName(this.state.father);
+		// Link parents (bidirectional). Each note is written ONCE with everything
+		// it needs — the central person gets both parents in one call, and each
+		// parent gets the central child plus the other parent as a spouse in one
+		// call — so two rapid processFrontMatter writes on the same file can't race
+		// and drop a reciprocal (the cause of intermittently missing parent links,
+		// #754).
+		const fatherCrId = this.state.father?.crId;
+		const motherCrId = this.state.mother?.crId;
+		const fatherLinkName = this.state.father ? getLinkName(this.state.father) : '';
+		const motherLinkName = this.state.mother ? getLinkName(this.state.mother) : '';
 
-			// Set father on central person
-			if (centralFile) {
-				await updatePersonNote(this.app, centralFile, {
-					fatherCrId: this.state.father.crId,
-					fatherName: fatherLinkName
-				});
+		// Father and/or mother on the central person — single write.
+		if (centralFile && (fatherCrId || motherCrId)) {
+			const centralParentFields: Partial<PersonData> = {};
+			if (fatherCrId) {
+				centralParentFields.fatherCrId = fatherCrId;
+				centralParentFields.fatherName = fatherLinkName;
 			}
-			// Add central person as child of father (merge with existing)
-			if (this.state.father.file) {
-				const existingChildrenOnFather = getExistingArray(this.state.father.file, 'children_id', 'children');
-				const mergedChildrenOnFather = mergeArrays(existingChildrenOnFather, [centralCrId], [centralLinkName]);
-				await updatePersonNote(this.app, this.state.father.file, {
-					childCrId: mergedChildrenOnFather.ids,
-					childName: mergedChildrenOnFather.names
-				});
+			if (motherCrId) {
+				centralParentFields.motherCrId = motherCrId;
+				centralParentFields.motherName = motherLinkName;
 			}
+			await updatePersonNote(this.app, centralFile, centralParentFields);
 		}
 
-		if (this.state.mother?.crId) {
-			const motherLinkName = getLinkName(this.state.mother);
-
-			// Set mother on central person
-			if (centralFile) {
-				await updatePersonNote(this.app, centralFile, {
-					motherCrId: this.state.mother.crId,
-					motherName: motherLinkName
-				});
+		// Father note: central as child + mother as spouse — single write.
+		if (fatherCrId && this.state.father?.file) {
+			const fatherFields: Partial<PersonData> = {};
+			const mergedChildren = mergeArrays(
+				getExistingArray(this.state.father.file, 'children_id', 'children'),
+				[centralCrId], [centralLinkName]
+			);
+			fatherFields.childCrId = mergedChildren.ids;
+			fatherFields.childName = mergedChildren.names;
+			if (motherCrId) {
+				const mergedSpouses = mergeArrays(
+					getExistingArray(this.state.father.file, 'spouse_id', 'spouse'),
+					[motherCrId], [motherLinkName]
+				);
+				fatherFields.spouseCrId = mergedSpouses.ids;
+				fatherFields.spouseName = mergedSpouses.names;
 			}
-			// Add central person as child of mother (merge with existing)
-			if (this.state.mother.file) {
-				const existingChildrenOnMother = getExistingArray(this.state.mother.file, 'children_id', 'children');
-				const mergedChildrenOnMother = mergeArrays(existingChildrenOnMother, [centralCrId], [centralLinkName]);
-				await updatePersonNote(this.app, this.state.mother.file, {
-					childCrId: mergedChildrenOnMother.ids,
-					childName: mergedChildrenOnMother.names
-				});
-			}
+			await updatePersonNote(this.app, this.state.father.file, fatherFields);
 		}
 
-		// Link father and mother as spouses to each other (merge with existing)
-		if (this.state.father?.crId && this.state.mother?.crId) {
-			const fatherLinkName = getLinkName(this.state.father);
-			const motherLinkName = getLinkName(this.state.mother);
-
-			if (this.state.father.file) {
-				const existingSpousesOnFather = getExistingArray(this.state.father.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnFather = mergeArrays(existingSpousesOnFather, [this.state.mother.crId], [motherLinkName]);
-				await updatePersonNote(this.app, this.state.father.file, {
-					spouseCrId: mergedSpousesOnFather.ids,
-					spouseName: mergedSpousesOnFather.names
-				});
+		// Mother note: central as child + father as spouse — single write.
+		if (motherCrId && this.state.mother?.file) {
+			const motherFields: Partial<PersonData> = {};
+			const mergedChildren = mergeArrays(
+				getExistingArray(this.state.mother.file, 'children_id', 'children'),
+				[centralCrId], [centralLinkName]
+			);
+			motherFields.childCrId = mergedChildren.ids;
+			motherFields.childName = mergedChildren.names;
+			if (fatherCrId) {
+				const mergedSpouses = mergeArrays(
+					getExistingArray(this.state.mother.file, 'spouse_id', 'spouse'),
+					[fatherCrId], [fatherLinkName]
+				);
+				motherFields.spouseCrId = mergedSpouses.ids;
+				motherFields.spouseName = mergedSpouses.names;
 			}
-			if (this.state.mother.file) {
-				const existingSpousesOnMother = getExistingArray(this.state.mother.file, 'spouse_id', 'spouse');
-				const mergedSpousesOnMother = mergeArrays(existingSpousesOnMother, [this.state.father.crId], [fatherLinkName]);
-				await updatePersonNote(this.app, this.state.mother.file, {
-					spouseCrId: mergedSpousesOnMother.ids,
-					spouseName: mergedSpousesOnMother.names
-				});
-			}
+			await updatePersonNote(this.app, this.state.mother.file, motherFields);
 		}
 	}
 
