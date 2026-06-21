@@ -6,6 +6,7 @@
 
 import { App, ButtonComponent, Modal, Setting, TFile, Notice } from 'obsidian';
 import type { CanvasRootsSettings } from '../../settings';
+import { getDefaultUniverse } from '../../settings';
 import { createLucideIcon } from '../../ui/lucide-icons';
 import { PersonPickerModal, PersonInfo } from '../../ui/person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from '../../ui/place-picker';
@@ -224,6 +225,8 @@ export class CreateEventModal extends Modal {
 			}
 		} else {
 			// Create mode
+			// Apply the default universe to brand-new events (#751).
+			this.universe = getDefaultUniverse(this.settings) || '';
 			if (options?.initialPerson) {
 				this.person = options.initialPerson.name;
 				this.personCrId = options.initialPerson.crId;

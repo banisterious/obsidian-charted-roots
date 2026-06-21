@@ -10,7 +10,7 @@ import { getAllPlaceTypesWithCustomizations, getPlaceTypeHierarchyLevel, getPlac
 import { createLucideIcon } from './lucide-icons';
 import { FamilyGraphService } from '../core/family-graph';
 import { PlaceGraphService } from '../core/place-graph';
-import { getDefaultPlaceCategory, getPlaceFolderForCategory, CanvasRootsSettings } from '../settings';
+import { getDefaultPlaceCategory, getPlaceFolderForCategory, getDefaultUniverse, CanvasRootsSettings } from '../settings';
 import { GeocodingService } from '../maps/services/geocoding-service';
 import { ImageMapManager } from '../maps/image-map-manager';
 import type CanvasRootsPlugin from '../../main';
@@ -218,7 +218,10 @@ export class CreatePlaceModal extends Modal {
 				placeType: options?.initialPlaceType,
 				placeCategory: defaultCategory,
 				collection: options?.initialCollection,
-				universe: options?.initialUniverse
+				// Default universe for new places (#751); the writer only persists it
+				// for fictional categories via isUniverseApplicable. Fall back to
+				// plugin.settings for call sites that pass plugin but not settings.
+				universe: options?.initialUniverse ?? getDefaultUniverse(this.settings ?? this.plugin?.settings)
 			};
 
 			// Set directory: use explicit option, or calculate from category (#163)

@@ -11,6 +11,7 @@ import { getAllOrganizationTypes, getOrganizationType } from '../constants/organ
 import { OrganizationService } from '../services/organization-service';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
 import { ModalStatePersistence, renderResumePromptBanner } from '../../ui/modal-state-persistence';
+import { getDefaultUniverse } from '../../settings';
 
 /**
  * Form data structure for persistence
@@ -95,6 +96,11 @@ export class CreateOrganizationModal extends Modal {
 		}
 
 		this.folder = plugin.settings.organizationsFolder;
+
+		// Apply the default universe to brand-new organizations (#751).
+		if (!this.editMode) {
+			this.universe = getDefaultUniverse(plugin.settings) || '';
+		}
 
 		// Set up persistence (only in create mode)
 		if (!this.editMode) {

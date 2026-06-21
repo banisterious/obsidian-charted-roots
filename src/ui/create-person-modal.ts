@@ -15,6 +15,7 @@ import { PersonPickerModal, PersonInfo } from './person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from './place-picker';
 import { RelationshipContext } from './quick-create-person-modal';
 import type { CanvasRootsSettings } from '../settings';
+import { getDefaultUniverse } from '../settings';
 import type CanvasRootsPlugin from '../../main';
 import { getSpouseLabel, getAddSpouseLabel } from '../utils/terminology';
 import { extractDisplayLabel } from '../utils/wikilink-resolver';
@@ -331,7 +332,10 @@ export class CreatePersonModal extends Modal {
 			this.directory = pathParts.join('/');
 		} else {
 			this.personData = {
-				name: options?.initialName || ''
+				name: options?.initialName || '',
+				// Apply the default universe to brand-new people (#751). Many call
+				// sites pass `plugin` but not `settings`, so fall back to plugin.settings.
+				universe: getDefaultUniverse(this.settings ?? this.plugin?.settings)
 			};
 		}
 

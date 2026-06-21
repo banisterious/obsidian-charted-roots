@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Default universe setting** ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751)): a new "Default universe" setting (Settings → Places) applies a chosen universe to new people, places, events, and organizations when their universe field is left empty — so working in a single universe no longer means typing it on every note. For places it applies only to fictional categories, and you can still change or clear it per note. Defaults to none. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
 ### Fixed
 
 - **Map refresh could crash on an event with a non-text type** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): if a `cr_type: event` note had an `event_type` that wasn't plain text — for example a bare number like `event_type: 1850`, which YAML reads as a number — opening the map failed to load any data ("Failed to refresh map data"). Event type, title, and id values are now read as text wherever they're used, so a stray non-text value is handled gracefully instead of breaking the whole map. Surfaced by the improved error reporting added in 0.22.73; reported by [@tenephor](https://github.com/tenephor).

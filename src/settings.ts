@@ -5,6 +5,7 @@ import type { LogLevel } from './core/logging';
 import type { RelationshipTypeDefinition } from './relationships';
 import type { FictionalDateSystem } from './dates';
 import { renderDateSystemsSettings } from './dates/ui/date-systems-card';
+import { createUniverseService } from './universes/services/universe-service';
 import type { OrganizationTypeDefinition } from './organizations';
 import type { SourceTypeDefinition, CitationFormat, SourceCategoryDefinition } from './sources/types/source-types';
 import type { EventTypeDefinition, EventCategoryDefinition } from './events/types/event-types';
@@ -287,6 +288,9 @@ export interface CanvasRootsSettings {
 	// Place category defaults
 	defaultPlaceCategory: PlaceCategory;
 	placeCategoryRules: PlaceCategoryRule[];
+	// Default universe applied to new applicable notes when none is specified (#751).
+	// Empty string means no default.
+	defaultUniverse: string;
 	// Place category → folder mapping (#163)
 	/** Automatically organize places into subfolders based on their category */
 	useCategorySubfolders: boolean;
@@ -712,6 +716,16 @@ export function getDefaultPlaceCategory(
 }
 
 /**
+ * Get the default universe to apply to a new applicable note (person, place,
+ * event, organization), or undefined when none is configured (#751). Trimmed so
+ * a stray-whitespace setting reads as "no default".
+ */
+export function getDefaultUniverse(settings: CanvasRootsSettings | undefined): string | undefined {
+	const value = settings?.defaultUniverse?.trim();
+	return value ? value : undefined;
+}
+
+/**
  * Get the folder path for a place based on its category (#163)
  * Priority:
  * 1. Check for explicit category → folder rule
@@ -815,6 +829,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	// Place category defaults
 	defaultPlaceCategory: 'real',  // Default place category when creating new places
 	placeCategoryRules: [],        // Folder/collection-based category rules
+	defaultUniverse: '',           // Default universe for new applicable notes (#751); '' = none
 	// Place category → folder mapping (#163)
 	useCategorySubfolders: false,  // Default false for existing vaults (set true on new installs via migration check)
 	placeCategoryFolderRules: [],  // Custom category → folder mappings (empty = use automatic naming)
@@ -2072,6 +2087,30 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.defaultPlaceCategory = value as PlaceCategory;
 					await this.plugin.saveSettings();
 				}));
+
+		// Default universe (#751) — applied to new people, places, events, and
+		// organizations when their universe field is left empty. Placed beside the
+		// place-category default since the two pair up for fictional worldbuilding.
+		new Setting(placesContent)
+			.setName('Default universe')
+			.setDesc('Universe assigned to new people, places, events, and organizations when not specified. For places, it only applies to fictional categories.')
+			.addDropdown(dropdown => {
+				dropdown.addOption('', '(None)');
+				const current = this.plugin.settings.defaultUniverse || '';
+				const names = createUniverseService(this.plugin).getAllUniverses().map(u => u.name);
+				for (const name of names) {
+					dropdown.addOption(name, name);
+				}
+				// Keep a previously-set universe selectable even if its note was removed.
+				if (current && !names.includes(current)) {
+					dropdown.addOption(current, `${current} (missing)`);
+				}
+				dropdown.setValue(current);
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.defaultUniverse = value;
+					await this.plugin.saveSettings();
+				});
+			});
 
 		new Setting(placesContent)
 			.setName('Accept DMS coordinate format')
