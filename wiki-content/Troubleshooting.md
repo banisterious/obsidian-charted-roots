@@ -14,6 +14,7 @@ Solutions to common issues with Charted Roots.
 - [Family Chart View](#family-chart-view)
 - [Excalidraw Export](#excalidraw-export)
 - [Performance Issues](#performance-issues)
+- [Property Types](#property-types)
 - [Getting More Help](#getting-more-help)
 
 ---
@@ -265,6 +266,20 @@ If you need to share your GEDCOM file to help debug import issues, use the anony
 2. Check vault size - very large vaults may need optimization
 3. Disable "Sync on file modify" if you don't need live sync
 4. Report issue with performance profile if problem persists
+
+## Property Types
+
+### A value displays wrong (e.g. a fictional date shows as a calendar date)
+
+**Symptoms:** A value you entered shows differently than you typed it. The most common case is a fictional date — for example, an event's `date` of `1000 AS` appears as a calendar date like `01/01/1000`, while the same kind of value in another field (such as `date_end`) displays correctly as text.
+
+**Cause:** Obsidian assigns one **type** (Text, Number, Date, etc.) to each property *name* across your entire vault. If a property like `date` is registered as a Date type — often because your daily notes or other notes use it — Obsidian applies that type to *every* note's `date`, including Charted Roots events, and coerces your fictional value into a calendar date. Charted Roots can't override Obsidian's global type for a property name.
+
+**Solutions:**
+1. Point the affected field at a different property name that isn't typed elsewhere, using a property alias: Settings → Charted Roots → Aliases → **Property aliases**
+2. Find the field (e.g. **Date** / "When the event occurred") and enter a custom name such as `event_date`
+3. New notes will use that property, which stays Text, so the value displays exactly as entered
+4. Existing notes keep working — re-save them to migrate, or set the new property manually
 
 ## Getting More Help
 
