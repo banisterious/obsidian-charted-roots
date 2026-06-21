@@ -20,6 +20,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 ### Fixed
 
 - **Map refresh could crash on an event with a non-text type** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): if a `cr_type: event` note had an `event_type` that wasn't plain text — for example a bare number like `event_type: 1850`, which YAML reads as a number — opening the map failed to load any data ("Failed to refresh map data"). Event type, title, and id values are now read as text wherever they're used, so a stray non-text value is handled gracefully instead of breaking the whole map. Surfaced by the improved error reporting added in 0.22.73; reported by [@tenephor](https://github.com/tenephor).
+- **Collections and universes duplicated when entered as wikilinks** ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755)): a `collection` or `universe` value typed as a wikilink (e.g. `[[Harra]]`) was treated as different from the plain form (`Harra`) or an aliased form (`[[Harra|Harra]]`), so the same collection/universe appeared multiple times in lists, filters, and dropdowns, showed raw `[[ ]]` brackets, and could even produce a collection "connection" to itself. These values are now normalized wherever they're gathered, so each collection/universe is counted once no matter how it was typed. (Plain text labels like `Cook/Server` are left untouched.) Reported by [@lomarcanys](https://github.com/lomarcanys).
 
 ## [0.22.73] - 2026-06-20
 

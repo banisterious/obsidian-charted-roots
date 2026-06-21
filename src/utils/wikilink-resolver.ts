@@ -116,6 +116,24 @@ export function unwrapWikilinkDisplay(value: string | null | undefined): string 
 }
 
 /**
+ * Normalize a free-form label value (e.g. a `collection` or `universe` string)
+ * that may contain one or more wikilinks. Each `[[target]]` / `[[target|display]]`
+ * is reduced to its display text, so `[[Harra]]` → `Harra` and
+ * `[[Lands of the Undying|Lands of the Undying]]` → `Lands of the Undying`.
+ * Plain text — including commas and slashes — is left untouched, so several
+ * aggregation surfaces stop treating `[[Harra]]`, `Harra`, and the alias form as
+ * three different collections/universes (#755). Unlike `unwrapWikilinkDisplay`
+ * this handles a string with multiple links (`[[A]],[[B]]` → `A,B`).
+ */
+export function normalizeLabelValue(value: string | null | undefined): string {
+	if (!value) return '';
+	return value
+		.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_match, target: string, alias?: string) =>
+			(alias ?? target).trim())
+		.trim();
+}
+
+/**
  * Convert a path to wikilink format
  * If already a wikilink, returns as-is
  */

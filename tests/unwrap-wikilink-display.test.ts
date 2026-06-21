@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { unwrapWikilinkDisplay } from '../src/utils/wikilink-resolver';
+import { unwrapWikilinkDisplay, normalizeLabelValue } from '../src/utils/wikilink-resolver';
 
 /**
  * Coverage for `unwrapWikilinkDisplay`, the helper used by the Family
@@ -110,5 +110,44 @@ describe('unwrapWikilinkDisplay', () => {
 			const second = unwrapWikilinkDisplay(first);
 			expect(second).toBe(first);
 		});
+	});
+});
+
+/**
+ * `normalizeLabelValue` cleans free-form label fields (collection, universe)
+ * that may contain one or more wikilinks, so aggregation surfaces stop treating
+ * `[[Harra]]`, `Harra`, and `[[Harra|Harra]]` as different values (#755).
+ */
+describe('normalizeLabelValue', () => {
+	it('returns empty string for nullish/empty input', () => {
+		expect(normalizeLabelValue(null)).toBe('');
+		expect(normalizeLabelValue(undefined)).toBe('');
+		expect(normalizeLabelValue('')).toBe('');
+	});
+
+	it('strips brackets from a bare wikilink', () => {
+		expect(normalizeLabelValue('[[Harra]]')).toBe('Harra');
+	});
+
+	it('takes the display/alias from a piped wikilink', () => {
+		expect(normalizeLabelValue('[[Lands of the Undying|Lands of the Undying]]')).toBe('Lands of the Undying');
+		expect(normalizeLabelValue('[[note-id|Imperial line]]')).toBe('Imperial line');
+	});
+
+	it('normalizes every wikilink in a comma-joined value', () => {
+		expect(normalizeLabelValue('[[Angarath]],[[Clan of the Wood]]')).toBe('Angarath,Clan of the Wood');
+	});
+
+	it('leaves plain text untouched (including slashes and bare pipes)', () => {
+		expect(normalizeLabelValue('Harra')).toBe('Harra');
+		expect(normalizeLabelValue('Cook/Server')).toBe('Cook/Server');
+		expect(normalizeLabelValue('Smith, Jones Family')).toBe('Smith, Jones Family');
+	});
+
+	it('collapses all forms of one collection to the same value', () => {
+		const forms = ['[[Imperial line]]', 'Imperial line', '[[Imperial line|Imperial line]]'];
+		const normalized = forms.map(normalizeLabelValue);
+		expect(new Set(normalized).size).toBe(1);
+		expect(normalized[0]).toBe('Imperial line');
 	});
 });

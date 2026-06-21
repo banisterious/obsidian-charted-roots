@@ -8,6 +8,7 @@
 
 import { App, TFile } from 'obsidian';
 import { getLogger } from './logging';
+import { normalizeLabelValue } from '../utils/wikilink-resolver';
 import {
 	PlaceNode,
 	PlaceCategory,
@@ -786,9 +787,10 @@ export class PlaceGraphService {
 				if (year) data.deathYear = year;
 			}
 
-			// Extract collection
+			// Extract collection (normalize wikilink syntax so it dedupes with
+			// the same collection on person notes, #755)
 			if (fm.collection) {
-				data.collection = fm.collection;
+				data.collection = normalizeLabelValue(fm.collection as string);
 			}
 
 			if (data.birthPlace || data.deathPlace) {
@@ -1195,13 +1197,13 @@ export class PlaceGraphService {
 				filePath: file.path,
 				category,
 				placeType: fm.place_type,
-				universe: supportsUniverse(category) ? fm.universe : undefined,
+				universe: supportsUniverse(category) && fm.universe ? normalizeLabelValue(fm.universe as string) : undefined,
 				parentId,
 				childIds: [],
 				aliases,
 				coordinates,
 				customCoordinates,
-				collection: fm.collection,
+				collection: fm.collection ? normalizeLabelValue(fm.collection as string) : fm.collection,
 				historicalNames: historicalNames.length > 0 ? historicalNames : undefined,
 				media: media.length > 0 ? media : undefined,
 				maps: maps.length > 0 ? maps : undefined

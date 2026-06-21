@@ -16,7 +16,7 @@ import type CanvasRootsPlugin from '../../main';
 import { createLucideIcon } from './lucide-icons';
 import { getLogger } from '../core/logging';
 import { generateCrId } from '../core/uuid';
-import { toWikilink, extractWikilinkPath } from '../utils/wikilink-resolver';
+import { toWikilink, extractWikilinkPath, normalizeLabelValue } from '../utils/wikilink-resolver';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { RegionDrawingModal } from '../maps/ui/region-drawing-modal';
 
@@ -748,7 +748,8 @@ export class CreateMapWizardModal extends Modal {
 			const crType = fm.cr_type || fm.type;
 			// Skip map notes — they may store cr_ids instead of names
 			if (crType === 'map') continue;
-			universes.add(fm.universe);
+			// Normalize so [[X]] / X / [[X|X]] collapse to one option (#755)
+			universes.add(normalizeLabelValue(fm.universe));
 		}
 
 		return Array.from(universes).sort();

@@ -16,6 +16,7 @@ import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
 import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
 import { computeCollectionDateRange, type DisplayDateRange } from './collection-date-range';
+import { normalizeLabelValue } from '../utils/wikilink-resolver';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
 import { RelationshipQueryService } from './relationship-query-service';
@@ -1923,8 +1924,12 @@ export class FamilyGraphService {
 		const sex = this.resolveGender(rawSex);
 		const pronouns = this.resolveProperty<string | string[]>(fm, 'pronouns');
 		const collectionName = this.resolveProperty<string>(fm, 'group_name');
-		const collection = this.resolveProperty<string>(fm, 'collection');
-		const universe = this.resolveProperty<string>(fm, 'universe');
+		// Normalize wikilink syntax so [[Harra]] / Harra / [[Harra|Harra]] aren't
+		// treated as different collections/universes downstream (#755).
+		const rawCollection = this.resolveProperty<string>(fm, 'collection');
+		const collection = rawCollection ? normalizeLabelValue(rawCollection) : rawCollection;
+		const rawUniverse = this.resolveProperty<string>(fm, 'universe');
+		const universe = rawUniverse ? normalizeLabelValue(rawUniverse) : rawUniverse;
 		const researchLevel = this.resolveProperty<number>(fm, 'research_level');
 
 		// External IDs for import round-trip support (#175)
