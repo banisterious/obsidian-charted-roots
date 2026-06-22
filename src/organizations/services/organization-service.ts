@@ -20,7 +20,7 @@ import { isValidOrganizationType, getOrganizationType } from '../constants/organ
 import { getLogger } from '../../core/logging';
 import { parseMediaRefs } from '../../core/media-service';
 import { isOrganizationNote } from '../../utils/note-type-detection';
-import { getCanonicalLinktext } from '../../utils/wikilink-resolver';
+import { getCanonicalLinktext, normalizeLabelValue } from '../../utils/wikilink-resolver';
 import { findCrNoteByCrId } from '../../utils/cr-id-resolver';
 import { waitForCacheRefresh } from '../../utils/cache-utils';
 import type { MembershipService } from './membership-service';
@@ -661,7 +661,7 @@ export class OrganizationService {
 			dissolved: fm.dissolved,
 			motto: fm.motto,
 			seat: fm.seat,
-			universe: fm.universe,
+			universe: fm.universe ? normalizeLabelValue(fm.universe) || undefined : undefined,
 			media: media.length > 0 ? media : undefined,
 			roles: roles && roles.length > 0 ? roles : undefined
 		};

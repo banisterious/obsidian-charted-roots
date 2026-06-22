@@ -290,7 +290,7 @@ export class MapDataService {
 				pixelX,
 				pixelY,
 				category: fm.place_category ? fmToString(fm.place_category) : undefined,
-				universe: fm.universe ? normalizeLabelValue(fmToString(fm.universe)) : undefined,
+				universe: fm.universe ? normalizeLabelValue(fm.universe) : undefined,
 				parentPlace: this.extractLinkTarget(fm.parent_place) || undefined,
 				parentPlaceId: fm.parent_place_id ? fmToString(fm.parent_place_id) : undefined,
 				maps,
@@ -349,7 +349,7 @@ export class MapDataService {
 				marriages: this.loadMarriages(fm),
 				burialPlace: this.extractPlaceString(fm.burial_place),
 				burialPlaceId: fm.burial_place_id,
-				collection: fm.collection ? normalizeLabelValue(fmToString(fm.collection)) : fm.collection,
+				collection: fm.collection ? normalizeLabelValue(fm.collection) : fm.collection,
 				altName: fm.alt_name ? fmToString(fm.alt_name) : undefined,
 				events: mergedEvents
 			};

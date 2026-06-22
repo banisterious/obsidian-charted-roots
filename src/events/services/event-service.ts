@@ -21,6 +21,7 @@ import {
 import { generateCrId } from '../../core/uuid';
 import { sanitizeFilename } from '../../utils/name-sanitization';
 import { isEventNote } from '../../utils/note-type-detection';
+import { normalizeLabelValue } from '../../utils/wikilink-resolver';
 import { getCalendariumBridge } from '../../integrations/calendarium-bridge';
 
 /**
@@ -923,7 +924,7 @@ export class EventService {
 			confidence,
 			description: descriptionValue ? fmToString(descriptionValue) : undefined,
 			isCanonical: isCanonicalValue === true,
-			universe: universeValue ? fmToString(universeValue) : undefined,
+			universe: universeValue ? normalizeLabelValue(universeValue) : undefined,
 			dateSystem: dateSystemValue ? fmToString(dateSystemValue) : undefined,
 			before: fmToStringArray(beforeValue),
 			after: fmToStringArray(afterValue),

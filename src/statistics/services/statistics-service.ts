@@ -18,6 +18,7 @@ import { OrganizationService } from '../../organizations';
 import { PlaceGraphService } from '../../core/place-graph';
 import type { EventService } from '../../events/services/event-service';
 import { placeNamesEqual, isSegmentAncestor } from '../../utils/place-segments';
+import { normalizeLabelValue } from '../../utils/wikilink-resolver';
 import {
 	orderMovementPlaces,
 	buildLocationSequence,
@@ -2356,7 +2357,9 @@ export class StatisticsService {
 			const fm = cache?.frontmatter;
 			if (!fm?.universe) continue;
 
-			const universeRef = String(fm.universe);
+			// Normalize so a `[[Lands of the Undying]]` reference matches the
+			// universe note's plain name instead of silently undercounting (#755).
+			const universeRef = normalizeLabelValue(fm.universe);
 			const universe = universeMap.get(universeRef) || universeMap.get(universeRef.toLowerCase());
 			if (!universe) continue;
 

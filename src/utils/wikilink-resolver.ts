@@ -124,10 +124,24 @@ export function unwrapWikilinkDisplay(value: string | null | undefined): string 
  * aggregation surfaces stop treating `[[Harra]]`, `Harra`, and the alias form as
  * three different collections/universes (#755). Unlike `unwrapWikilinkDisplay`
  * this handles a string with multiple links (`[[A]],[[B]]` → `A,B`).
+ *
+ * Accepts `unknown` because these fields are read straight from frontmatter and
+ * may legitimately be a multi-value array (`collection: [A, B]` → `A, B`) or a
+ * non-string scalar. A non-string value reaching the old string-only signature
+ * threw inside `.replace`, which blanked every collection/people/family-chart
+ * view that builds on the family graph (#755 follow-up).
  */
-export function normalizeLabelValue(value: string | null | undefined): string {
-	if (!value) return '';
-	return value
+export function normalizeLabelValue(value: unknown): string {
+	if (value === null || value === undefined) return '';
+	if (Array.isArray(value)) {
+		return value
+			.map(entry => normalizeLabelValue(entry))
+			.filter(entry => entry.length > 0)
+			.join(', ');
+	}
+	const str = typeof value === 'string' ? value : String(value);
+	if (!str) return '';
+	return str
 		.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_match, target: string, alias?: string) =>
 			(alias ?? target).trim())
 		.trim();

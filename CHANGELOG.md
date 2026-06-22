@@ -15,6 +15,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 ### Fixed
 
 - **"Add to this person" actions no longer fail right after creating a person** ([#757](https://github.com/banisterious/obsidian-charted-roots/issues/757)): after creating a person, clicking Add spouse / Add child / Add parent in the follow-up dialog could fail with "No person context available". The newly created person's id wasn't reliably available yet because the modal waited on Obsidian's metadata cache to catch up. The id is now established when the note is created, so the follow-up actions work immediately. Reported by [@pawel-k1200](https://github.com/pawel-k1200).
+- **Collection and universe labels render cleanly in more places, and a multi-value collection no longer blanks the views** ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755) follow-up): a `collection` set to a list of values (e.g. two collection names) caused the collections, people, and family chart views to come up empty. Label normalization now handles list values safely, and the wikilink-to-plain-text cleanup was extended to the Events universe filter, the Organizations universe column, and per-universe statistics counts. Reported by [@lomarcanys](https://github.com/lomarcanys).
 
 ## [0.22.74] - 2026-06-21
 

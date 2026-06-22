@@ -150,4 +150,29 @@ describe('normalizeLabelValue', () => {
 		expect(new Set(normalized).size).toBe(1);
 		expect(normalized[0]).toBe('Imperial line');
 	});
+
+	// A multi-value field (`collection: [A, B]`) reaches the helper as an array.
+	// Before #755 follow-up this threw inside `.replace`, blanking the family
+	// graph and every collection/people/family-chart view built on it.
+	describe('non-string input (#755 follow-up)', () => {
+		it('does not throw on an array and joins normalized entries', () => {
+			expect(normalizeLabelValue(['Angarath', 'Clan of the Wood'])).toBe('Angarath, Clan of the Wood');
+		});
+
+		it('normalizes wikilinks inside an array', () => {
+			expect(normalizeLabelValue(['[[Harra]]', '[[Saer|Saer]]'])).toBe('Harra, Saer');
+		});
+
+		it('drops empty array entries', () => {
+			expect(normalizeLabelValue(['Angarath', '', null])).toBe('Angarath');
+		});
+
+		it('coerces a non-string scalar instead of throwing', () => {
+			expect(normalizeLabelValue(1492)).toBe('1492');
+		});
+
+		it('returns empty string for an empty array', () => {
+			expect(normalizeLabelValue([])).toBe('');
+		});
+	});
 });
