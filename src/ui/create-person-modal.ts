@@ -14,6 +14,7 @@ import { aggregateCollections } from '../core/collections-aggregator';
 import { PersonPickerModal, PersonInfo } from './person-picker';
 import { PlacePickerModal, SelectedPlaceInfo } from './place-picker';
 import { RelationshipContext } from './quick-create-person-modal';
+import { generateCrId } from '../core/uuid';
 import type { CanvasRootsSettings } from '../settings';
 import { getDefaultUniverse } from '../settings';
 import type CanvasRootsPlugin from '../../main';
@@ -3130,6 +3131,14 @@ export class CreatePersonModal extends Modal {
 			// Add collection and universe
 			data.collection = this.getCollectionValue();
 			data.universe = this.getUniverseValue();
+
+			// Generate the cr_id upfront so post-create actions have person
+			// context immediately, without waiting on the metadata cache to
+			// catch up after the file is written (#757). createPersonNote would
+			// otherwise generate its own id internally and not return it here.
+			if (!data.crId) {
+				data.crId = generateCrId();
+			}
 
 			const file = await createPersonNote(this.app, data, {
 				directory: this.directory,

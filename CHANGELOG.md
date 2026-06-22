@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **"Add to this person" actions no longer fail right after creating a person** ([#757](https://github.com/banisterious/obsidian-charted-roots/issues/757)): after creating a person, clicking Add spouse / Add child / Add parent in the follow-up dialog could fail with "No person context available". The newly created person's id wasn't reliably available yet because the modal waited on Obsidian's metadata cache to catch up. The id is now established when the note is created, so the follow-up actions work immediately. Reported by [@pawel-k1200](https://github.com/pawel-k1200).
+
 ## [0.22.74] - 2026-06-21
 
 ### Added
