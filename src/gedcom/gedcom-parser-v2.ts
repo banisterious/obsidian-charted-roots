@@ -25,6 +25,7 @@ import {
 	getPedigreeType
 } from './gedcom-types';
 import { GedcomParser, GedcomParseError, GedcomValidationResult } from './gedcom-parser';
+import type { GedcomDateInterpretation } from './gedcom-parser';
 
 /**
  * GEDCOM line structure
@@ -56,8 +57,8 @@ export class GedcomParserV2 {
 	/**
 	 * Convert GEDCOM date to ISO format (delegates to v1 parser)
 	 */
-	static gedcomDateToISO(gedcomDate: string): string | undefined {
-		return GedcomParser.normalizeGedcomDate(gedcomDate);
+	static gedcomDateToISO(gedcomDate: string, interpretation?: GedcomDateInterpretation): string | undefined {
+		return GedcomParser.normalizeGedcomDate(gedcomDate, interpretation);
 	}
 
 	/**

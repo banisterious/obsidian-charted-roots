@@ -7,6 +7,7 @@
 
 import type { DatePrecision } from '../events/types/event-types';
 import type { GedcomCompatibilityMode, PreprocessorDetection } from './gedcom-preprocessor';
+import type { GedcomDateInterpretation } from './gedcom-parser';
 
 // ============================================================================
 // Event Types and Mappings
@@ -511,6 +512,14 @@ export interface GedcomImportOptionsV2 {
 
 	/** GEDCOM compatibility mode for vendor-specific fixes */
 	compatibilityMode?: GedcomCompatibilityMode;
+
+	/**
+	 * User-chosen interpretation for ambiguous/non-standard dates, set in the
+	 * import wizard's preview step (#718). Omitted means #716's defaults
+	 * (ambiguous slash → day/month; event-label dates imported with label
+	 * dropped).
+	 */
+	dateInterpretation?: GedcomDateInterpretation;
 }
 
 /**

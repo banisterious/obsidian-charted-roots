@@ -112,6 +112,26 @@ export interface GedcomDateNormalization {
 }
 
 /**
+ * User-chosen interpretation for date inputs that #716 can only resolve by a
+ * default convention. Threaded from the import wizard (#718) so a US-sourced
+ * file or a user who'd rather drop baptism/burial dates can override the
+ * defaults. Omitting a field (or the whole object) reproduces #716's behavior.
+ */
+export interface GedcomDateInterpretation {
+	/**
+	 * How to read an ambiguous slash date (`05/06/1990`, both parts ≤ 12):
+	 * `day-month` (default, the non-US norm) or `month-day` (US convention).
+	 */
+	slashOrder?: 'day-month' | 'month-day';
+	/**
+	 * What to do with a date carrying a non-standard event label (`Bapt`,
+	 * `Buried`, `Christened`, …): `import` the recovered date (default) or
+	 * `skip` it (leave the field blank rather than treat it as the real date).
+	 */
+	eventLabel?: 'import' | 'skip';
+}
+
+/**
  * Parse a GEDCOM file into structured data
  */
 export class GedcomParser {
@@ -485,8 +505,8 @@ export class GedcomParser {
 	 * - With qualifiers: "ABT 1950", "BEF 1950-03", etc.
 	 * - Ranges: "BET 1882 AND 1885" (passed through)
 	 */
-	static normalizeGedcomDate(gedcomDate: string): string | undefined {
-		return this.normalizeGedcomDateDetailed(gedcomDate).value;
+	static normalizeGedcomDate(gedcomDate: string, interpretation?: GedcomDateInterpretation): string | undefined {
+		return this.normalizeGedcomDateDetailed(gedcomDate, interpretation).value;
 	}
 
 	/**
@@ -494,7 +514,7 @@ export class GedcomParser {
 	 * ambiguous (DD/MM vs MM/DD) or non-standard (event-label) dates to the
 	 * user instead of dropping them silently.
 	 */
-	static normalizeGedcomDateDetailed(gedcomDate: string): GedcomDateNormalization {
+	static normalizeGedcomDateDetailed(gedcomDate: string, interpretation?: GedcomDateInterpretation): GedcomDateNormalization {
 		const original = (gedcomDate || '').trim();
 
 		// Empty input is not an error - nothing to warn about.
@@ -529,7 +549,7 @@ export class GedcomParser {
 		}
 
 		// Parse the remaining date portion.
-		const parsed = this.parseDatePortion(working);
+		const parsed = this.parseDatePortion(working, interpretation?.slashOrder);
 		if (!parsed.value) {
 			return { value: undefined, status: 'unparsed', original, label };
 		}
@@ -537,6 +557,12 @@ export class GedcomParser {
 		const value = qualifier ? `${qualifier} ${parsed.value}` : parsed.value;
 
 		if (label) {
+			// Event-label dates honor the user's import/skip choice (#718). Skip
+			// blanks the value while keeping the classification, so previews can
+			// still count it.
+			if (interpretation?.eventLabel === 'skip') {
+				return { value: undefined, status: 'event-label', original, label };
+			}
 			return { value, status: 'event-label', original, label };
 		}
 		if (parsed.ambiguous) {
@@ -567,8 +593,8 @@ export class GedcomParser {
 	 * trying slash dates first, then textual formats. Reports whether a slash
 	 * date had to be disambiguated by convention.
 	 */
-	private static parseDatePortion(datePart: string): { value?: string; ambiguous?: boolean } {
-		const slash = this.parseSlashDate(datePart);
+	private static parseDatePortion(datePart: string, slashOrder?: 'day-month' | 'month-day'): { value?: string; ambiguous?: boolean } {
+		const slash = this.parseSlashDate(datePart, slashOrder);
 		if (slash) return slash;
 		return { value: this.parseDatePart(datePart) };
 	}
@@ -578,7 +604,7 @@ export class GedcomParser {
 	 * otherwise assumes DD/MM (the non-US GEDCOM norm) and marks the result
 	 * ambiguous. Returns null if the input is not a slash date.
 	 */
-	private static parseSlashDate(datePart: string): { value: string; ambiguous?: boolean } | null {
+	private static parseSlashDate(datePart: string, slashOrder: 'day-month' | 'month-day' = 'day-month'): { value: string; ambiguous?: boolean } | null {
 		const match = datePart.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
 		if (!match) return null;
 
@@ -598,9 +624,15 @@ export class GedcomParser {
 			day = second;
 			month = first;
 		} else {
-			// Ambiguous - assume DD/MM by convention.
-			day = first;
-			month = second;
+			// Ambiguous - read per the chosen interpretation (default DD/MM). The
+			// caller still gets `ambiguous: true` so the date is surfaced/counted.
+			if (slashOrder === 'month-day') {
+				month = first;
+				day = second;
+			} else {
+				day = first;
+				month = second;
+			}
 			ambiguous = true;
 		}
 

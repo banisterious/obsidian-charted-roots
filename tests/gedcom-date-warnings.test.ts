@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GedcomParserV2 } from '../src/gedcom/gedcom-parser-v2';
-import { collectDateWarnings } from '../src/gedcom/gedcom-date-warnings';
+import { collectDateWarnings, summarizeDateInterpretations } from '../src/gedcom/gedcom-date-warnings';
 
 /**
  * #716 — pre-import scan that surfaces ambiguous / non-standard / unparseable
@@ -74,5 +74,42 @@ describe('collectDateWarnings (#716)', () => {
 	it('does not warn for clean control dates', () => {
 		expect(warnings.some(w => w.includes('Henry'))).toBe(false);
 		expect(warnings.some(w => w.includes('Arthur') && w.includes('Birth date'))).toBe(false);
+	});
+});
+
+describe('summarizeDateInterpretations (#718)', () => {
+	const summary = summarizeDateInterpretations(GedcomParserV2.parse(ged));
+
+	it('counts the ambiguous slash dates (Clara birth + the marriage)', () => {
+		expect(summary.ambiguousSlashCount).toBe(2);
+	});
+
+	it('counts the event-label dates and groups them by family', () => {
+		expect(summary.eventLabelCount).toBe(2);
+		expect(summary.eventLabelByFamily).toEqual({ baptism: 1, burial: 1 });
+	});
+
+	it('counts the unparseable date', () => {
+		expect(summary.unparsedCount).toBe(1);
+	});
+
+	it('ignores clean and unambiguous dates', () => {
+		// Arthur (19/08), Henry (15 MAR 1950) contribute to no category.
+		const total = summary.ambiguousSlashCount + summary.eventLabelCount + summary.unparsedCount;
+		expect(total).toBe(5);
+	});
+});
+
+describe('collectDateWarnings honors interpretation (#718)', () => {
+	const data = GedcomParserV2.parse(ged);
+
+	it('reports month/day wording when the slash order is flipped', () => {
+		const warnings = collectDateWarnings(data, { slashOrder: 'month-day' });
+		expect(warnings.some(w => w.includes('Clara') && w.includes('read as month/day → 1990-05-06'))).toBe(true);
+	});
+
+	it('reports event-label dates as skipped when skip is chosen', () => {
+		const warnings = collectDateWarnings(data, { eventLabel: 'skip' });
+		expect(warnings.some(w => w.includes('Thomas') && w.includes('skipped') && w.includes('left blank'))).toBe(true);
 	});
 });

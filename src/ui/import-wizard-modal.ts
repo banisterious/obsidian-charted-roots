@@ -16,7 +16,9 @@
 import { App, ButtonComponent, Modal, Notice, setIcon } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { GedcomImporterV2 } from '../gedcom/gedcom-importer-v2';
-import { collectDateWarnings } from '../gedcom/gedcom-date-warnings';
+import { collectDateWarnings, summarizeDateInterpretations } from '../gedcom/gedcom-date-warnings';
+import type { DateInterpretationSummary } from '../gedcom/gedcom-date-warnings';
+import type { GedcomDateInterpretation } from '../gedcom/gedcom-parser';
 import type { GedcomDataV2, GedcomImportOptionsV2, GedcomImportResultV2 } from '../gedcom/gedcom-types';
 import { ReferenceNumberingService, type NumberingSystem as RefNumberingSystem, type NumberingStats } from '../core/reference-numbering';
 import { PersonPickerModal, type PersonInfo } from './person-picker';
@@ -83,6 +85,11 @@ interface ImportWizardFormData {
 	parsedData: GedcomDataV2 | null;
 	parseErrors: string[];
 	parseWarnings: string[];
+	// Date interpretation (#718): per-category choices for ambiguous/non-standard
+	// dates, surfaced in the preview with counts from dateSummary.
+	dateSlashOrder: 'day-month' | 'month-day';
+	dateEventLabel: 'import' | 'skip';
+	dateSummary: DateInterpretationSummary | null;
 	gpkgExtractionResult: GpkgExtractionResult | null;
 	previewParsed: boolean;  // Track if preview parsing has been attempted
 
@@ -220,6 +227,9 @@ export class ImportWizardModal extends Modal {
 			parsedData: null,
 			parseErrors: [],
 			parseWarnings: [],
+			dateSlashOrder: 'day-month',
+			dateEventLabel: 'import',
+			dateSummary: null,
 			gpkgExtractionResult: null,
 			previewParsed: false,
 
@@ -919,28 +929,39 @@ export class ImportWizardModal extends Modal {
 			});
 		}
 
+		// Date interpretation controls (#718): per-category choices for ambiguous
+		// slash dates and event-label dates, shown only when such dates exist.
+		this.renderDateInterpretationControls(section);
+
+		// Merge the base parser warnings with the date warnings for the current
+		// interpretation, so the list reflects what the import will actually do.
+		const dateWarnings = this.formData.parsedData
+			? collectDateWarnings(this.formData.parsedData, this.getDateInterpretation())
+			: [];
+		const warnings = [...this.formData.parseWarnings, ...dateWarnings];
+
 		// Show warnings if any
-		if (this.formData.parseWarnings.length > 0) {
+		if (warnings.length > 0) {
 			const warningEl = section.createDiv({ cls: 'crc-import-preview-warning' });
 			const warningHeader = warningEl.createDiv({ cls: 'crc-import-preview-warning-header' });
 			const warningIcon = warningHeader.createDiv({ cls: 'crc-import-preview-warning-icon' });
 			setIcon(warningIcon, 'alert-triangle');
 			warningHeader.createDiv({
 				cls: 'crc-import-preview-warning-text',
-				text: `${this.formData.parseWarnings.length} warning(s) found during parsing`
+				text: `${warnings.length} warning(s) found during parsing`
 			});
 			const expandIcon = warningHeader.createDiv({ cls: 'crc-import-preview-warning-expand' });
 			setIcon(expandIcon, 'chevron-down');
 
 			// Create collapsible details container
 			const warningDetails = warningEl.createDiv({ cls: 'crc-import-preview-warning-details crc-hidden' });
-			for (const warning of this.formData.parseWarnings.slice(0, 10)) {
+			for (const warning of warnings.slice(0, 10)) {
 				warningDetails.createDiv({ cls: 'crc-import-preview-warning-detail', text: warning });
 			}
-			if (this.formData.parseWarnings.length > 10) {
+			if (warnings.length > 10) {
 				warningDetails.createDiv({
 					cls: 'crc-import-preview-warning-more',
-					text: `...and ${this.formData.parseWarnings.length - 10} more`
+					text: `...and ${warnings.length - 10} more`
 				});
 			}
 
@@ -1004,12 +1025,11 @@ export class ImportWizardModal extends Modal {
 				if (parseResult.valid && parseResult.data) {
 					this.formData.parsedData = parseResult.data;
 
-					// Surface ambiguous or non-standard dates here, before import,
-					// so the user can review them in the preview (#716).
-					this.formData.parseWarnings = [
-						...this.formData.parseWarnings,
-						...collectDateWarnings(parseResult.data)
-					];
+					// Tally ambiguous/non-standard dates so the preview can offer
+					// per-category interpretation controls with counts (#718). The
+					// per-date warnings themselves are computed at render time from
+					// the chosen interpretation (see renderStep4Preview).
+					this.formData.dateSummary = summarizeDateInterpretations(parseResult.data);
 
 					// Compute preview counts from parsed data
 					const data = parseResult.data;
@@ -1183,6 +1203,7 @@ export class ImportWizardModal extends Modal {
 						includeDynamicBlocks: this.formData.includeDynamicBlocks,
 						dynamicBlockTypes: ['media', 'timeline', 'relationships'],
 						compatibilityMode: settings.gedcomCompatibilityMode,
+						dateInterpretation: this.getDateInterpretation(),
 						onProgress: (progress) => {
 							// Update UI based on progress
 							const percent = progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
@@ -1927,6 +1948,86 @@ export class ImportWizardModal extends Modal {
 			toggle.toggleClass('crc-import-toggle--on', !isCurrentlyOn);
 			onChange(!isCurrentlyOn);
 		});
+	}
+
+	/** Build the date interpretation from the current preview choices (#718). */
+	private getDateInterpretation(): GedcomDateInterpretation {
+		return {
+			slashOrder: this.formData.dateSlashOrder,
+			eventLabel: this.formData.dateEventLabel
+		};
+	}
+
+	/**
+	 * Render per-category date interpretation controls (#718) in the preview.
+	 * Only categories with affected dates appear, each with a count so the user
+	 * sees the scale of what the choice affects. Changing a choice re-renders the
+	 * preview so the warning list reflects the new behavior; counts are stable.
+	 */
+	private renderDateInterpretationControls(section: HTMLElement): void {
+		const summary = this.formData.dateSummary;
+		if (!summary) return;
+		if (summary.ambiguousSlashCount === 0 && summary.eventLabelCount === 0 && summary.unparsedCount === 0) {
+			return;
+		}
+
+		const box = section.createDiv({ cls: 'crc-import-date-interpretation' });
+		box.createEl('div', { cls: 'crc-import-options-title crc-mt-3', text: 'Date interpretation' });
+		box.createEl('small', {
+			cls: 'crc-text-muted',
+			text: 'Some dates can be read more than one way. Choose how to handle them; the defaults match a non-US file.'
+		});
+
+		// Ambiguous slash dates: read as day/month (default) or month/day.
+		if (summary.ambiguousSlashCount > 0) {
+			const row = box.createDiv({ cls: 'crc-import-toggle-row' });
+			const labelEl = row.createDiv({ cls: 'crc-import-toggle-label' });
+			labelEl.createSpan({
+				text: `${summary.ambiguousSlashCount} ambiguous slash date${summary.ambiguousSlashCount === 1 ? '' : 's'}`
+			});
+			labelEl.createEl('small', { text: 'e.g. 05/06/1990 — which part is the day?' });
+			const select = row.createEl('select', { cls: 'dropdown' });
+			select.createEl('option', { value: 'day-month', text: 'Day/month (DD/MM)' });
+			select.createEl('option', { value: 'month-day', text: 'Month/day (MM/DD)' });
+			select.value = this.formData.dateSlashOrder;
+			select.addEventListener('change', () => {
+				this.formData.dateSlashOrder = select.value === 'month-day' ? 'month-day' : 'day-month';
+				this.renderCurrentStep();
+			});
+		}
+
+		// Event-label dates: import the recovered date (default) or skip it.
+		if (summary.eventLabelCount > 0) {
+			const breakdown = Object.entries(summary.eventLabelByFamily)
+				.map(([family, count]) => `${count} ${family}`)
+				.join(', ');
+			const row = box.createDiv({ cls: 'crc-import-toggle-row' });
+			const labelEl = row.createDiv({ cls: 'crc-import-toggle-label' });
+			labelEl.createSpan({
+				text: `${summary.eventLabelCount} event-label date${summary.eventLabelCount === 1 ? '' : 's'}`
+			});
+			labelEl.createEl('small', {
+				text: breakdown
+					? `${breakdown} — dates carrying a label like "Bapt" or "Buried"`
+					: 'dates carrying a label like "Bapt" or "Buried"'
+			});
+			const select = row.createEl('select', { cls: 'dropdown' });
+			select.createEl('option', { value: 'import', text: 'Import the date' });
+			select.createEl('option', { value: 'skip', text: 'Skip it (leave blank)' });
+			select.value = this.formData.dateEventLabel;
+			select.addEventListener('change', () => {
+				this.formData.dateEventLabel = select.value === 'skip' ? 'skip' : 'import';
+				this.renderCurrentStep();
+			});
+		}
+
+		// Unparsed dates: informational only — there's no interpretation to pick.
+		if (summary.unparsedCount > 0) {
+			box.createEl('small', {
+				cls: 'crc-text-muted',
+				text: `${summary.unparsedCount} date${summary.unparsedCount === 1 ? '' : 's'} couldn't be parsed and will be left blank.`
+			});
+		}
 	}
 
 	/**

@@ -787,7 +787,7 @@ export class GedcomImporterV2 {
 			// Surface ambiguous or non-standard dates instead of dropping them
 			// silently (#716). Scanning the parsed data warns once per couple's
 			// marriage date, not once per spouse.
-			result.warnings.push(...collectDateWarnings(gedcomData));
+			result.warnings.push(...collectDateWarnings(gedcomData, options.dateInterpretation));
 
 			result.success = result.errors.length === 0;
 
@@ -851,8 +851,8 @@ export class GedcomImporterV2 {
 			givenName: individual.givenName,
 			surnames: individual.surname ? [individual.surname] : undefined,
 			// Core dates and places
-			birthDate: GedcomParserV2.gedcomDateToISO(individual.birthDate || ''),
-			deathDate: GedcomParserV2.gedcomDateToISO(individual.deathDate || ''),
+			birthDate: GedcomParserV2.gedcomDateToISO(individual.birthDate || '', options.dateInterpretation),
+			deathDate: GedcomParserV2.gedcomDateToISO(individual.deathDate || '', options.dateInterpretation),
 			birthPlace: birthPlaceValue,
 			deathPlace: deathPlaceValue,
 			occupation: individual.occupation,
@@ -960,7 +960,7 @@ export class GedcomImporterV2 {
 						(family.wifeRef === individual.id && family.husbandRef === spouseRef);
 					if (isMatch) {
 						if (family.marriageDate) {
-							marriageDate = GedcomParserV2.gedcomDateToISO(family.marriageDate);
+							marriageDate = GedcomParserV2.gedcomDateToISO(family.marriageDate, options.dateInterpretation);
 						}
 						marriageLocation = family.marriagePlace;
 						// Check for divorce event (event.date is already ISO-converted by the parser)

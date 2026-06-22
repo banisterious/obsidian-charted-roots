@@ -129,3 +129,42 @@ describe('GedcomParser.normalizeGedcomDateDetailed classification (#716)', () =>
 		expect(r.original).toBe('sometime in the spring');
 	});
 });
+
+describe('GedcomParser date interpretation overrides (#718)', () => {
+	it('reads an ambiguous slash date as month/day when chosen', () => {
+		const r = GedcomParser.normalizeGedcomDateDetailed('05/06/1990', { slashOrder: 'month-day' });
+		expect(r.value).toBe('1990-05-06');
+		// Still classified ambiguous so the preview keeps counting it.
+		expect(r.status).toBe('ambiguous-slash');
+	});
+
+	it('keeps day/month for an ambiguous slash date by default', () => {
+		const r = GedcomParser.normalizeGedcomDateDetailed('05/06/1990', { slashOrder: 'day-month' });
+		expect(r.value).toBe('1990-06-05');
+	});
+
+	it('does not swap an unambiguous slash date even when month-day is chosen', () => {
+		// 19 can only be the day, so the interpretation must not flip it.
+		const r = GedcomParser.normalizeGedcomDateDetailed('19/08/1990', { slashOrder: 'month-day' });
+		expect(r.value).toBe('1990-08-19');
+		expect(r.status).toBe('ok');
+	});
+
+	it('blanks an event-label date when skip is chosen but keeps the classification', () => {
+		const r = GedcomParser.normalizeGedcomDateDetailed('Bapt 18 Dec 1690', { eventLabel: 'skip' });
+		expect(r.value).toBeUndefined();
+		expect(r.status).toBe('event-label');
+		expect(r.label).toBe('Bapt');
+	});
+
+	it('imports an event-label date when import is chosen', () => {
+		const r = GedcomParser.normalizeGedcomDateDetailed('Buried 11 April 1758', { eventLabel: 'import' });
+		expect(r.value).toBe('1758-04-11');
+		expect(r.status).toBe('event-label');
+	});
+
+	it('leaves a clean date untouched regardless of interpretation', () => {
+		expect(GedcomParser.normalizeGedcomDate('27 June 1885', { slashOrder: 'month-day', eventLabel: 'skip' }))
+			.toBe('1885-06-27');
+	});
+});

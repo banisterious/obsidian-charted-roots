@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Added
+
+- **Choose how ambiguous and non-standard dates are read during GEDCOM import** ([#718](https://github.com/banisterious/obsidian-charted-roots/issues/718)): the import preview now offers per-category date-interpretation controls, with counts so you can see how many dates each choice affects. Ambiguous slash dates (e.g. `05/06/1990`) can be read as day/month or month/day for the whole import, and dates carrying an event label (`Bapt`, `Buried`, …) can be imported or skipped. Leaving the controls untouched keeps the previous defaults. Builds on [#716](https://github.com/banisterious/obsidian-charted-roots/issues/716).
+
 ### Fixed
 
 - **"Add to this person" actions no longer fail right after creating a person** ([#757](https://github.com/banisterious/obsidian-charted-roots/issues/757)): after creating a person, clicking Add spouse / Add child / Add parent in the follow-up dialog could fail with "No person context available". The newly created person's id wasn't reliably available yet because the modal waited on Obsidian's metadata cache to catch up. The id is now established when the note is created, so the follow-up actions work immediately. Reported by [@pawel-k1200](https://github.com/pawel-k1200).
