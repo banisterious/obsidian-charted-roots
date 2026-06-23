@@ -14,6 +14,7 @@ import { ensureFolderExists } from '../core/canvas-utils';
 import { getErrorMessage } from '../core/error-utils';
 import { pluralize } from '../utils/format-utils';
 import type { PersonNode } from '../core/family-graph';
+import { mergeFamilyComponentsByCollectionName } from '../core/family-component-merge';
 import { aggregateCollections, type AggregatedCollection } from '../core/collections-aggregator';
 import { formatDateRangeLine } from '../core/collection-date-range';
 
@@ -184,8 +185,10 @@ function updateCollectionsList(
 		container.appendChild(listCard);
 
 	} else if (mode === 'families') {
-		// Show detected families
-		const components = graphService.findAllFamilyComponents();
+		// Show detected families. Merge components that share a manually-set
+		// group name so unconnected people grouped by hand (e.g. "Jedi") appear
+		// as one family, matching the Person Picker (#491/#761).
+		const components = mergeFamilyComponentsByCollectionName(graphService.findAllFamilyComponents());
 
 		const listCard = createCard({
 			title: `Detected families (${components.length})`,
@@ -355,8 +358,10 @@ async function generateCollectionOverviewCanvas(
 
 		const graphService = plugin.createFamilyGraphService();
 
-		// Get both detected families and user collections
-		const families = graphService.findAllFamilyComponents();
+		// Get both detected families and user collections. Merge hand-grouped
+		// families so analytics (e.g. the "smallest" collection) count them as
+		// one group rather than several one-person families (#761).
+		const families = mergeFamilyComponentsByCollectionName(graphService.findAllFamilyComponents());
 		const userCollections = graphService.getUserCollections();
 
 		// Combine them into a single collection list
@@ -627,7 +632,7 @@ export function renderCollectionsList(options: CollectionsListOptions): void {
 			searchInput.show();
 			searchInput.placeholder = 'Search families...';
 
-			const components = graphService.findAllFamilyComponents();
+			const components = mergeFamilyComponentsByCollectionName(graphService.findAllFamilyComponents());
 
 			// Filter by search query
 			let filtered = components;
