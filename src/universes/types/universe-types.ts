@@ -35,6 +35,13 @@ export interface UniverseInfo {
 	defaultCalendar?: string;
 	/** Default map cr_id for this universe */
 	defaultMap?: string;
+	/**
+	 * The universe's "current date" — its in-world "now". Used to age living
+	 * characters (no death date) for record superlatives, since a fictional
+	 * universe has no inherent present (#749). A date string in the universe's
+	 * own calendar, resolved era-aware via DateService.
+	 */
+	currentDate?: string;
 	/** Creation date */
 	created?: string;
 }
@@ -52,6 +59,7 @@ export interface UniverseFrontmatter {
 	status?: UniverseStatus;
 	default_calendar?: string;
 	default_map?: string;
+	current_date?: string;
 	created?: string;
 }
 
@@ -73,6 +81,8 @@ export interface CreateUniverseData {
 	crId?: string;
 	/** Default calendar id (built-in id or custom calendar id) */
 	defaultCalendar?: string;
+	/** The universe's in-world "current date" for aging living characters (#749) */
+	currentDate?: string;
 }
 
 /**

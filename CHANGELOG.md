@@ -14,6 +14,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ### Added
 
+- **Living people now appear in record superlatives** ([#749](https://github.com/banisterious/obsidian-charted-roots/issues/749)): the Statistics "Oldest people" record previously ignored anyone without a death date, so a long-lived living character could never top the list. Living people are now aged against a "current date" — today for real-world people, and a new per-universe **current date** (set in the Edit Universe dialog and the universe wizard) for fictional universes — and listed with a "(living)" marker. Real-world living ages are capped to keep a merely-missing death date from looking implausible; fictional universes are uncapped, and `cr_living` always includes a person. Raised by [@JakeTheLemon](https://github.com/JakeTheLemon).
 - **Choose how ambiguous and non-standard dates are read during GEDCOM import** ([#718](https://github.com/banisterious/obsidian-charted-roots/issues/718)): the import preview now offers per-category date-interpretation controls, with counts so you can see how many dates each choice affects. Ambiguous slash dates (e.g. `05/06/1990`) can be read as day/month or month/day for the whole import, and dates carrying an event label (`Bapt`, `Buried`, …) can be imported or skipped. Leaving the controls untouched keeps the previous defaults. Builds on [#716](https://github.com/banisterious/obsidian-charted-roots/issues/716).
 
 ### Fixed

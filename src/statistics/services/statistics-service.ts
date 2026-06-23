@@ -15,6 +15,7 @@ import { extractSurnames } from '../../utils/name-utils';
 import { FolderFilterService } from '../../core/folder-filter';
 import { capitalize } from '../../utils/format-utils';
 import { OrganizationService } from '../../organizations';
+import { UniverseService, createUniverseService } from '../../universes/services/universe-service';
 import { PlaceGraphService } from '../../core/place-graph';
 import type { EventService } from '../../events/services/event-service';
 import { placeNamesEqual, isSegmentAncestor } from '../../utils/place-segments';
@@ -87,6 +88,9 @@ export class StatisticsService {
 	private vaultStatsService: VaultStatsService | null = null;
 	private familyGraphService: FamilyGraphService | null = null;
 	private organizationService: OrganizationService | null = null;
+	private universeService: UniverseService | null = null;
+	/** Memo of universe name → resolved current year for living-age ranking (#749). */
+	private universeCurrentYearCache: Map<string, number | null> | null = null;
 
 	constructor(app: App, settings: CanvasRootsSettings, plugin?: CanvasRootsPlugin) {
 		this.app = app;
@@ -186,6 +190,11 @@ export class StatisticsService {
 		if (this.familyGraphService) {
 			this.familyGraphService.clearCache();
 		}
+		// Drop the universe-current-date lookups so edits to a universe's
+		// `current_date` are reflected on refresh (#749). The universe service is
+		// recreated lazily and reloads its own cache on next use.
+		this.universeService = null;
+		this.universeCurrentYearCache = null;
 	}
 
 	/**
@@ -1738,6 +1747,70 @@ export class StatisticsService {
 	}
 
 	/**
+	 * Compute a person's age for record rankings, including living people (#749).
+	 * A death date gives age-at-death; without one, the person is treated as
+	 * living and aged against their universe's "current date" (today for the
+	 * real world, the per-universe `current_date` for fictional universes).
+	 * Returns null when the age can't be established (missing/unparseable birth,
+	 * or a fictional universe with no current date set).
+	 */
+	private calculateAgeEntry(person: PersonNode): { age: number; isLiving: boolean } | null {
+		if (!person.birthDate) return null;
+		const birthYear = this.extractYear(person.birthDate, person.universe);
+		if (birthYear === null) return null;
+
+		if (person.deathDate) {
+			const deathYear = this.extractYear(person.deathDate, person.universe);
+			if (deathYear === null) return null;
+			return { age: deathYear - birthYear, isLiving: false };
+		}
+
+		const currentYear = this.resolveUniverseCurrentYear(person.universe);
+		if (currentYear === null) return null;
+		return { age: currentYear - birthYear, isLiving: true };
+	}
+
+	/**
+	 * Plausibility cap for a ranking age. Age-at-death keeps the existing global
+	 * behavior; a living age is capped at a real-world maximum unless the person
+	 * belongs to a fictional universe (which can be arbitrarily old), so a
+	 * missing death date doesn't surface a real person as implausibly old (#749).
+	 */
+	private maxAgeForRanking(person: PersonNode, isLiving: boolean): number {
+		if (isLiving) {
+			return person.universe && person.universe.trim() ? Infinity : 120;
+		}
+		return this.maxAge;
+	}
+
+	/**
+	 * Resolve the "current year" used to age living people. Real-world people
+	 * (no universe) use today; a fictional universe uses its `current_date`
+	 * frontmatter, parsed era-aware. Returns null for a fictional universe with
+	 * no current date set — its living people can't be ranked until one is (#749).
+	 */
+	private resolveUniverseCurrentYear(universe?: string): number | null {
+		if (!universe || !universe.trim()) {
+			return new Date().getFullYear();
+		}
+		const key = universe.trim();
+		if (!this.universeCurrentYearCache) this.universeCurrentYearCache = new Map();
+		const cached = this.universeCurrentYearCache.get(key);
+		if (cached !== undefined) return cached;
+
+		let year: number | null = null;
+		if (this.plugin) {
+			if (!this.universeService) this.universeService = createUniverseService(this.plugin);
+			const info = this.universeService.getUniverseByName(key) ?? this.universeService.getUniverse(key);
+			if (info?.currentDate) {
+				year = this.extractYear(info.currentDate, key);
+			}
+		}
+		this.universeCurrentYearCache.set(key, year);
+		return year;
+	}
+
+	/**
 	 * Extract year from a date string (supports various formats).
 	 *
 	 * Defers to `DateService.parseDate` first when a fictional calendar is
@@ -2014,22 +2087,25 @@ export class StatisticsService {
 	 * Oldest people by lifespan
 	 */
 	private computeOldestPeople(people: PersonNode[], topN: number): RecordCategory {
-		const withLifespan: { person: PersonNode; age: number }[] = [];
+		const withAge: { person: PersonNode; age: number; isLiving: boolean }[] = [];
 
 		for (const person of people) {
-			const age = this.calculateLifespan(person);
-			if (age !== null && age >= 0 && age <= this.maxAge) {
-				withLifespan.push({ person, age });
+			const entry = this.calculateAgeEntry(person);
+			if (!entry || entry.age < 0) continue;
+			const cap = this.maxAgeForRanking(person, entry.isLiving);
+			// cr_living forces inclusion past the plausibility cap (#749).
+			if (entry.age <= cap || person.cr_living === true) {
+				withAge.push({ person, age: entry.age, isLiving: entry.isLiving });
 			}
 		}
 
-		withLifespan.sort((a, b) => b.age - a.age);
+		withAge.sort((a, b) => b.age - a.age);
 
 		return {
 			label: 'Oldest people',
 			icon: 'crown',
-			entries: withLifespan.slice(0, topN).map(({ person, age }) =>
-				this.buildRecordEntry(person, `${age} years`)
+			entries: withAge.slice(0, topN).map(({ person, age, isLiving }) =>
+				this.buildRecordEntry(person, `${age} years${isLiving ? ' (living)' : ''}`)
 			)
 		};
 	}

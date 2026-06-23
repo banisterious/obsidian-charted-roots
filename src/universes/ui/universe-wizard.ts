@@ -49,6 +49,8 @@ interface UniverseFormData {
 	author: string;
 	genre: string;
 	status: UniverseStatus;
+	/** In-world "current date" for aging living characters in statistics (#749). */
+	currentDate: string;
 }
 
 /**
@@ -142,7 +144,8 @@ export class UniverseWizardModal extends Modal {
 			description: '',
 			author: '',
 			genre: '',
-			status: 'active'
+			status: 'active',
+			currentDate: ''
 		};
 
 		this.calendarData = {
@@ -378,6 +381,19 @@ export class UniverseWizardModal extends Modal {
 				.setValue(this.universeData.status)
 				.onChange(value => {
 					this.universeData.status = value as UniverseStatus;
+				}));
+
+		// Current date: the universe's in-world "now", used to age living
+		// characters for record superlatives (#749). Optional — can be set later
+		// from the Edit Universe dialog once a calendar and history exist.
+		new Setting(detailsContent)
+			.setName('Current date')
+			.setDesc("The universe's present, in its own calendar (e.g. \"342 AE\"). Used to age living characters in statistics. Optional.")
+			.addText(text => text
+				.setPlaceholder('e.g. 342 AE')
+				.setValue(this.universeData.currentDate)
+				.onChange(value => {
+					this.universeData.currentDate = value;
 				}));
 	}
 
@@ -1082,7 +1098,8 @@ export class UniverseWizardModal extends Modal {
 				author: this.universeData.author || undefined,
 				genre: this.universeData.genre || undefined,
 				status: this.universeData.status,
-				defaultCalendar: defaultCalendarId || undefined
+				defaultCalendar: defaultCalendarId || undefined,
+				currentDate: this.universeData.currentDate.trim() || undefined
 			};
 
 			const universeFile = await this.universeService.createUniverse(universeData);

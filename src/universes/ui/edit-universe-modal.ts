@@ -49,6 +49,7 @@ export class EditUniverseModal extends Modal {
 	private genre: string;
 	private status: UniverseStatus;
 	private defaultCalendar: string;
+	private currentDate: string;
 
 	constructor(
 		app: App,
@@ -73,6 +74,7 @@ export class EditUniverseModal extends Modal {
 		this.genre = this.universe.genre || '';
 		this.status = this.universe.status;
 		this.defaultCalendar = this.universe.defaultCalendar || '';
+		this.currentDate = this.universe.currentDate || '';
 	}
 
 	onOpen() {
@@ -179,6 +181,19 @@ export class EditUniverseModal extends Modal {
 				});
 			});
 
+		// Current date: the universe's in-world "now", used to age living
+		// characters for record superlatives (#749). Real-world universes can
+		// leave this blank (today is assumed for people without a universe).
+		new Setting(form)
+			.setName('Current date')
+			.setDesc("The universe's present, in its own calendar (e.g. \"342 AE\"). Used to age living characters in statistics. Leave blank to use today.")
+			.addText(text => text
+				.setPlaceholder('e.g. 342 AE')
+				.setValue(this.currentDate)
+				.onChange(value => {
+					this.currentDate = value;
+				}));
+
 		// Info section
 		const info = form.createDiv({ cls: 'crc-modal-info' });
 		info.createEl('p', {
@@ -233,7 +248,8 @@ export class EditUniverseModal extends Modal {
 				status: this.status,
 				// Empty string clears the field; undefined would preserve it,
 				// so use empty-string sentinel to support the (unset) option.
-				defaultCalendar: this.defaultCalendar
+				defaultCalendar: this.defaultCalendar,
+				currentDate: this.currentDate.trim()
 			});
 
 			this.close();

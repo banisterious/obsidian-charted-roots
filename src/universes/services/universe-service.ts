@@ -316,6 +316,9 @@ export class UniverseService {
 		if (data.defaultCalendar) {
 			frontmatterLines.push(`default_calendar: "${data.defaultCalendar}"`);
 		}
+		if (data.currentDate) {
+			frontmatterLines.push(`current_date: "${data.currentDate}"`);
+		}
 		frontmatterLines.push(`created: ${new Date().toISOString().split('T')[0]}`);
 
 		frontmatterLines.push('---');
@@ -364,6 +367,7 @@ export class UniverseService {
 			status?: UniverseStatus;
 			defaultCalendar?: string;
 			defaultMap?: string;
+			currentDate?: string;
 		}
 	): Promise<void> {
 		const cache = this.app.metadataCache.getFileCache(file);
@@ -422,6 +426,9 @@ export class UniverseService {
 
 		const defaultMap = data.defaultMap !== undefined ? data.defaultMap : fm.default_map;
 		if (defaultMap) newFrontmatterLines.push(`default_map: "${defaultMap}"`);
+
+		const currentDate = data.currentDate !== undefined ? data.currentDate : fm.current_date;
+		if (currentDate) newFrontmatterLines.push(`current_date: "${currentDate}"`);
 
 		// Preserve created date
 		if (fm.created) newFrontmatterLines.push(`created: ${fm.created}`);
@@ -828,6 +835,7 @@ export class UniverseService {
 			status: this.parseStatus(fm.status),
 			defaultCalendar: fm.default_calendar,
 			defaultMap: fm.default_map,
+			currentDate: typeof fm.current_date === 'string' ? fm.current_date : undefined,
 			created: fm.created
 		};
 	}
