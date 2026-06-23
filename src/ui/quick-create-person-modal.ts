@@ -6,6 +6,7 @@
 
 import { App, ButtonComponent, Modal, Setting, Notice, normalizePath } from 'obsidian';
 import { createPersonNote, PersonData } from '../core/person-note-writer';
+import { getDefaultUniverse } from '../settings';
 import { generateCrId } from '../core/uuid';
 import { createLucideIcon } from './lucide-icons';
 import { PersonInfo } from './person-picker';
@@ -227,6 +228,13 @@ export class QuickCreatePersonModal extends Modal {
 
 			if (this.birthDate) {
 				personData.birthDate = this.birthDate;
+			}
+
+			// Apply the default universe to brand-new people (#751 follow-up:
+			// quick-create runs outside the Create Person modal path).
+			const defaultUniverse = getDefaultUniverse(this.plugin?.settings);
+			if (defaultUniverse) {
+				personData.universe = defaultUniverse;
 			}
 
 			// Create the note

@@ -26,6 +26,7 @@ import { PersonPickerModal, PersonInfo } from './person-picker';
 import { getLogger } from '../core/logging';
 import { ModalStatePersistence, renderResumePromptBanner } from './modal-state-persistence';
 import { getSpouseLabel } from '../utils/terminology';
+import { getDefaultUniverse } from '../settings';
 
 const logger = getLogger('FamilyCreationWizard');
 
@@ -1434,6 +1435,13 @@ export class FamilyCreationWizardModal extends Modal {
 
 					if (person.birthDate) {
 						personData.birthDate = person.birthDate;
+					}
+
+					// Apply the default universe to brand-new people (#751 follow-up:
+					// the wizard creates notes outside the Create Person modal path).
+					const defaultUniverse = getDefaultUniverse(this.plugin.settings);
+					if (defaultUniverse) {
+						personData.universe = defaultUniverse;
 					}
 
 					const file = await createPersonNote(this.app, personData, {
