@@ -4,6 +4,7 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.74 Release Cohort](#v02274-release-cohort-2026-06-21)
 - [v0.22.73 Release Cohort](#v02273-release-cohort-2026-06-20)
 - [v0.22.72 Release Cohort](#v02272-release-cohort-2026-06-18)
 - [v0.22.71 Release Cohort](#v02271-release-cohort-2026-06-16)
@@ -26,6 +27,24 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.74 Release Cohort (2026-06-21)
+
+A single-universe convenience setting and a family-creation shortcut, plus a map crash fix, a wikilink-normalization fix for collections and universes, and a follow-up to the place-type hierarchy editor. Notable implementation work:
+
+**Default universe setting ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751)).** A new `defaultUniverse` setting and `getDefaultUniverse` helper in `src/settings.ts` (with a "Default universe" dropdown in Settings → Places, populated via the universe service) apply a chosen universe to new notes when their universe field is left empty. It is read at create time across all four entity modals — `src/ui/create-person-modal.ts`, `src/ui/create-place-modal.ts`, `src/events/ui/create-event-modal.ts`, and `src/organizations/ui/create-organization-modal.ts`. The person and place modals take `options.settings` and `options.plugin` separately and several call sites pass `plugin` not `settings`, so the helper falls back to `this.plugin?.settings`. For places it applies only to fictional categories (the universe field is category-gated), and the value can still be changed or cleared per note. Defaults to none; first-edit fill was deferred to avoid mixed-vault surprises. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
+**"Create family" in the person right-click menu ([#754](https://github.com/banisterious/obsidian-charted-roots/issues/754)).** The Relationships submenu in `src/plugin/context-menus.ts` now includes a "Create family..." entry that opens the family-creation wizard pre-anchored on the clicked person, skipping the mode picker. `src/ui/family-creation-wizard.ts` gained the seeded-entry flow alongside three finalize fixes: sex-marker values are normalized through `ValueAliasService`; a gender-neutral `parents` fallback is written when a specific parent role can't be determined (and `updatePersonNote` in `src/core/person-note-writer.ts` now writes the `parents` field); and the per-note writes were consolidated to eliminate a `processFrontMatter` race. Requested by [@pawel-k1200](https://github.com/pawel-k1200).
+
+**Coerce non-text `event_type` before alias resolution ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)).** A `cr_type: event` note with an `event_type` that YAML parsed as a non-string (e.g. a bare number `event_type: 1850`) reached `ValueAliasService.resolve` and crashed on `.toLowerCase`, so the whole map failed to load. `resolve` in `src/core/value-alias-service.ts` now coerces its `unknown` input; `src/events/services/event-service.ts` reads `cr_id`, `title`, and `event_type` through `fmToString`; and `src/events/life-events-parser.ts` gains a `coerceLifeEventText` guard. Surfaced by the improved error reporting added in v0.22.73; reported by [@tenephor](https://github.com/tenephor).
+
+**Normalize wikilink syntax in collection and universe values ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755)).** A `collection` or `universe` entered as a wikilink (`[[Harra]]`) was treated as distinct from the plain (`Harra`) or aliased (`[[Harra|Harra]]`) form, so the same value appeared multiple times in lists and filters, showed raw brackets, and could even produce a self-connection. A new `normalizeLabelValue` in `src/utils/wikilink-resolver.ts` unwraps wikilink syntax to the bare label; it is applied wherever these values are gathered — `src/core/family-graph.ts`, `src/core/place-graph.ts`, `src/maps/map-data-service.ts`, and `src/ui/create-map-wizard-modal.ts`. Plain text labels containing a slash (e.g. `Cook/Server`) are left untouched. Reported by [@lomarcanys](https://github.com/lomarcanys).
+
+**Place-type insert-above/tie prompt now applies ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up).** The insert-above/tie prompt added in v0.22.73 computed the result but didn't persist it in some paths; `src/places/ui/place-type-editor-modal.ts` now actually applies the chosen push-down. The create/edit place-type modal also gains a live hierarchy preview, and the row controls in `src/places/ui/place-type-manager-card.ts` are rounded out with trash and eye icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Files created:** none. Suite total 1587 across 139 suites.
 
 ---
 

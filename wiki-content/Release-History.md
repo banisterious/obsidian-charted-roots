@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.74 Round-Up: Default Universe, Create Family, and a Map Crash Fix](#v02274-round-up-default-universe-create-family-and-a-map-crash-fix-v02274)
   - [v0.22.73 Round-Up: Worldbuilding and Maps — Marriage Type, Friendlier Place Hierarchies, and Real-World/Fictional Map Separation](#v02273-round-up-worldbuilding-and-maps--marriage-type-friendlier-place-hierarchies-and-real-worldfictional-map-separation-v02273)
   - [v0.22.72 Round-Up: Two 0.22.71 Regressions, a Timeline Crash, and Place-Type Reorder Refinements](#v02272-round-up-two-02271-regressions-a-timeline-crash-and-place-type-reorder-refinements-v02272)
   - [v0.22.71 Round-Up: Place Type Management Overhaul and Display Names Everywhere](#v02271-round-up-place-type-management-overhaul-and-display-names-everywhere-v02271)
@@ -205,6 +206,22 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.74 Round-Up: Default Universe, Create Family, and a Map Crash Fix (v0.22.74)
+
+A worldbuilding-convenience release. A new default universe applies itself to new notes so single-universe vaults stop typing it on every entity, the person right-click menu gains a one-click route into the family-creation wizard, and a cluster of fixes clears a map crash and a collection/universe duplication. The place-type hierarchy editor's insert-above choice from 0.22.73 now reliably takes effect.
+
+**Added: Default universe setting** ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751)): A new "Default universe" setting (Settings → Places) applies a chosen universe to new people, places, events, and organizations when their universe field is left empty — so working in a single universe no longer means typing it on every note. For places it applies only to fictional categories, and you can still change or clear it per note. Defaults to none. Requested by [@doctorwodka](https://github.com/doctorwodka).
+
+**Added: "Create family" in the person right-click menu** ([#754](https://github.com/banisterious/obsidian-charted-roots/issues/754)): The Relationships submenu on a person note now includes a "Create family..." entry that opens the family-creation wizard pre-anchored on that person — skipping the mode picker so you go straight to adding their spouses, children, and parents. The wizard's finalize step also gained reliability fixes: sex markers are normalized consistently, a gender-neutral parent link is written when a specific role can't be determined, and per-note writes are consolidated to avoid a save race. Requested by [@pawel-k1200](https://github.com/pawel-k1200).
+
+**Fix: Map refresh could crash on an event with a non-text type** ([#746](https://github.com/banisterious/obsidian-charted-roots/issues/746)): If a `cr_type: event` note had an `event_type` that wasn't plain text — for example a bare number like `event_type: 1850`, which YAML reads as a number — opening the map failed to load any data ("Failed to refresh map data"). Event type, title, and id values are now read as text wherever they're used, so a stray non-text value is handled gracefully instead of breaking the whole map. Surfaced by the improved error reporting added in 0.22.73; reported by [@tenephor](https://github.com/tenephor).
+
+**Fix: Collections and universes no longer duplicate when entered as wikilinks** ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755)): A `collection` or `universe` value typed as a wikilink (e.g. `[[Harra]]`) was treated as different from the plain form (`Harra`) or an aliased form (`[[Harra|Harra]]`), so the same collection/universe appeared multiple times in lists, filters, and dropdowns, showed raw `[[ ]]` brackets, and could even produce a collection "connection" to itself. These values are now normalized wherever they're gathered, so each collection/universe is counted once no matter how it was typed. Plain text labels like `Cook/Server` are left untouched. Reported by [@lomarcanys](https://github.com/lomarcanys).
+
+**Fix: Place-type insert-above choice now takes effect** ([#734](https://github.com/banisterious/obsidian-charted-roots/issues/734) follow-up): The "insert above and push the lower types down" choice added in 0.22.73 computed the result but didn't always apply it. It now reliably re-levels the affected types. The create/edit place-type modal also shows a live preview of where the new type lands in the hierarchy, and the per-row controls are rounded out with delete and show/hide icons. Follow-up from testing by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Stability-window impact:** v0.22.74's changes are additive items (the default universe setting and the "Create family" menu entry) plus bug fixes (the map non-text-type crash, the collection/universe wikilink duplication, and the place-type insert-above follow-up), with no breaking changes, all within the v0.22.59 stability window, so the window holds at its v0.22.59 anchor (2026-06-02).
 
 ### v0.22.73 Round-Up: Worldbuilding and Maps — Marriage Type, Friendlier Place Hierarchies, and Real-World/Fictional Map Separation (v0.22.73)
 
