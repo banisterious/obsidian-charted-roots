@@ -139,7 +139,16 @@ export function normalizeLabelValue(value: unknown): string {
 			.filter(entry => entry.length > 0)
 			.join(', ');
 	}
-	const str = typeof value === 'string' ? value : String(value);
+	// Coerce only primitives; an object label is meaningless here and must not
+	// stringify to "[object Object]" (also satisfies no-base-to-string).
+	let str: string;
+	if (typeof value === 'string') {
+		str = value;
+	} else if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+		str = String(value);
+	} else {
+		return '';
+	}
 	if (!str) return '';
 	return str
 		.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_match, target: string, alias?: string) =>
