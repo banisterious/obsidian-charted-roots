@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.75] - 2026-06-23
+
+A worldbuilding- and data-quality-focused release. GEDCOM import gains per-format control over how ambiguous and event-labelled dates are read, living characters now appear in record superlatives (measured against a new per-universe current date), and a Data Quality check finds and one-click-fixes type fields that were stored as numbers or dates. Alongside fixes for hand-grouped family merging in the Collections tab, default-universe application outside the Create Person modal, post-create relationship actions, and multi-value collection handling.
+
 ### Added
 
 - **Data Quality check for mistyped property values** ([#758](https://github.com/banisterious/obsidian-charted-roots/issues/758)): a new "Fix mistyped property values" batch operation in the Data Quality tab scans entity notes for type fields (`cr_type`, `event_type`, `place_category`, `org_type`, `source_type`) that were stored as a number or date instead of text — for example `event_type: 1850`, which YAML reads as a number and which previously broke the map refresh. It lists each affected note and value and converts them back to text in one click. Surfaced from a suggestion by [@tenephor](https://github.com/tenephor) in [#746](https://github.com/banisterious/obsidian-charted-roots/issues/746).
