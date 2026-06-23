@@ -19,6 +19,7 @@ import type { DataQualityReport, DataQualityIssue, IssueSeverity, IssueCategory,
 import { EventService } from '../events/services/event-service';
 import { PlaceGeneratorModal } from '../enhancement/ui/place-generator-modal';
 import { FlattenNestedPropertiesModal } from './flatten-nested-properties-modal';
+import { FixMistypedValuesModal } from './fix-mistyped-values-modal';
 import { BulkMediaLinkModal } from '../core/ui/bulk-media-link-modal';
 import { TemplateSnippetsModal } from './template-snippets-modal';
 import { getErrorMessage } from '../core/error-utils';
@@ -325,6 +326,18 @@ export function renderDataQualityTab(options: DataQualityTabOptions): void {
 			.setCta()
 			.onClick(() => {
 				new FlattenNestedPropertiesModal(app).open();
+			})
+		);
+
+	// Fix mistyped property values (#758)
+	new Setting(batchContent)
+		.setName('Fix mistyped property values')
+		.setDesc('Convert type fields stored as a number or date (e.g., event_type: 1850) back to text')
+		.addButton(btn => btn
+			.setButtonText('Open')
+			.setCta()
+			.onClick(() => {
+				new FixMistypedValuesModal(app).open();
 			})
 		);
 
