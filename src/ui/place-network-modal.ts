@@ -3,7 +3,7 @@
  * Visualizes place hierarchy as an interactive network/tree diagram
  */
 
-import { App, Modal, Setting } from 'obsidian';
+import { App, Modal, DropdownComponent, ToggleComponent } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
 import { PlaceNode, PlaceCategory } from '../models/place';
@@ -48,6 +48,7 @@ export class PlaceNetworkModal extends Modal {
 	private colorMode: ColorMode = 'category';
 	private showMigrations: boolean = false;
 	private svgContainer?: HTMLElement;
+	private legendContainer?: HTMLElement;
 	private personCounts: Map<string, number> = new Map();
 
 	constructor(app: App) {
@@ -167,44 +168,51 @@ export class PlaceNetworkModal extends Modal {
 			return;
 		}
 
-		// Controls
+		// Controls. Built from plain label + component groups rather than
+		// `Setting` rows: Obsidian's `.setting-item` adds a divider border and
+		// 16px of top padding to every row after the first, which staggered this
+		// horizontal toolbar and resisted being overridden away. Plain groups
+		// line up cleanly (#767).
 		const controlsRow = contentEl.createDiv({ cls: 'crc-network-controls' });
 
-		// View mode selector
-		new Setting(controlsRow)
-			.setName('Layout')
-			.addDropdown(dropdown => dropdown
-				.addOption('hierarchy', 'Tree')
-				.addOption('radial', 'Radial')
-				.setValue(this.viewMode)
-				.onChange((value: ViewMode) => {
-					this.viewMode = value;
-					this.renderNetwork();
-				}));
+		// Layout selector
+		const layoutGroup = controlsRow.createDiv({ cls: 'crc-network-control' });
+		layoutGroup.createSpan({ cls: 'crc-network-control-label', text: 'Layout' });
+		new DropdownComponent(layoutGroup)
+			.addOption('hierarchy', 'Tree')
+			.addOption('radial', 'Radial')
+			.setValue(this.viewMode)
+			.onChange((value: string) => {
+				this.viewMode = value as ViewMode;
+				this.renderNetwork();
+			});
 
 		// Color mode selector
-		new Setting(controlsRow)
-			.setName('Color by')
-			.addDropdown(dropdown => dropdown
-				.addOption('category', 'Category')
-				.addOption('type', 'Place type')
-				.addOption('depth', 'Depth')
-				.setValue(this.colorMode)
-				.onChange((value: ColorMode) => {
-					this.colorMode = value;
-					this.renderNetwork();
-				}));
+		const colorGroup = controlsRow.createDiv({ cls: 'crc-network-control' });
+		colorGroup.createSpan({ cls: 'crc-network-control-label', text: 'Color by' });
+		new DropdownComponent(colorGroup)
+			.addOption('category', 'Category')
+			.addOption('type', 'Place type')
+			.addOption('depth', 'Depth')
+			.setValue(this.colorMode)
+			.onChange((value: string) => {
+				this.colorMode = value as ColorMode;
+				this.renderNetwork();
+				// The legend maps colors to the selected mode, so it has to
+				// rebuild when "Color by" changes (#767).
+				this.renderLegend();
+			});
 
 		// Show migrations toggle (only if there are migration flows)
 		if (this.migrationFlows.length > 0) {
-			new Setting(controlsRow)
-				.setName('Show migrations')
-				.addToggle(toggle => toggle
-					.setValue(this.showMigrations)
-					.onChange((value: boolean) => {
-						this.showMigrations = value;
-						this.renderNetwork();
-					}));
+			const migrationGroup = controlsRow.createDiv({ cls: 'crc-network-control' });
+			migrationGroup.createSpan({ cls: 'crc-network-control-label', text: 'Show migrations' });
+			new ToggleComponent(migrationGroup)
+				.setValue(this.showMigrations)
+				.onChange((value: boolean) => {
+					this.showMigrations = value;
+					this.renderNetwork();
+				});
 		}
 
 		// Network container
@@ -213,8 +221,10 @@ export class PlaceNetworkModal extends Modal {
 		// Initial render
 		this.renderNetwork();
 
-		// Legend
-		this.renderLegend(contentEl);
+		// Legend — kept in its own container so it can be rebuilt in place when
+		// the "Color by" mode changes (#767).
+		this.legendContainer = contentEl.createDiv();
+		this.renderLegend();
 	}
 
 	onClose() {
@@ -596,8 +606,10 @@ export class PlaceNetworkModal extends Modal {
 	/**
 	 * Render the legend
 	 */
-	private renderLegend(container: HTMLElement): void {
-		const legend = container.createDiv({ cls: 'crc-network-legend' });
+	private renderLegend(): void {
+		if (!this.legendContainer) return;
+		this.legendContainer.empty();
+		const legend = this.legendContainer.createDiv({ cls: 'crc-network-legend' });
 
 		if (this.colorMode === 'category') {
 			const categories: PlaceCategory[] = ['real', 'historical', 'disputed', 'legendary', 'mythological', 'fictional'];

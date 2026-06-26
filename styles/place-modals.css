@@ -710,20 +710,25 @@
 
 .crc-network-controls {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.crc-network-controls .setting-item {
-  border: none;
-  padding: 0;
-  flex: 0 0 auto;
+/* Each control is a plain label + dropdown/toggle group, vertically centered
+   so the toolbar lines up regardless of control height (#767). */
+.crc-network-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.crc-network-controls .setting-item-info {
-  padding-right: 8px;
+.crc-network-control-label {
+  color: var(--text-normal);
+  white-space: nowrap;
 }
 
 .crc-place-network {
