@@ -7,7 +7,8 @@
 import { App, Modal, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
-import { PlaceCategory } from '../models/place';
+import { PlaceCategory, getPlaceCategoryLabel } from '../models/place';
+import { getPlaceTypeDisplayName } from '../places/constants/default-place-types';
 import { FolderFilterService } from '../core/folder-filter';
 import { CreatePlaceModal } from './create-place-modal';
 import type { CanvasRootsSettings } from '../settings';
@@ -395,20 +396,26 @@ export class PlacePickerModal extends Modal {
 		// Meta info
 		const metaInfo = card.createDiv({ cls: 'crc-picker-item__meta' });
 
-		// Show place type if available
+		// Show place type if available. Resolve the slug id to its display name
+		// so the badge reads "Astro sector", not "astro_sector" (#770).
 		if (place.placeType) {
 			const typeBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
 			const typeIcon = createLucideIcon('layers', 12);
 			typeBadge.appendChild(typeIcon);
-			typeBadge.appendText(place.placeType);
+			typeBadge.appendText(getPlaceTypeDisplayName(
+				place.placeType,
+				this.settings?.customPlaceTypes,
+				this.settings?.placeTypeCustomizations
+			));
 		}
 
-		// Show category if not 'real' (default)
+		// Show category if not 'real' (default). Use the category's display
+		// label rather than its internal id (#770).
 		if (place.category && place.category !== 'real') {
 			const categoryBadge = metaInfo.createDiv({ cls: 'crc-picker-badge' });
 			const categoryIcon = createLucideIcon('globe', 12);
 			categoryBadge.appendChild(categoryIcon);
-			categoryBadge.appendText(place.category);
+			categoryBadge.appendText(getPlaceCategoryLabel(place.category));
 		}
 
 		// Fallback: show cr_id if no other metadata

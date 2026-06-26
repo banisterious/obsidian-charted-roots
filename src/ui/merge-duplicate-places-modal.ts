@@ -7,6 +7,7 @@
 import { App, ButtonComponent, Menu, Modal, Notice, TFile } from 'obsidian';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
+import { getPlaceTypeDisplayName } from '../places/constants/default-place-types';
 import { PlaceNode, computeMergedHistoricalNames, toFlatHistoricalNames } from '../models/place';
 import type { CanvasRootsSettings } from '../settings';
 import { FolderFilterService } from '../core/folder-filter';
@@ -502,7 +503,8 @@ export class MergeDuplicatePlacesModal extends Modal {
 				// Place type
 				if (place.placeType) {
 					metaEl.createEl('span', {
-						text: place.placeType,
+						// Display name, not the raw slug id (#770).
+						text: getPlaceTypeDisplayName(place.placeType),
 						cls: 'crc-badge crc-badge--small'
 					});
 				}

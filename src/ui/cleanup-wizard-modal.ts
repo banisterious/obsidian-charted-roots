@@ -37,6 +37,7 @@ import type { CleanupWizardPersistedState } from '../settings';
 import { findPlaceNameVariants, findDuplicatePlacesByFullName, mergeDuplicatePlaces, type PlaceVariantMatch, type PlaceDuplicateGroup } from './standardize-place-variants-modal';
 import { GeocodingService, type GeocodingResult } from '../maps/services/geocoding-service';
 import { PlaceGraphService } from '../core/place-graph';
+import { getPlaceTypeDisplayName } from '../places/constants/default-place-types';
 import { createPlaceNote, updatePlaceNote, type PlaceData } from '../core/place-note-writer';
 import type { PlaceNode } from '../models/place';
 import { SourceMigrationService, type IndexedSourceNote } from '../sources/services/source-migration-service';
@@ -2719,7 +2720,9 @@ export class CleanupWizardModal extends Modal {
 			setIcon(iconEl, 'map-pin');
 			item.createSpan({ text: place.name, cls: 'crc-cleanup-hierarchy-list-name' });
 			if (place.placeType) {
-				item.createSpan({ text: ` (${place.placeType})`, cls: 'crc-cleanup-hierarchy-list-type' });
+				// Show the place type's display name, not the raw slug id (#770).
+				const typeLabel = getPlaceTypeDisplayName(place.placeType, this.plugin.settings.customPlaceTypes, this.plugin.settings.placeTypeCustomizations);
+				item.createSpan({ text: ` (${typeLabel})`, cls: 'crc-cleanup-hierarchy-list-type' });
 			}
 		}
 

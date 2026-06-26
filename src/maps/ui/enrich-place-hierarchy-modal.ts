@@ -10,6 +10,7 @@
 import { App, Modal, Notice, Setting, TFile } from 'obsidian';
 import { GeocodingService } from '../services/geocoding-service';
 import { PlaceGraphService } from '../../core/place-graph';
+import { getPlaceTypeDisplayName } from '../../places/constants/default-place-types';
 import { createPlaceNote, updatePlaceNote, PlaceData } from '../../core/place-note-writer';
 import type { PlaceNode, PlaceType } from '../../models/place';
 import { setLucideIcon, createLucideIcon } from '../../ui/lucide-icons';
@@ -390,7 +391,8 @@ export class EnrichPlaceHierarchyModal extends Modal {
 			// Show place type if available
 			if (place.placeType) {
 				const typeSpan = item.createSpan({ cls: 'cr-enrich-preview-type cr-text-muted' });
-				typeSpan.textContent = ` (${place.placeType})`;
+				// Show the place type's display name, not the raw slug id (#770).
+				typeSpan.textContent = ` (${getPlaceTypeDisplayName(place.placeType)})`;
 			}
 		}
 	}
