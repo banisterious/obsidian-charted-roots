@@ -1196,6 +1196,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
+/* The container's own `display: flex` has the same specificity as the shared
+   `.cr-hidden { display: none }` utility but loads later, so `.cr-hidden`
+   alone can't hide it — the slider stayed visible (and stuck on the stale
+   1800-2000 real-world bounds) even though it defaults to disabled and is
+   only meant to appear after the Timeline toggle. Scope the hide to this
+   container so the toggle actually hides it (#764). */
+.cr-map-time-slider-container.cr-hidden {
+  display: none;
+}
+
 /* Year display */
 .cr-map-time-year {
   display: flex;
