@@ -924,3 +924,25 @@ export function coordsBelongToCRS(
 	if (hasPixel && coords.lat === 0 && coords.lng === 0) return false;
 	return true;
 }
+
+/**
+ * Parse a Map view year-filter input ("From year" / "To year") to a signed
+ * canonical year. The map's events resolve to signed canonical years (fictional
+ * BBY is negative, ABY positive), so a number-only field that filtered against
+ * a bare integer dropped every fictional event off the map (#765). The input is
+ * text, so a fictional-era value like `"10 ABY"` / `"896 BBY"` can be entered
+ * and is resolved through `parseToYear` (the DateService) to the same canonical
+ * year the events use; a bare number falls back to an integer parse so
+ * real-world years keep working, and blank input clears the bound.
+ */
+export function parseYearFilterValue(
+	raw: string,
+	parseToYear: (value: string) => number | null
+): number | undefined {
+	const value = raw.trim();
+	if (!value) return undefined;
+	const parsed = parseToYear(value);
+	if (parsed !== null) return parsed;
+	const fallback = parseInt(value, 10);
+	return Number.isNaN(fallback) ? undefined : fallback;
+}

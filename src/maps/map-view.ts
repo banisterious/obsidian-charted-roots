@@ -31,7 +31,7 @@ import type {
 	JourneyPath,
 	JourneyWaypoint
 } from './types/map-types';
-import { getJourneyWaypointEventLabel } from './types/map-types';
+import { getJourneyWaypointEventLabel, parseYearFilterValue } from './types/map-types';
 
 const logger = getLogger('MapView');
 
@@ -342,17 +342,22 @@ export class MapView extends ItemView {
 			void this.refreshData();
 		});
 
-		// Year range
+		// Year range. Text (not number) inputs so fictional-era dates like
+		// "10 ABY" / "896 BBY" can be entered — a number-only field can't, and
+		// the events themselves resolve to signed canonical years, so a bare
+		// number filtered every fictional event off the map (#765).
+		const yearHint = 'Year — e.g. 1850, or a fictional era like 10 ABY / 896 BBY';
 		const yearFromInput = centerSection.createEl('input', {
 			cls: 'cr-map-input',
 			attr: {
-				type: 'number',
+				type: 'text',
 				placeholder: 'From year',
-				'aria-label': 'From year'
+				'aria-label': 'From year',
+				title: yearHint
 			}
 		});
 		yearFromInput.addEventListener('change', () => {
-			this.filters.yearFrom = yearFromInput.value ? parseInt(yearFromInput.value) : undefined;
+			this.filters.yearFrom = this.parseYearFilterInput(yearFromInput.value);
 			void this.refreshData();
 		});
 
@@ -361,13 +366,14 @@ export class MapView extends ItemView {
 		const yearToInput = centerSection.createEl('input', {
 			cls: 'cr-map-input',
 			attr: {
-				type: 'number',
+				type: 'text',
 				placeholder: 'To year',
-				'aria-label': 'To year'
+				'aria-label': 'To year',
+				title: yearHint
 			}
 		});
 		yearToInput.addEventListener('change', () => {
-			this.filters.yearTo = yearToInput.value ? parseInt(yearToInput.value) : undefined;
+			this.filters.yearTo = this.parseYearFilterInput(yearToInput.value);
 			void this.refreshData();
 		});
 
@@ -1256,6 +1262,21 @@ export class MapView extends ItemView {
 			activateMapView: (mapId?: string, forceNew?: boolean) => Promise<void>
 		};
 		void pluginInstance.activateMapView(undefined, true);
+	}
+
+	/**
+	 * Resolve a "From year" / "To year" filter input to a signed canonical year,
+	 * so fictional-era values ("10 ABY", "896 BBY") match the canonical years the
+	 * events carry instead of filtering every fictional event off the map (#765).
+	 * Parses through the DateService in the active universe; a bare number falls
+	 * back to an integer parse, and blank input clears the bound.
+	 */
+	private parseYearFilterInput(raw: string): number | undefined {
+		const dateService = this.plugin.getDateService?.();
+		return parseYearFilterValue(raw, (value) => {
+			const parsed = dateService?.parseDate(value, this.filters.universe);
+			return parsed && parsed.year !== null ? parsed.year : null;
+		});
 	}
 
 	// =========================================================================
