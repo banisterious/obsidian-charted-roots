@@ -4,6 +4,7 @@ This document contains detailed implementation notes for significant features. F
 
 ## Table of Contents
 
+- [v0.22.76 Release Cohort](#v02276-release-cohort-2026-06-25)
 - [v0.22.75 Release Cohort](#v02275-release-cohort-2026-06-23)
 - [v0.22.74 Release Cohort](#v02274-release-cohort-2026-06-21)
 - [v0.22.73 Release Cohort](#v02273-release-cohort-2026-06-20)
@@ -28,6 +29,34 @@ This document contains detailed implementation notes for significant features. F
 - [Entity Profile View — Inline Editing](#entity-profile-view--inline-editing-2026-03-02)
 - [Structured Role Lists for Organizations](#structured-role-lists-for-organizations-2026-02-28)
 - [Mills-Aligned Source Classification](#mills-aligned-source-classification-2026-02-28)
+
+---
+
+## v0.22.76 Release Cohort (2026-06-25)
+
+A reporter-driven bug-fix cohort focused on the Maps, Places, and Collections workflows: ten issues, nine from [@DigitalDreamn](https://github.com/DigitalDreamn) and the journey-map hierarchy fix from [@tenephor](https://github.com/tenephor). Notable implementation work:
+
+**Collection highlights merge hand-grouped families and skip lone notes ([#761](https://github.com/banisterious/obsidian-charted-roots/issues/761) follow-up).** The v0.22.75 #761 ship applied `mergeFamilyComponentsByCollectionName` at the three Collections-tab call sites but missed the analytics surface: `calculateCollectionAnalytics` in `src/services/family-graph.ts` still consumed the raw connected components, so the "Collection highlights" (largest / smallest) and family count reported hand-grouped people as separate one-person families. The analytics now apply the same group-name merge, and the largest/smallest highlights additionally exclude size-1 components (a lone unconnected note rendering as a one-person "Unnamed Family") so they report collections that actually group more than one person. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Dockable Collections list fills height ([#762](https://github.com/banisterious/obsidian-charted-roots/issues/762)).** The dockable Collections view reused the shared `.crc-person-list` styling, whose fixed 400px max-height (sized for the Control Center modal) capped the family list in a wide tab or tall sidebar. A `.cr-collections-view` scope lifts the cap so the list grows to fill the pane like the other dockable views. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Journey-map place hierarchy resolution ([#763](https://github.com/banisterious/obsidian-charted-roots/issues/763)).** On a person's journey map, an event naming a hierarchical location (e.g. "Lebanon, Kansas, United States") mapped to the country rather than the city, because `resolvePlace` substring-matched and collapsed the comma-joined name to the top of the hierarchy — the same class of bug as #614. A new `resolvePlaceNameKey` in `src/maps/place-segments.ts` resolves a hierarchical name to its most specific known place, so journey events land on their actual city while birth/death (already specific) are unaffected. Reported by [@tenephor](https://github.com/tenephor).
+
+**Map timeline slider hidden by default ([#764](https://github.com/banisterious/obsidian-charted-roots/issues/764)).** The slider is gated behind the Timeline button but a styling conflict left it permanently visible — showing stale real-world 1800-2000 bounds with no era labels, ignoring the hide, and not refreshing on Collection-filter change. The fix is a CSS-specificity correction so `.cr-map-time-slider-container.cr-hidden` actually hides the container, with the range re-synced (era-aware for the active map) when it opens and as filters change. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Year-range filter accepts era dates ([#765](https://github.com/banisterious/obsidian-charted-roots/issues/765)).** The Map view's "From year" / "To year" inputs were `type="number"`, so a fictional value like "10 ABY" / "896 BBY" couldn't be entered, and a bare number was compared against the signed canonical years fictional events resolve to — filtering every event off a fictional map. The inputs become `type="text"` and a new `parseYearFilterValue` in `src/maps/map-types.ts` resolves an era date the same way the events do (a plain number still works for real-world maps). Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Place timeline margin and calendar display names ([#766](https://github.com/banisterious/obsidian-charted-roots/issues/766)).** Two parts. The Place timeline card on the Maps tab had its left/right padding zeroed, so the picker and event rows rode the left edge — the horizontal margin is restored to match the surrounding cards. And the calendar filter dropdown (place and person timelines) showed each calendar's internal id (e.g. `star_wars_out_of_universe_calendar`); a new `getCalendarSystemName` in `src/.../calendar-display.ts` resolves the display name, falling back to a readable form of the id for any unnamed calendar. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Place hierarchy legend rebuild + control alignment ([#767](https://github.com/banisterious/obsidian-charted-roots/issues/767)).** In the Place hierarchy visualization, switching "Color by" (Category / Place type / Depth) recolored the chart but left the legend showing the Category colors; the legend now rebuilds to match the selected mode. The control row was also misaligned — fighting the Obsidian `.setting-item` border-top + 16px padding-top staircase via CSS specificity failed, so the three `Setting`-based widgets were rewritten as plain `DropdownComponent` / `ToggleComponent` instances on `.crc-network-control` groups, which vertically centers the Layout / Color by / Show migrations row. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Extract-events toggle/X overlap ([#768](https://github.com/banisterious/obsidian-charted-roots/issues/768)).** In the "Extract events from source" modal, each event's "Include this event" toggle sat directly under the remove (X) button. A `padding-right` on `.crc-extract-event-header` reserves space for the X so the two no longer overlap. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Place type/category display names in picker and modals ([#770](https://github.com/banisterious/obsidian-charted-roots/issues/770)).** The location tags in the "Select place" picker showed internal ids (e.g. `astro_sector`, `fictional`). They now resolve via `getPlaceTypeDisplayName` / `getPlaceCategoryLabel` to the proper name and label, with the same fix applied to the other raw-id surfaces — the enrich place hierarchy preview, the cleanup wizard's hierarchy list, and the merge duplicate places modal. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Places-tab cache-refresh race ([#772](https://github.com/banisterious/obsidian-charted-roots/issues/772)).** Editing a place from the Places tab (e.g. changing its place type) could drop the note from the "Place notes" list until the Control Center was reopened, because the list rebuilt before Obsidian re-indexed the saved note and read stale frontmatter. Both edit paths now `waitForCacheRefresh` before re-rendering. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+Suite total 1642 across 144 suites.
 
 ---
 
