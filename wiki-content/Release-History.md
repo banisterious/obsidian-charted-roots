@@ -9,6 +9,7 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ## Table of Contents
 
 - [v0.22.x](#v022x)
+  - [v0.22.75 Round-Up: GEDCOM Date Interpretation, Living-People Superlatives, and a Mistyped-Value Data Quality Check](#v02275-round-up-gedcom-date-interpretation-living-people-superlatives-and-a-mistyped-value-data-quality-check-v02275)
   - [v0.22.74 Round-Up: Default Universe, Create Family, and a Map Crash Fix](#v02274-round-up-default-universe-create-family-and-a-map-crash-fix-v02274)
   - [v0.22.73 Round-Up: Worldbuilding and Maps — Marriage Type, Friendlier Place Hierarchies, and Real-World/Fictional Map Separation](#v02273-round-up-worldbuilding-and-maps--marriage-type-friendlier-place-hierarchies-and-real-worldfictional-map-separation-v02273)
   - [v0.22.72 Round-Up: Two 0.22.71 Regressions, a Timeline Crash, and Place-Type Reorder Refinements](#v02272-round-up-two-02271-regressions-a-timeline-crash-and-place-type-reorder-refinements-v02272)
@@ -206,6 +207,26 @@ For version-specific changes, see the [CHANGELOG](../CHANGELOG.md) and [GitHub R
 ---
 
 ## v0.22.x
+
+### v0.22.75 Round-Up: GEDCOM Date Interpretation, Living-People Superlatives, and a Mistyped-Value Data Quality Check (v0.22.75)
+
+A worldbuilding- and data-quality-focused release. GEDCOM import gains per-format control over how ambiguous and event-labelled dates are read, living characters now appear in record superlatives measured against a new per-universe current date, and a Data Quality check finds and one-click-fixes type fields that were stored as numbers or dates. Fixes round out the release: hand-grouped families merge in the Collections tab, the default universe reaches people created outside the Create Person modal, post-create relationship actions work immediately, and a multi-value collection no longer blanks the views.
+
+**Added: Data Quality check for mistyped property values** ([#758](https://github.com/banisterious/obsidian-charted-roots/issues/758)): A new "Fix mistyped property values" batch operation in the Data Quality tab scans entity notes for type fields (`cr_type`, `event_type`, `place_category`, `org_type`, `source_type`) that were stored as a number or date instead of text — for example `event_type: 1850`, which YAML reads as a number and which previously broke the map refresh. It lists each affected note and value and converts them back to text in one click. Surfaced from a suggestion by [@tenephor](https://github.com/tenephor) in [#746](https://github.com/banisterious/obsidian-charted-roots/issues/746).
+
+**Added: Living people now appear in record superlatives** ([#749](https://github.com/banisterious/obsidian-charted-roots/issues/749)): The Statistics "Oldest people" record previously ignored anyone without a death date, so a long-lived living character could never top the list. Living people are now aged against a "current date" — today for real-world people, and a new per-universe **current date** (set in the Edit Universe dialog and the universe wizard) for fictional universes — and listed with a "(living)" marker. Real-world living ages are capped to keep a merely-missing death date from looking implausible; fictional universes are uncapped, and `cr_living` always includes a person. Raised by [@JakeTheLemon](https://github.com/JakeTheLemon).
+
+**Added: Choose how ambiguous and non-standard dates are read during GEDCOM import** ([#718](https://github.com/banisterious/obsidian-charted-roots/issues/718)): The import preview now offers per-category date-interpretation controls, with counts so you can see how many dates each choice affects. Ambiguous slash dates (e.g. `05/06/1990`) can be read as day/month or month/day for the whole import, and dates carrying an event label (`Bapt`, `Buried`, …) can be imported or skipped. Leaving the controls untouched keeps the previous defaults. Builds on [#716](https://github.com/banisterious/obsidian-charted-roots/issues/716).
+
+**Fix: Hand-grouped families now merge in the Collections tab** ([#761](https://github.com/banisterious/obsidian-charted-roots/issues/761)): People grouped by a manually-set group name (rather than biological links) appeared as separate one-person families in the Control Center's Collections tab, even though the Person Picker merged them correctly. The Collections tab — and its analytics, like the "smallest" collection — now merge components that share a group name, matching the Person Picker. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: Default universe now applies to people created outside the Create Person modal** ([#751](https://github.com/banisterious/obsidian-charted-roots/issues/751) follow-up): The default universe setting was only applied by the four "Create X" modals, so people created through the Create Family wizard — or added inline from the Edit Person modal — were left without it. Both paths now apply the default universe to brand-new people, matching the modals. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+
+**Fix: "Add to this person" actions no longer fail right after creating a person** ([#757](https://github.com/banisterious/obsidian-charted-roots/issues/757)): After creating a person, clicking Add spouse / Add child / Add parent in the follow-up dialog could fail with "No person context available". The newly created person's id wasn't reliably available yet because the modal waited on Obsidian's metadata cache to catch up. The id is now established when the note is created, so the follow-up actions work immediately. Reported by [@pawel-k1200](https://github.com/pawel-k1200).
+
+**Fix: A multi-value collection no longer blanks the views, and labels render cleanly in more places** ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755) follow-up): A `collection` set to a list of values (e.g. two collection names) caused the collections, people, and family chart views to come up empty. Label normalization now handles list values safely, and the wikilink-to-plain-text cleanup was extended to the Events universe filter, the Organizations universe column, and per-universe statistics counts. Reported by [@lomarcanys](https://github.com/lomarcanys).
+
+**Stability-window impact:** v0.22.75's changes are additive items (the GEDCOM date-interpretation controls, living-people superlatives, and the mistyped-value Data Quality check) plus bug fixes (the Collections-tab family merge, the default-universe follow-up, the post-create relationship actions, and the multi-value collection normalization), with no breaking changes, all within the v0.22.59 stability window, so the window holds at its v0.22.59 anchor (2026-06-02).
 
 ### v0.22.74 Round-Up: Default Universe, Create Family, and a Map Crash Fix (v0.22.74)
 
