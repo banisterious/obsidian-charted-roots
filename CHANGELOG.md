@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+## [0.22.76] - 2026-06-25
+
+A reporter-driven bug-fix release focused on the Maps and Places workflows. The map's timeline slider and year-range filter now work correctly on fictional universes, journey events map to their specific place rather than the whole country, and the Place hierarchy visualization's legend tracks the selected color mode. Place types and categories show their display names instead of internal ids across the place pickers and tools, the Places tab list refreshes promptly after edits, and a cluster of Control Center layout papercuts are cleared.
+
 ### Fixed
 
 - **Collection highlights now merge hand-grouped families and skip lone notes** ([#761](https://github.com/banisterious/obsidian-charted-roots/issues/761) follow-up): the Control Center's "Collection highlights" (largest / smallest collection) and family count still treated people hand-grouped under a shared group name as separate one-person families, so a group could appear as the "smallest collection" with 1 person even though the Detected families table correctly merged it into one. The highlights and family count now apply the same group-name merge as the table. The largest/smallest highlights also no longer surface a single unconnected note (a one-person "Unnamed Family"), so they report the smallest and largest collections that actually group more than one person. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).

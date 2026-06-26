@@ -8,7 +8,7 @@
  * GitHub: https://github.com/banisterious/obsidian-charted-roots
  *
  * BUILD INFORMATION:
- * - Generated: 2026-06-20 14:00:40 UTC
+ * - Generated: 2026-06-26 00:32:53 UTC
  * - Components: 50 files
  * - Build System: Node.js CSS Build Script v1.0.0
  *
@@ -7677,7 +7677,7 @@ settings:
    COMPONENT: PLACE-MODALS.CSS
    ========================================================================== */
 
-/* Component Size: 1271 lines, 25.7 KB */
+/* Component Size: 1276 lines, 25.89 KB */
 
 /* ==========================================================================
    CREATE PLACE MODAL
@@ -8391,20 +8391,25 @@ settings:
 
 .crc-network-controls {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 24px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.crc-network-controls .setting-item {
-  border: none;
-  padding: 0;
-  flex: 0 0 auto;
+/* Each control is a plain label + dropdown/toggle group, vertically centered
+   so the toolbar lines up regardless of control height (#767). */
+.crc-network-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.crc-network-controls .setting-item-info {
-  padding-right: 8px;
+.crc-network-control-label {
+  color: var(--text-normal);
+  white-space: nowrap;
 }
 
 .crc-place-network {
@@ -23450,7 +23455,7 @@ settings:
    COMPONENT: MAP-VIEW.CSS
    ========================================================================== */
 
-/* Component Size: 2264 lines, 50.29 KB */
+/* Component Size: 2274 lines, 50.77 KB */
 
 /* ==========================================================================
    Map View Styles
@@ -24648,6 +24653,16 @@ svg.leaflet-image-layer.leaflet-interactive path {
   padding: var(--cr-spacing-md);
   background: var(--background-secondary);
   border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* The container's own `display: flex` has the same specificity as the shared
+   `.cr-hidden { display: none }` utility but loads later, so `.cr-hidden`
+   alone can't hide it — the slider stayed visible (and stuck on the stale
+   1800-2000 real-world bounds) even though it defaults to disabled and is
+   only meant to appear after the Timeline toggle. Scope the hide to this
+   container so the toggle actually hides it (#764). */
+.cr-map-time-slider-container.cr-hidden {
+  display: none;
 }
 
 /* Year display */
@@ -26389,7 +26404,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
    COMPONENT: EVENTS.CSS
    ========================================================================== */
 
-/* Component Size: 1635 lines, 33.54 KB */
+/* Component Size: 1644 lines, 34.1 KB */
 
 /**
  * Events Styles
@@ -26657,6 +26672,10 @@ svg.leaflet-image-layer.leaflet-interactive path {
 
 .crc-extract-event-header {
   margin-bottom: var(--size-4-2);
+
+  /* Reserve room on the right for the absolutely-positioned remove (X) button,
+     so the "Include this event" toggle doesn't sit underneath it (#768). */
+  padding-right: var(--size-4-8);
 }
 
 .crc-extract-event-header .setting-item {
@@ -27216,7 +27235,12 @@ svg.leaflet-image-layer.leaflet-interactive path {
    ========================================================================== */
 
 .crc-place-timeline-card {
-  padding: var(--size-4-2) 0;
+  /* This class lands on the card's `.crc-card__content`, whose `0 24px 24px`
+     padding gives the section its left/right margin. The earlier `0` here
+     zeroed that horizontal padding, so the place picker and event rows rode
+     the left edge unlike the sibling cards (#766). Keep the small vertical
+     padding but restore the 24px horizontal to match the other cards. */
+  padding: var(--size-4-2) 24px;
 }
 
 .crc-place-timeline-filters {
@@ -35095,7 +35119,7 @@ body.cr-media-linker-active .suggestion-container {
    COMPONENT: COLLECTIONS.CSS
    ========================================================================== */
 
-/* Component Size: 41 lines, 0.73 KB */
+/* Component Size: 52 lines, 1.22 KB */
 
 /**
  * Collections Styles
@@ -35132,6 +35156,17 @@ body.cr-media-linker-active .suggestion-container {
 .cr-cv-content {
   display: flex;
   flex-direction: column;
+}
+
+/* The collections list reuses the Control Center modal's `.crc-person-list`,
+   which is capped at 400px so it scrolls within the modal. In the dockable
+   view the whole view already scrolls, so the cap just freezes the list at
+   400px and leaves the rest of the leaf empty. Lift the cap here so the list
+   grows to its natural height and fills the available space like the other
+   dockable views (#762). */
+.cr-collections-view .crc-person-list {
+  max-height: none;
+  overflow-y: visible;
 }
 
 .cr-collection-row--browse {
@@ -41300,11 +41335,11 @@ body.cr-media-linker-active .suggestion-container {
    ========================================================================== */
 
 /*
- * Build completed: 2026-06-20 14:00:42 UTC
+ * Build completed: 2026-06-26 00:32:54 UTC
  * Components processed: 50
- * Total lines: 40831
- * Total size: 838.23 KB
- * Build duration: 2.8 seconds
+ * Total lines: 40866
+ * Total size: 839.96 KB
+ * Build duration: 1.28 seconds
  *
  * Component breakdown:
  * - variables.css: 80 lines, 2.48 KB
@@ -41314,7 +41349,7 @@ body.cr-media-linker-active .suggestion-container {
  * - settings.css: 148 lines, 4.03 KB
  * - control-center.css: 5710 lines, 107.14 KB
  * - entity-create-modals.css: 1242 lines, 25.67 KB
- * - place-modals.css: 1271 lines, 25.7 KB
+ * - place-modals.css: 1276 lines, 25.89 KB
  * - media-modals.css: 1995 lines, 38.67 KB
  * - import-export-wizard.css: 2092 lines, 39.9 KB
  * - staging-manager.css: 553 lines, 11.33 KB
@@ -41333,10 +41368,10 @@ body.cr-media-linker-active .suggestion-container {
  * - data-quality.css: 1442 lines, 28.84 KB
  * - relationships.css: 583 lines, 11.2 KB
  * - canvas-navigation.css: 674 lines, 14.43 KB
- * - map-view.css: 2264 lines, 50.29 KB
+ * - map-view.css: 2274 lines, 50.77 KB
  * - leaflet-distortable.css: 372 lines, 8.84 KB
  * - date-systems.css: 278 lines, 5.16 KB
- * - events.css: 1635 lines, 33.54 KB
+ * - events.css: 1644 lines, 34.1 KB
  * - timeline-callouts.css: 322 lines, 11.08 KB
  * - organizations.css: 615 lines, 11.55 KB
  * - sources.css: 2809 lines, 56.97 KB
@@ -41346,7 +41381,7 @@ body.cr-media-linker-active .suggestion-container {
  * - universe-wizard.css: 617 lines, 11.13 KB
  * - universes.css: 41 lines, 0.73 KB
  * - universe-entities.css: 186 lines, 4.11 KB
- * - collections.css: 41 lines, 0.73 KB
+ * - collections.css: 52 lines, 1.22 KB
  * - data-quality-view.css: 47 lines, 0.89 KB
  * - family-wizard.css: 641 lines, 13.73 KB
  * - map-wizard.css: 606 lines, 12.67 KB
