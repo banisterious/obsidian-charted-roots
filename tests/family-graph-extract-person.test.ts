@@ -117,3 +117,58 @@ describe('FamilyGraphService.extractPersonNode — non-person cr_type rejection 
 		expect(privates(service).extractPersonNode(file)).toBeNull();
 	});
 });
+
+/**
+ * #755 follow-up — a `group_name` entered as a wikilink (`[[Harra]]`) was read
+ * raw into the person's `collectionName`, so the Collections "Detected families"
+ * list and the Person Picker "Family groups" sidebar rendered the brackets, and
+ * the bracketed/aliased/plain forms merged as separate collections. The
+ * `group_name` read now normalizes wikilink syntax to match the existing
+ * `collection` / `universe` handling. Reported by @lomarcanys.
+ */
+describe('FamilyGraphService.extractPersonNode — group_name wikilink normalization (#755)', () => {
+	it('strips a plain wikilink from the collection name', () => {
+		const { service, app } = makeService();
+		const file = makeFile('people/Arro.md', 'Arro');
+		app.vault.files.set(file.path, file);
+		app.metadataCache._setFrontmatter(file, {
+			cr_id: 'prs-101-aaa-202',
+			cr_type: 'person',
+			name: 'Arro Sin Harrare',
+			group_name: '[[Harra]]',
+		});
+
+		const result = privates(service).extractPersonNode(file) as { collectionName?: string } | null;
+		expect(result?.collectionName).toBe('Harra');
+	});
+
+	it('strips an aliased wikilink from the collection name', () => {
+		const { service, app } = makeService();
+		const file = makeFile('people/Khora.md', 'Khora');
+		app.vault.files.set(file.path, file);
+		app.metadataCache._setFrontmatter(file, {
+			cr_id: 'prs-303-bbb-404',
+			cr_type: 'person',
+			name: 'Khora Ryin Sairris',
+			group_name: '[[Saer|Saer]]',
+		});
+
+		const result = privates(service).extractPersonNode(file) as { collectionName?: string } | null;
+		expect(result?.collectionName).toBe('Saer');
+	});
+
+	it('leaves a plain-text collection name untouched', () => {
+		const { service, app } = makeService();
+		const file = makeFile('people/Plain.md', 'Plain');
+		app.vault.files.set(file.path, file);
+		app.metadataCache._setFrontmatter(file, {
+			cr_id: 'prs-505-ccc-606',
+			cr_type: 'person',
+			name: 'Plain Person',
+			group_name: 'Angarath',
+		});
+
+		const result = privates(service).extractPersonNode(file) as { collectionName?: string } | null;
+		expect(result?.collectionName).toBe('Angarath');
+	});
+});

@@ -12,6 +12,10 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 
 ## [Unreleased]
 
+### Fixed
+
+- **Family names and universe values render cleanly in the Collections tab, person picker, and orphan universe list** ([#755](https://github.com/banisterious/obsidian-charted-roots/issues/755) follow-up): a `group_name` or `universe` entered as a wikilink (e.g. `[[Harra]]`) still showed its raw `[[ ]]` brackets in the Control Center's "Detected families" list, the Select person modal's "Family groups" sidebar, and the Universes tab's "Orphan universe values" list. A universe written in different wikilink forms (plain, aliased, bracketed) was also counted as several separate orphan values. These surfaces now apply the same wikilink cleanup used elsewhere, so the names read cleanly and the duplicate orphan buckets merge into one. Reported by [@lomarcanys](https://github.com/lomarcanys).
+
 ## [0.22.76] - 2026-06-25
 
 A reporter-driven bug-fix release focused on the Maps and Places workflows. The map's timeline slider and year-range filter now work correctly on fictional universes, journey events map to their specific place rather than the whole country, and the Place hierarchy visualization's legend tracks the selected color mode. Place types and categories show their display names instead of internal ids across the place pickers and tools, the Places tab list refreshes promptly after edits, and a cluster of Control Center layout papercuts are cleared.

@@ -1924,9 +1924,11 @@ export class FamilyGraphService {
 		const rawSex = this.resolveProperty<string>(fm, 'sex') || this.resolveProperty<string>(fm, 'gender') || this.resolveProperty<string>(fm, 'gender_identity');
 		const sex = this.resolveGender(rawSex);
 		const pronouns = this.resolveProperty<string | string[]>(fm, 'pronouns');
-		const collectionName = this.resolveProperty<string>(fm, 'group_name');
 		// Normalize wikilink syntax so [[Harra]] / Harra / [[Harra|Harra]] aren't
-		// treated as different collections/universes downstream (#755).
+		// treated as different collections/universes downstream, and so the family
+		// name renders cleanly in the Collections tab and Person Picker (#755).
+		const rawCollectionName = this.resolveProperty<string>(fm, 'group_name');
+		const collectionName = rawCollectionName ? normalizeLabelValue(rawCollectionName) : rawCollectionName;
 		const rawCollection = this.resolveProperty<string>(fm, 'collection');
 		const collection = rawCollection ? normalizeLabelValue(rawCollection) : rawCollection;
 		const rawUniverse = this.resolveProperty<string>(fm, 'universe');

@@ -25,6 +25,7 @@ import { getLogger } from '../../core/logging';
 import { isUniverseNote } from '../../utils/note-type-detection';
 import { sanitizeName } from '../../utils/name-sanitization';
 import { waitForCacheRefresh } from '../../utils/cache-utils';
+import { normalizeLabelValue } from '../../utils/wikilink-resolver';
 
 const logger = getLogger('UniverseService');
 
@@ -499,8 +500,13 @@ export class UniverseService {
 			const cache = this.app.metadataCache.getFileCache(file);
 			const fm = cache?.frontmatter;
 			if (fm?.universe) {
-				const value = String(fm.universe);
-				references.set(value, (references.get(value) || 0) + 1);
+				// Normalize wikilink syntax so [[Lands of the Undying]],
+				// [[Lands of the Undying|Lands of the Undying]], and the plain form
+				// collapse to a single reference instead of separate orphan buckets (#755).
+				const value = normalizeLabelValue(fm.universe);
+				if (value) {
+					references.set(value, (references.get(value) || 0) + 1);
+				}
 			}
 		}
 
@@ -560,7 +566,9 @@ export class UniverseService {
 		for (const file of files) {
 			const cache = this.app.metadataCache.getFileCache(file);
 			const fm = cache?.frontmatter;
-			if (fm?.universe !== universeValue) continue;
+			// Compare against the normalized form so a wikilinked reference matches
+			// the normalized orphan key gathered in getAllUniverseReferences (#755).
+			if (!fm?.universe || normalizeLabelValue(fm.universe) !== universeValue) continue;
 
 			const crType = fm.cr_type || fm.type;
 			switch (crType) {
