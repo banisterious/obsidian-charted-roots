@@ -77,7 +77,7 @@ export function renderPlacesTab(
 					placeGraph: plugin.createPlaceGraphService(),
 					settings: plugin.settings,
 					plugin,
-					onCreated: () => showTab('places')
+					onCreated: (file) => rerenderAfterPlaceChange(plugin, file, () => showTab('places'))
 				}).open();
 			}));
 
@@ -710,12 +710,13 @@ function renderOtherTools(
  * Open a place note for editing
  */
 /**
- * Re-render the Places tab after a place edit, but only once Obsidian's
- * metadata cache reflects the saved change. Without the wait the list rebuilds
- * from stale frontmatter, so a just-edited place is read with its old type and
- * drops out of the filtered results until the Control Center is reopened (#772).
+ * Re-render the Places tab after a place is created or edited, but only once
+ * Obsidian's metadata cache reflects the change. Without the wait the list
+ * rebuilds from stale frontmatter, so a just-edited place is read with its old
+ * type and drops out of the filtered results, and a just-created place is
+ * missing entirely, until the Control Center is reopened (#772).
  */
-function rerenderAfterPlaceEdit(plugin: CanvasRootsPlugin, file: TFile, rerender: () => void): void {
+function rerenderAfterPlaceChange(plugin: CanvasRootsPlugin, file: TFile, rerender: () => void): void {
 	void waitForCacheRefresh(plugin.app, file).then(rerender);
 }
 
@@ -738,7 +739,7 @@ function openPlaceForEditing(
 		editFile: file,
 		placeGraph: placeService,
 		settings: plugin.settings,
-		onUpdated: () => rerenderAfterPlaceEdit(plugin, file, () => showTab('places'))
+		onUpdated: () => rerenderAfterPlaceChange(plugin, file, () => showTab('places'))
 	}).open();
 }
 
@@ -1115,7 +1116,7 @@ function loadPlaceList(
 						editFile: file,
 						placeGraph: placeService,
 						settings: plugin.settings,
-						onUpdated: () => rerenderAfterPlaceEdit(plugin, file, () => loadPlaceList(container, plugin, showTab))
+						onUpdated: () => rerenderAfterPlaceChange(plugin, file, () => loadPlaceList(container, plugin, showTab))
 					}).open();
 				}
 			});
@@ -1416,10 +1417,10 @@ function showQuickCreatePlaceModal(
 		placeGraph: plugin.createPlaceGraphService(),
 		settings: plugin.settings,
 		plugin,
-		onCreated: () => {
+		onCreated: (file) => {
 			new Notice(`Created place note: ${placeName}`);
-			// Refresh the Places tab
-			showTab('places');
+			// Refresh the Places tab once the new note is indexed (#772)
+			rerenderAfterPlaceChange(plugin, file, () => showTab('places'));
 		}
 	});
 	modal.open();
