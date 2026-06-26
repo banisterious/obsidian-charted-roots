@@ -16,6 +16,7 @@ import { CANONICAL_GENDERS, BUILTIN_SYNONYMS } from './value-alias-service';
 import { parseMediaRefs } from './media-service';
 import { isSourceNote, isEventNote, isPlaceNote, isOrganizationNote, isProofSummaryNote, isUniverseNote, isCitationNote, isPersonNote } from '../utils/note-type-detection';
 import { computeCollectionDateRange, type DisplayDateRange } from './collection-date-range';
+import { mergeFamilyComponentsByCollectionName } from './family-component-merge';
 import { normalizeLabelValue } from '../utils/wikilink-resolver';
 import type { RawRelationship, FamilyGraphMapping } from '../relationships/types/relationship-types';
 import { getRelationshipType, getAllRelationshipTypesWithCustomizations } from '../relationships/constants/default-relationship-types';
@@ -2603,7 +2604,13 @@ export class FamilyGraphService {
 		}
 
 		const allPeople = Array.from(this.personCache.values());
-		const families = this.findAllFamilyComponents();
+		// Merge hand-grouped families that share a collection name into one
+		// component before deriving analytics, so the "Collection highlights"
+		// (largest/smallest) and the family count match the Collections tab and
+		// the Person Picker instead of counting each isolated member as its own
+		// one-person family (#761 follow-up; the original #761 fix wrapped the
+		// Collections-tab call sites but missed this service-level surface).
+		const families = mergeFamilyComponentsByCollectionName(this.findAllFamilyComponents());
 		const userCollections = this.getUserCollections();
 		const connections = this.detectCollectionConnections();
 
@@ -2671,11 +2678,19 @@ export class FamilyGraphService {
 		const averageSize = collectionSizes.length > 0
 			? Math.round(collectionSizes.reduce((a, b) => a + b, 0) / collectionSizes.length)
 			: 0;
-		const largestCollection = normalizedCollections.length > 0
-			? normalizedCollections.reduce((max, c) => c.size > max.size ? c : max)
+		// The largest/smallest highlights only consider multi-person collections.
+		// A single unconnected note forms a one-person "Unnamed Family" component
+		// that is technically the smallest collection but not a meaningful one to
+		// surface, so size-1 entries are excluded from the highlights (the counts
+		// above still include them). If no multi-person collection exists, the
+		// highlights are omitted rather than falling back to an orphan singleton
+		// (#761 follow-up).
+		const highlightCollections = normalizedCollections.filter(c => c.size > 1);
+		const largestCollection = highlightCollections.length > 0
+			? highlightCollections.reduce((max, c) => c.size > max.size ? c : max)
 			: null;
-		const smallestCollection = normalizedCollections.length > 0
-			? normalizedCollections.reduce((min, c) => c.size < min.size ? c : min)
+		const smallestCollection = highlightCollections.length > 0
+			? highlightCollections.reduce((min, c) => c.size < min.size ? c : min)
 			: null;
 
 		return {
