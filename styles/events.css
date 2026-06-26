@@ -823,7 +823,12 @@
    ========================================================================== */
 
 .crc-place-timeline-card {
-  padding: var(--size-4-2) 0;
+  /* This class lands on the card's `.crc-card__content`, whose `0 24px 24px`
+     padding gives the section its left/right margin. The earlier `0` here
+     zeroed that horizontal padding, so the place picker and event rows rode
+     the left edge unlike the sibling cards (#766). Keep the small vertical
+     padding but restore the 24px horizontal to match the other cards. */
+  padding: var(--size-4-2) 24px;
 }
 
 .crc-place-timeline-filters {

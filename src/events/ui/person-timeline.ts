@@ -12,6 +12,8 @@ import { EventService } from '../services/event-service';
 import { EventNote, getEventType, DATE_PRECISION_LABELS } from '../types/event-types';
 import { formatDisplayDate } from '../../dates';
 import { extractDisplayLabel } from '../../utils/wikilink-resolver';
+import { DEFAULT_DATE_SYSTEMS } from '../../dates/constants/default-date-systems';
+import { getCalendarSystemName } from '../../dates/calendar-display';
 
 /**
  * Extract unique calendar/date system values from events
@@ -184,10 +186,14 @@ export function renderPersonTimeline(
 		const filterSelect = filterContainer.createEl('select', { cls: 'crc-timeline-filter' });
 		filterSelect.createEl('option', { text: 'All calendars', attr: { value: '' } });
 
+		// Resolve each calendar id to its display name so the dropdown shows the
+		// calendar's name rather than its raw id (#766). User systems take
+		// precedence over built-ins on an id clash.
+		const dateSystems = [...(settings.fictionalDateSystems ?? []), ...DEFAULT_DATE_SYSTEMS];
 		for (const calendar of calendars) {
 			const eventsInCalendar = allEvents.filter(e => e.dateSystem === calendar).length;
 			filterSelect.createEl('option', {
-				text: `${calendar} (${eventsInCalendar})`,
+				text: `${getCalendarSystemName(calendar, dateSystems)} (${eventsInCalendar})`,
 				attr: { value: calendar }
 			});
 		}
