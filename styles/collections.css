@@ -35,6 +35,17 @@
   flex-direction: column;
 }
 
+/* The collections list reuses the Control Center modal's `.crc-person-list`,
+   which is capped at 400px so it scrolls within the modal. In the dockable
+   view the whole view already scrolls, so the cap just freezes the list at
+   400px and leaves the rest of the leaf empty. Lift the cap here so the list
+   grows to its natural height and fills the available space like the other
+   dockable views (#762). */
+.cr-collections-view .crc-person-list {
+  max-height: none;
+  overflow-y: visible;
+}
+
 .cr-collection-row--browse {
   cursor: default;
 }

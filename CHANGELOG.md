@@ -15,6 +15,7 @@ when 1.0 ships, GEDCOM round-trip API, BRAT vs. Community Plugins), see
 ### Fixed
 
 - **Collection highlights now merge hand-grouped families and skip lone notes** ([#761](https://github.com/banisterious/obsidian-charted-roots/issues/761) follow-up): the Control Center's "Collection highlights" (largest / smallest collection) and family count still treated people hand-grouped under a shared group name as separate one-person families, so a group could appear as the "smallest collection" with 1 person even though the Detected families table correctly merged it into one. The highlights and family count now apply the same group-name merge as the table. The largest/smallest highlights also no longer surface a single unconnected note (a one-person "Unnamed Family"), so they report the smallest and largest collections that actually group more than one person. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
+- **Collections pane now fills the available space** ([#762](https://github.com/banisterious/obsidian-charted-roots/issues/762)): the dockable Collections view's family list was capped at a fixed height — it reused the Control Center modal's height-limited list — so it stayed small in a wide tab or a tall sidebar instead of expanding to fill the pane like the other dockable views. The list now grows to fill the available area. Reported by [@DigitalDreamn](https://github.com/DigitalDreamn).
 
 ## [0.22.75] - 2026-06-23
 
