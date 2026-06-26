@@ -12,6 +12,7 @@ import { openManageMediaModal } from '../plugin/context-menu-helpers';
 import type { LucideIconName } from './lucide-icons';
 import { createLucideIcon } from './lucide-icons';
 import { PlaceGraphService } from '../core/place-graph';
+import { waitForCacheRefresh } from '../utils/cache-utils';
 import type { PlaceCategory } from '../models/place';
 import { CreatePlaceModal } from './create-place-modal';
 import { CreateMissingPlacesModal } from './create-missing-places-modal';
@@ -708,6 +709,16 @@ function renderOtherTools(
 /**
  * Open a place note for editing
  */
+/**
+ * Re-render the Places tab after a place edit, but only once Obsidian's
+ * metadata cache reflects the saved change. Without the wait the list rebuilds
+ * from stale frontmatter, so a just-edited place is read with its old type and
+ * drops out of the filtered results until the Control Center is reopened (#772).
+ */
+function rerenderAfterPlaceEdit(plugin: CanvasRootsPlugin, file: TFile, rerender: () => void): void {
+	void waitForCacheRefresh(plugin.app, file).then(rerender);
+}
+
 function openPlaceForEditing(
 	plugin: CanvasRootsPlugin,
 	filePath: string | undefined,
@@ -727,7 +738,7 @@ function openPlaceForEditing(
 		editFile: file,
 		placeGraph: placeService,
 		settings: plugin.settings,
-		onUpdated: () => showTab('places')
+		onUpdated: () => rerenderAfterPlaceEdit(plugin, file, () => showTab('places'))
 	}).open();
 }
 
@@ -1104,9 +1115,7 @@ function loadPlaceList(
 						editFile: file,
 						placeGraph: placeService,
 						settings: plugin.settings,
-						onUpdated: () => {
-							loadPlaceList(container, plugin, showTab);
-						}
+						onUpdated: () => rerenderAfterPlaceEdit(plugin, file, () => loadPlaceList(container, plugin, showTab))
 					}).open();
 				}
 			});
