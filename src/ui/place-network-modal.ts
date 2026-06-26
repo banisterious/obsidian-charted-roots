@@ -37,6 +37,58 @@ type ViewMode = 'hierarchy' | 'radial' | 'force';
 type ColorMode = 'category' | 'type' | 'depth';
 
 /**
+ * Colors for each built-in place type, in canonical hierarchy order
+ * (largest → smallest). The legend derives its order and membership from these
+ * keys, so adding a type here surfaces it in both the chart and the legend.
+ * `other` is the fallback for custom/unknown types. (#767)
+ */
+export const PLACE_TYPE_COLORS: Record<string, string> = {
+	planet: '#3F51B5',
+	continent: '#4CAF50',
+	country: '#2196F3',
+	state: '#03A9F4',
+	province: '#00BCD4',
+	region: '#009688',
+	county: '#8BC34A',
+	city: '#FF9800',
+	township: '#CDDC39',
+	town: '#FFC107',
+	village: '#FFEB3B',
+	district: '#795548',
+	parish: '#9E9E9E',
+	castle: '#673AB7',
+	estate: '#E91E63',
+	cemetery: '#607D8B',
+	church: '#9C27B0',
+	other: '#757575'
+};
+
+/** Canonical legend order — every built-in type except the `other` fallback. */
+export const PLACE_TYPE_LEGEND_ORDER = Object.keys(PLACE_TYPE_COLORS).filter(k => k !== 'other');
+
+/**
+ * From the place types present on the chart's nodes, pick the known built-in
+ * types to show in the legend (in canonical order) and whether any
+ * custom/unknown or untyped node is present (rendered with the `other` fallback,
+ * surfaced as a single "Other" legend entry). (#767 follow-up)
+ */
+export function selectPresentPlaceTypes(
+	placeTypes: Array<string | undefined>,
+	knownOrder: string[] = PLACE_TYPE_LEGEND_ORDER
+): { types: string[]; hasOther: boolean } {
+	const present = new Set<string>();
+	let hasOther = false;
+	for (const t of placeTypes) {
+		if (t && knownOrder.includes(t)) {
+			present.add(t);
+		} else {
+			hasOther = true;
+		}
+	}
+	return { types: knownOrder.filter(t => present.has(t)), hasOther };
+}
+
+/**
  * Modal displaying a place network visualization
  */
 export class PlaceNetworkModal extends Modal {
@@ -549,25 +601,7 @@ export class PlaceNetworkModal extends Modal {
 	 * Get color for a place type
 	 */
 	private getTypeColor(placeType?: string): string {
-		const typeColors: Record<string, string> = {
-			continent: '#4CAF50',
-			country: '#2196F3',
-			state: '#03A9F4',
-			province: '#00BCD4',
-			region: '#009688',
-			county: '#8BC34A',
-			city: '#FF9800',
-			town: '#FFC107',
-			village: '#FFEB3B',
-			district: '#795548',
-			parish: '#9E9E9E',
-			castle: '#673AB7',
-			estate: '#E91E63',
-			cemetery: '#607D8B',
-			church: '#9C27B0',
-			other: '#757575'
-		};
-		return typeColors[placeType || 'other'] || '#757575';
+		return PLACE_TYPE_COLORS[placeType || 'other'] || PLACE_TYPE_COLORS.other;
 	}
 
 	/**
@@ -620,12 +654,23 @@ export class PlaceNetworkModal extends Modal {
 				item.createSpan({ text: capitalize(cat) });
 			}
 		} else if (this.colorMode === 'type') {
-			const types = ['country', 'state', 'city', 'town', 'village'];
+			// Build the legend from the place types actually present in the chart,
+			// each colored by getTypeColor, in canonical hierarchy order — so the
+			// legend stays complete as the data changes instead of showing a fixed
+			// short list. Any custom/unknown type (rendered with the fallback
+			// colour) collapses into a single "Other" entry. (#767 follow-up)
+			const { types, hasOther } = selectPresentPlaceTypes(this.nodes.map(n => n.placeType));
 			for (const type of types) {
 				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
 				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
 				dot.style.setProperty('background-color', this.getTypeColor(type));
 				item.createSpan({ text: capitalize(type) });
+			}
+			if (hasOther) {
+				const item = legend.createDiv({ cls: 'crc-network-legend-item' });
+				const dot = item.createSpan({ cls: 'crc-network-legend-dot' });
+				dot.style.setProperty('background-color', this.getTypeColor('other'));
+				item.createSpan({ text: 'Other' });
 			}
 		} else {
 			const gradientItem = legend.createDiv({ cls: 'crc-network-legend-item' });

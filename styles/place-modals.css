@@ -803,7 +803,7 @@
 .crc-network-legend-gradient {
   width: 60px;
   height: 12px;
-  background: linear-gradient(to right, hsl(240deg 70% 50%), hsl(0deg 70% 50%));
+  background: linear-gradient(to right, hsl(240deg 70% 50%), hsl(180deg 70% 50%), hsl(120deg 70% 50%), hsl(60deg 70% 50%), hsl(0deg 70% 50%));
   border-radius: 2px;
   display: inline-block;
 }
