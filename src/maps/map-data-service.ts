@@ -8,6 +8,7 @@
 import { TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { normalizeLabelValue } from '../utils/wikilink-resolver';
+import { resolvePlaceNameKey } from '../utils/place-segments';
 import { getLogger } from '../core/logging';
 import { ValueAliasService } from '../core/value-alias-service';
 import type {
@@ -1261,20 +1262,18 @@ export class MapDataService {
 			if (place) return this.applyCoordinateFallback(place);
 		}
 
-		// Try by name (extract from wikilink if needed)
+		// Try by name (extract from wikilink if needed). Resolve hierarchical
+		// place strings to their most specific known place so an event recorded
+		// as "Lebanon, Kansas, USA" maps to the Lebanon city note rather than
+		// collapsing onto an ancestor like the country (#763).
 		if (placeName) {
 			const linkTarget = this.extractLinkTarget(placeName);
 			const searchName = (linkTarget || placeName).toLowerCase();
 
-			// Search in cache
-			const place = this.placeByNameCache.get(searchName);
-			if (place) return this.applyCoordinateFallback(place);
-
-			// Try partial match (city name without country, etc.)
-			for (const [name, data] of this.placeByNameCache) {
-				if (name.includes(searchName) || searchName.includes(name)) {
-					return this.applyCoordinateFallback(data);
-				}
+			const key = resolvePlaceNameKey(searchName, this.placeByNameCache.keys());
+			if (key) {
+				const place = this.placeByNameCache.get(key);
+				if (place) return this.applyCoordinateFallback(place);
 			}
 		}
 

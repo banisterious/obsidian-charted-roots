@@ -139,3 +139,58 @@ export function placeNamesEqual(aName: string, bName: string): boolean {
 	if (a.length === 0 || a.length !== b.length) return false;
 	return sharedLeafSegmentCount(a, b) === a.length;
 }
+
+/**
+ * Resolve a (possibly hierarchical) place name to the best-matching key from a
+ * set of known place names, preferring the most specific match so a
+ * hierarchical string like `"Lebanon, Kansas, USA"` resolves to the `"Lebanon"`
+ * leaf rather than collapsing onto an ancestor like `"USA"` (#763 — the same
+ * substring-collapse class as #614, here in the map's place lookup).
+ *
+ * Matching, in priority order:
+ *  1. exact full-chain equality;
+ *  2. a known place exactly equal to one of the search name's segments,
+ *     leaf-first, so the city wins over the country;
+ *  3. a substring match (the search is a bare leaf and the known place carries
+ *     the full chain, or vice versa), preferring the longest — most specific —
+ *     match so a hierarchical string never collapses onto a short ancestor.
+ *
+ * Containment in step 3 keeps a diverging jurisdiction apart: `"Lebanon, Kansas,
+ * USA"` does not match a `"Lebanon, Oregon"` note. Returns the matching key
+ * exactly as supplied, or `null`.
+ */
+export function resolvePlaceNameKey(searchName: string, knownNames: Iterable<string>): string | null {
+	const searchSegments = splitPlaceSegments(searchName);
+	if (searchSegments.length === 0) return null;
+
+	const known = [...knownNames];
+
+	// 1. Exact full-chain match.
+	for (const name of known) {
+		if (placeNamesEqual(name, searchName)) return name;
+	}
+
+	// 2. A known place exactly equal to one of the search segments, leaf-first
+	//    (the leaf city resolves before any ancestor tier like the country).
+	for (const segment of searchSegments) {
+		for (const name of known) {
+			if (placeNamesEqual(name, segment)) return name;
+		}
+	}
+
+	// 3. Substring fallback, longest (most specific) wins.
+	const search = normalizeSegment(searchName);
+	let best: string | null = null;
+	let bestLength = 0;
+	for (const name of known) {
+		const candidate = normalizeSegment(name);
+		if (candidate.length === 0) continue;
+		if (candidate.includes(search) || search.includes(candidate)) {
+			if (candidate.length > bestLength) {
+				best = name;
+				bestLength = candidate.length;
+			}
+		}
+	}
+	return best;
+}

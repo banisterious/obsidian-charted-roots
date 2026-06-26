@@ -5,6 +5,7 @@ import {
 	isSameLocationDifferentJurisdiction,
 	isSegmentAncestor,
 	placeNamesEqual,
+	resolvePlaceNameKey,
 } from '../src/utils/place-segments';
 
 /**
@@ -134,5 +135,48 @@ describe('placeNamesEqual (#614)', () => {
 
 	it('returns false on empty input', () => {
 		expect(placeNamesEqual('', '')).toBe(false);
+	});
+});
+
+describe('resolvePlaceNameKey (#763)', () => {
+	// The map place cache is keyed by lowercased place-note names.
+	const cities = ['lebanon', 'kansas', 'united states'];
+
+	it('resolves a hierarchical string to its leaf city, not an ancestor', () => {
+		// The #763 bug: "Lebanon, Kansas, United States" collapsed onto the
+		// "United States" note because it was a substring of the search string.
+		expect(resolvePlaceNameKey('lebanon, kansas, united states', cities)).toBe('lebanon');
+	});
+
+	it('falls back to the most specific available ancestor when the leaf is unknown', () => {
+		expect(resolvePlaceNameKey('smallville, kansas, united states', cities)).toBe('kansas');
+	});
+
+	it('matches an exact full-chain place note', () => {
+		const known = ['lebanon, kansas, united states', 'united states'];
+		expect(resolvePlaceNameKey('lebanon, kansas, united states', known)).toBe('lebanon, kansas, united states');
+	});
+
+	it('resolves a bare leaf search to its full-chain note', () => {
+		const known = ['lebanon, kansas, united states', 'united states'];
+		expect(resolvePlaceNameKey('lebanon', known)).toBe('lebanon, kansas, united states');
+	});
+
+	it('prefers the most specific chain when several share the leaf region', () => {
+		const known = ['united states', 'kansas, united states', 'lebanon, kansas, united states'];
+		expect(resolvePlaceNameKey('lebanon, kansas, united states', known)).toBe('lebanon, kansas, united states');
+	});
+
+	it('does not match a place in a diverging jurisdiction', () => {
+		// "Lebanon, Kansas, USA" must not resolve to a "Lebanon, Oregon" note.
+		expect(resolvePlaceNameKey('lebanon, kansas, united states', ['lebanon, oregon'])).toBeNull();
+	});
+
+	it('returns null for an empty search', () => {
+		expect(resolvePlaceNameKey('', cities)).toBeNull();
+	});
+
+	it('returns null when nothing matches', () => {
+		expect(resolvePlaceNameKey('coruscant', cities)).toBeNull();
 	});
 });
