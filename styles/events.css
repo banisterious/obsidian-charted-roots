@@ -264,6 +264,10 @@
 
 .crc-extract-event-header {
   margin-bottom: var(--size-4-2);
+
+  /* Reserve room on the right for the absolutely-positioned remove (X) button,
+     so the "Include this event" toggle doesn't sit underneath it (#768). */
+  padding-right: var(--size-4-8);
 }
 
 .crc-extract-event-header .setting-item {
