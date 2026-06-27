@@ -74,7 +74,7 @@ import { setIcon, TFile, Notice } from 'obsidian';
 import type CanvasRootsPlugin from '../../main';
 import { getLogger } from '../core/logging';
 import { capitalize } from '../utils/format-utils';
-import { getEventType } from '../events/types/event-types';
+import { getEventType, humanizeEventTypeId, resolveEventTypeLabel } from '../events/types/event-types';
 import type {
 	MapData,
 	MapMarker,
@@ -90,7 +90,7 @@ import type {
 	CRPolyline,
 	CustomMapConfig
 } from './types/map-types';
-import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange, coordsBelongToCRS } from './types/map-types';
+import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange, coordsBelongToCRS, resolveMarkerEventTypeId, getJourneyWaypointEventLabel } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
 
 const logger = getLogger('MapController');
@@ -960,8 +960,13 @@ export class MapController {
 		const showIcon = iconMode === 'icon' || iconMode === 'both';
 		const showText = iconMode === 'text' || iconMode === 'both';
 
+		// A `custom`-resolved marker stashes its real event_type slug in
+		// customLabel, so resolve the type (icon + display name) from that, not
+		// the generic `custom` marker type — otherwise custom/two-word event
+		// types lose their icon and show the raw slug. (#774)
+		const eventTypeId = resolveMarkerEventTypeId(data.type, data.customLabel);
 		const eventType = getEventType(
-			data.type,
+			eventTypeId,
 			(this.settings.customEventTypes || []) as unknown as Parameters<typeof getEventType>[1],
 			this.settings.showBuiltInEventTypes !== false
 		);
@@ -996,12 +1001,12 @@ export class MapController {
 		}
 		const dateText = dateRange ? `: ${dateRange}${ageSuffix}` : '';
 		if (showText) {
-			// For `custom`-resolved events, surface the original raw event type
-			// (or event-note title) instead of the generic `Custom:` label so
-			// the popup carries category context (#466).
-			const typeLabel = data.type === 'custom' && data.customLabel
-				? capitalize(data.customLabel)
-				: capitalize(data.type);
+			// Use the resolved event type's display name (falling back to a
+			// humanized slug for an unregistered type) so custom/two-word event
+			// types show their proper name instead of the raw slug (#774); for
+			// `custom`-resolved events this still carries the original event type
+			// rather than the generic `Custom:` label (#466).
+			const typeLabel = eventType?.name ?? humanizeEventTypeId(eventTypeId);
 			typeRow.createEl('span', {
 				text: `${typeLabel}${dateText}`
 			});
@@ -1354,7 +1359,13 @@ export class MapController {
 				cls: 'cr-journey-waypoint'
 			});
 
-			const eventLabel = capitalize(wp.eventType);
+			// Resolve the waypoint's event type to its display name so custom/
+			// two-word types show their proper name, not the raw slug (#774).
+			const eventLabel = resolveEventTypeLabel(
+				getJourneyWaypointEventLabel(wp),
+				(this.settings.customEventTypes || []) as unknown as Parameters<typeof resolveEventTypeLabel>[1],
+				this.settings.showBuiltInEventTypes !== false
+			);
 			const dateText = wp.year ? ` (${wp.year})` : '';
 			wpEl.createEl('span', {
 				cls: 'cr-journey-waypoint-event',

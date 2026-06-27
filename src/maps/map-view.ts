@@ -32,6 +32,7 @@ import type {
 	JourneyWaypoint
 } from './types/map-types';
 import { getJourneyWaypointEventLabel, parseYearFilterValue } from './types/map-types';
+import { resolveEventTypeLabel } from '../events/types/event-types';
 
 const logger = getLogger('MapView');
 
@@ -1765,7 +1766,11 @@ export class MapView extends ItemView {
 		// Label
 		const label = this.journeyControlsEl.querySelector('[data-id="journey-label"]') as HTMLElement;
 		if (label) {
-			const eventType = getJourneyWaypointEventLabel(waypoint) || 'Event';
+			const eventType = resolveEventTypeLabel(
+				getJourneyWaypointEventLabel(waypoint),
+				(this.plugin.settings.customEventTypes || []) as unknown as Parameters<typeof resolveEventTypeLabel>[1],
+				this.plugin.settings.showBuiltInEventTypes !== false
+			) || 'Event';
 			const place = waypoint.name || '';
 			label.textContent = place ? `${eventType} in ${place}` : eventType;
 		}
@@ -1844,7 +1849,11 @@ export class MapView extends ItemView {
 
 		// Header with event type
 		const header = container.createDiv({ cls: 'cr-journey-rich-popup__header' });
-		const eventLabel = capitalize(getJourneyWaypointEventLabel(waypoint));
+		const eventLabel = resolveEventTypeLabel(
+			getJourneyWaypointEventLabel(waypoint),
+			(this.plugin.settings.customEventTypes || []) as unknown as Parameters<typeof resolveEventTypeLabel>[1],
+			this.plugin.settings.showBuiltInEventTypes !== false
+		);
 		header.createSpan({ text: eventLabel, cls: 'cr-journey-rich-popup__type' });
 
 		if (allWaypoints) {

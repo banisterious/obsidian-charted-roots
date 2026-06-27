@@ -553,6 +553,31 @@ export function getEventType(
 }
 
 /**
+ * Humanize an event type id for display when no registered definition is found
+ * (a custom type the user later deleted, or an event_type slug typed by hand):
+ * `plot_point` → `Plot point`. Mirrors the place-type display-name fallback. (#774)
+ */
+export function humanizeEventTypeId(id: string): string {
+	return id.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+/**
+ * Resolve an event type id to its display name: the registered definition's
+ * name if known, otherwise a humanized form of the id. Used by map pop-ups and
+ * the journey rich pop-up so custom/two-word event types show their display
+ * name instead of the raw slug. (#774)
+ */
+export function resolveEventTypeLabel(
+	typeId: string,
+	customTypes: EventTypeDefinition[] = [],
+	showBuiltIn = true,
+	customizations?: Record<string, Partial<EventTypeDefinition>>
+): string {
+	return getEventType(typeId, customTypes, showBuiltIn, customizations)?.name
+		?? humanizeEventTypeId(typeId);
+}
+
+/**
  * Get all available event types
  * Respects customizations and hidden types
  */

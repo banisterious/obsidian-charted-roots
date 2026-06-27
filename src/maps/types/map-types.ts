@@ -838,6 +838,22 @@ export function getJourneyWaypointEventLabel(
 }
 
 /**
+ * Resolve the underlying event type id for a static map marker. A `custom`-
+ * resolved marker carries its real event_type slug in `customLabel`, so callers
+ * must resolve display name and icon from that rather than the generic `custom`
+ * marker type. Mirrors getJourneyWaypointEventLabel on the marker side. (#774)
+ */
+export function resolveMarkerEventTypeId(
+	type: string,
+	customLabel?: string
+): string {
+	if (type === 'custom' && customLabel) {
+		return customLabel;
+	}
+	return type;
+}
+
+/**
  * Check if a marker type is visible based on layer settings
  */
 export function isMarkerTypeVisible(type: MarkerType, layers: LayerVisibility): boolean {
