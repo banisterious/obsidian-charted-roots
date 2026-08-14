@@ -73,6 +73,7 @@ import type {
 	ResearchReportStatusDistribution
 } from '../types/statistics-types';
 import { DEFAULT_TOP_LIST_LIMIT, CACHE_DEBOUNCE_MS, getGenerationLabel } from '../constants/statistics-constants';
+import { isLivingPerson } from '../../utils/living-status';
 
 /**
  * Service for computing and caching vault statistics
@@ -418,14 +419,14 @@ export class StatisticsService {
 		// the issues notice still reported missing births) (#676).
 		const livingThreshold = this.settings.livingPersonAgeThreshold ?? 100;
 		const currentYear = new Date().getFullYear();
-		const couldBeLiving = (person: PersonNode): boolean => {
-			// A recorded death date means they are not living.
-			if (person.deathDate) return false;
-			// Without a birth year we cannot judge plausible living status.
-			const birthYear = this.extractYear(person.birthDate, person.universe);
-			if (birthYear === null) return false;
-			return currentYear - birthYear < livingThreshold;
-		};
+		const couldBeLiving = (person: PersonNode): boolean => isLivingPerson({
+			// cr_living is authoritative; otherwise fall back to the age threshold (#776).
+			crLiving: person.cr_living,
+			hasDeathDate: !!person.deathDate,
+			birthYear: this.extractYear(person.birthDate, person.universe),
+			currentYear,
+			threshold: livingThreshold
+		});
 
 		const missingBirthDate = people.filter(p => !p.birthDate).length;
 		const livingPeople = people.filter(couldBeLiving).length;

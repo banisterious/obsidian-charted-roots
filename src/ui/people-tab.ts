@@ -79,6 +79,7 @@ interface PersonListItem {
 	name: string;
 	birthDate?: string;
 	deathDate?: string;
+	crLiving?: boolean;
 	birthPlace?: PlaceInfo;
 	deathPlace?: PlaceInfo;
 	burialPlace?: PlaceInfo;
@@ -158,6 +159,7 @@ export function renderPeopleList(options: PeopleListOptions): void {
 		name: string;
 		birthDate?: string;
 		deathDate?: string;
+		crLiving?: boolean;
 		birthPlace?: PlaceInfo;
 		deathPlace?: PlaceInfo;
 		burialPlace?: PlaceInfo;
@@ -173,6 +175,7 @@ export function renderPeopleList(options: PeopleListOptions): void {
 			name: p.name,
 			birthDate: p.birthDate,
 			deathDate: p.deathDate,
+			crLiving: typeof fm.cr_living === 'boolean' ? fm.cr_living : (fm.cr_living === 'true' ? true : (fm.cr_living === 'false' ? false : undefined)),
 			birthPlace: extractPlaceInfo(fm.birth_place),
 			deathPlace: extractPlaceInfo(fm.death_place),
 			burialPlace: extractPlaceInfo(fm.burial_place),
@@ -256,7 +259,8 @@ export function renderPeopleList(options: PeopleListOptions): void {
 				filtered = filtered.filter(hasUnlinkedPlaces);
 				break;
 			case 'living':
-				filtered = filtered.filter(p => p.birthDate && !p.deathDate);
+				// cr_living is authoritative; otherwise fall back to has-birth/no-death (#776)
+				filtered = filtered.filter(p => p.crLiving === true || (p.crLiving !== false && !!p.birthDate && !p.deathDate));
 				break;
 		}
 
@@ -1123,6 +1127,7 @@ function loadPersonList(container: HTMLElement, options: PeopleTabOptions): void
 			name: p.name,
 			birthDate: p.birthDate,
 			deathDate: p.deathDate,
+			crLiving: typeof fm.cr_living === 'boolean' ? fm.cr_living : (fm.cr_living === 'true' ? true : (fm.cr_living === 'false' ? false : undefined)),
 			birthPlace: extractPlaceInfo(fm.birth_place),
 			deathPlace: extractPlaceInfo(fm.death_place),
 			burialPlace: extractPlaceInfo(fm.burial_place),
@@ -1228,7 +1233,8 @@ function loadPersonList(container: HTMLElement, options: PeopleTabOptions): void
 				filtered = filtered.filter(hasUnlinkedPlaces);
 				break;
 			case 'living':
-				filtered = filtered.filter(p => p.birthDate && !p.deathDate);
+				// cr_living is authoritative; otherwise fall back to has-birth/no-death (#776)
+				filtered = filtered.filter(p => p.crLiving === true || (p.crLiving !== false && !!p.birthDate && !p.deathDate));
 				break;
 		}
 
@@ -1749,6 +1755,7 @@ function showPersonContextMenu(
 		name: string;
 		birthDate?: string;
 		deathDate?: string;
+		crLiving?: boolean;
 		birthPlace?: PlaceInfo;
 		deathPlace?: PlaceInfo;
 		burialPlace?: PlaceInfo;

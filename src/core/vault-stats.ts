@@ -4,6 +4,7 @@ import { SpouseValue } from '../types/frontmatter';
 import { FolderFilterService } from './folder-filter';
 import type { CanvasRootsSettings } from '../settings';
 import { isPlaceNote, isMapNote, isSourceNote, isEventNote, isOrganizationNote, isProofSummaryNote, isUniverseNote } from '../utils/note-type-detection';
+import { isLivingPerson } from '../utils/living-status';
 
 /**
  * Vault statistics for person notes
@@ -229,8 +230,8 @@ export class VaultStatsService {
 				peopleWithDeathDate++;
 			}
 
-			// Living person check: uses age threshold, not just "no death date"
-			if (this.couldBeLiving(personData.birthYear, personData.hasDeathDate)) {
+			// Living person check: cr_living is authoritative, otherwise age threshold
+			if (this.couldBeLiving(personData.birthYear, personData.hasDeathDate, personData.crLiving)) {
 				livingPeople++;
 			}
 
@@ -340,6 +341,7 @@ export class VaultStatsService {
 		hasChildren: boolean;
 		spouseCount: number;
 		birthYear: number | null;
+		crLiving?: boolean;
 	} | null {
 		try {
 			const cache = this.app.metadataCache.getFileCache(file);
@@ -386,7 +388,10 @@ export class VaultStatsService {
 				hasAnyParent,
 				hasChildren,
 				spouseCount: this.getSpouseCount(fm.spouse || fm.spouse_id),
-				birthYear
+				birthYear,
+				crLiving: typeof fm.cr_living === 'boolean'
+					? fm.cr_living
+					: (fm.cr_living === 'true' ? true : (fm.cr_living === 'false' ? false : undefined))
 			};
 		} catch (error: unknown) {
 			console.error('Error extracting person data from file:', file.path, error);
@@ -432,22 +437,18 @@ export class VaultStatsService {
 	}
 
 	/**
-	 * Check if a person could plausibly still be alive based on birth year
-	 * Uses the livingPersonAgeThreshold setting (default 100)
+	 * Check if a person could plausibly still be alive. An explicit `cr_living`
+	 * flag is authoritative; otherwise falls back to the age threshold
+	 * (livingPersonAgeThreshold setting, default 100). (#776)
 	 */
-	private couldBeLiving(birthYear: number | null, hasDeathDate: boolean): boolean {
-		// If they have a death date, they're not living
-		if (hasDeathDate) return false;
-
-		// If no birth year, we can't determine if living
-		if (birthYear === null) return false;
-
-		// Calculate age and compare to threshold
-		const currentYear = new Date().getFullYear();
-		const age = currentYear - birthYear;
-		const threshold = this.settings?.livingPersonAgeThreshold ?? 100;
-
-		return age < threshold;
+	private couldBeLiving(birthYear: number | null, hasDeathDate: boolean, crLiving?: boolean): boolean {
+		return isLivingPerson({
+			crLiving,
+			hasDeathDate,
+			birthYear,
+			currentYear: new Date().getFullYear(),
+			threshold: this.settings?.livingPersonAgeThreshold ?? 100
+		});
 	}
 }
 
