@@ -220,6 +220,8 @@ export interface CanvasRootsSettings {
 	peopleFolder: string;
 	placesFolder: string;
 	mapsFolder: string;
+	/** CARTO basemap key, stored locally in plugin settings. */
+	cartoBasemapApiKey: string;
 	schemasFolder: string;
 	canvasesFolder: string;
 	logExportPath: string;
@@ -774,6 +776,7 @@ export const DEFAULT_SETTINGS: CanvasRootsSettings = {
 	peopleFolder: 'Charted Roots/People',
 	placesFolder: 'Charted Roots/Places',
 	mapsFolder: 'Charted Roots/Places/Maps',
+	cartoBasemapApiKey: '',
 	schemasFolder: 'Charted Roots/Schemas',
 	canvasesFolder: 'Charted Roots/Canvases',
 	logExportPath: '.charted-roots/logs',
@@ -2141,6 +2144,24 @@ export class CanvasRootsSettingTab extends PluginSettingTab {
 					this.plugin.settings.geonamesUsername = value.trim();
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(placesContent)
+			.setName('CARTO basemap API key')
+			.setDesc(createFragment(f => {
+				f.appendText('Used for the real-world map and minimap. ');
+				f.createEl('a', { text: 'Request a free key', href: 'https://carto.com/basemaps/apikey/' });
+				f.appendText('. Stored unencrypted in plugin settings; do not share your data.json. Close and reopen map views after changing the key.');
+			}))
+			.addText(text => {
+				text.inputEl.type = 'password';
+				text.inputEl.autocomplete = 'off';
+				text.setPlaceholder('CARTO API key')
+					.setValue(this.plugin.settings.cartoBasemapApiKey)
+					.onChange(async (value) => {
+						this.plugin.settings.cartoBasemapApiKey = value.trim();
+						await this.plugin.saveSettings();
+					});
+			});
 
 		// Heat map intensity
 		new Setting(placesContent)

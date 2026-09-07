@@ -25,10 +25,13 @@ Charted Roots handles **highly sensitive personally identifiable information (PI
 - **Potential additional PII** in linked Markdown files
 
 **Important**: All data is stored **locally** in your Obsidian vault. The plugin does **not**:
-- Transmit data over the network
-- Connect to external services
-- Upload information to cloud servers
-- Share data with third parties
+- Upload genealogical notes or family relationships to cloud servers
+- Share genealogical records with third parties
+
+Online map tiles are requested from CARTO. When configured, the basemap API
+key is included in those requests; CARTO also receives the requested tile
+coordinates and ordinary connection metadata. Place lookup can contact
+external geocoding services when used.
 
 ### Data Storage Locations
 
@@ -55,7 +58,7 @@ Charted Roots handles **highly sensitive personally identifiable information (PI
 5. **Plugin Settings** (`data.json`)
    - Location: `.obsidian/plugins/charted-roots/data.json`
    - Format: Plain text JSON (unencrypted)
-   - Contains: Plugin configuration (node sizes, spacing, preferences)
+   - Contains: Plugin configuration (node sizes, spacing, preferences), including the optional CARTO basemap API key. Remove cartoBasemapApiKey before sharing this file.
    - Does NOT contain: Personal genealogical data
 
 ### Why Plain Text Storage?
