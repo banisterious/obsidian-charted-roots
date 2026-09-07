@@ -51,6 +51,21 @@ The Map View provides a Leaflet.js-powered interactive map for visualizing where
 **Option 4: Context Menu**
 - Right-click on a map note and select "Open in Map View"
 
+### CARTO basemap API key
+
+The real-world map uses CARTO Voyager tiles. If the background displays an
+"API key required" watermark, request your own key at
+[CARTO Basemaps](https://carto.com/basemaps/apikey/) and enter it in
+**Settings → Charted Roots → Places → CARTO basemap API key**. Close and reopen
+existing map views to apply the change. The same key is used for the minimap
+and when switching back from a custom image map.
+
+The key is stored unencrypted in the plugin's data.json, separately from
+the plugin code, and is sent to CARTO with tile requests. Exclude it when
+sharing settings or diagnostics. Keep CARTO and OpenStreetMap attribution
+visible. Existing vaults without a key retain the previous unauthenticated
+URL and may display CARTO's watermark.
+
 ### Map Features
 
 | Feature | Description |

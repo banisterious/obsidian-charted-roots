@@ -92,11 +92,11 @@ import type {
 } from './types/map-types';
 import { getMarkerColor, isMarkerTypeVisible, formatPopupDateRange, coordsBelongToCRS } from './types/map-types';
 import { ImageMapManager } from './image-map-manager';
+import { getCartoTileUrl } from './carto-basemap';
 
 const logger = getLogger('MapController');
 
-// Tile URLs — CartoDB Voyager (doesn't require referrer header, unlike tile.openstreetmap.org)
-const OSM_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+// Attribution is retained for authenticated and unauthenticated CARTO tiles.
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
 /**
@@ -234,7 +234,7 @@ export class MapController {
 				return tile;
 			}
 		});
-		this.tileLayer = new (TileLayerNoRef as unknown as typeof L.TileLayer)(OSM_TILE_URL, {
+		this.tileLayer = new (TileLayerNoRef as unknown as typeof L.TileLayer)(getCartoTileUrl(this.plugin.settings.cartoBasemapApiKey), {
 			attribution: OSM_ATTRIBUTION,
 			maxZoom: 19
 		}).addTo(this.map);
@@ -380,7 +380,7 @@ export class MapController {
 				return tile;
 			}
 		});
-		const miniMapTiles = new (MiniTileLayer as unknown as typeof L.TileLayer)(OSM_TILE_URL, {
+		const miniMapTiles = new (MiniTileLayer as unknown as typeof L.TileLayer)(getCartoTileUrl(this.plugin.settings.cartoBasemapApiKey), {
 			attribution: '',
 			maxZoom: 13
 		});
@@ -2090,7 +2090,7 @@ export class MapController {
 			}
 
 			if (!this.tileLayer) {
-				this.tileLayer = L.tileLayer(OSM_TILE_URL, {
+				this.tileLayer = L.tileLayer(getCartoTileUrl(this.plugin.settings.cartoBasemapApiKey), {
 					attribution: OSM_ATTRIBUTION,
 					maxZoom: 19
 				});
@@ -2241,7 +2241,7 @@ export class MapController {
 		if (targetCRS === 'geographic') {
 			// Geographic mode - add OSM tiles or custom image overlay
 			if (mapId === 'openstreetmap') {
-				this.tileLayer = L.tileLayer(OSM_TILE_URL, {
+				this.tileLayer = L.tileLayer(getCartoTileUrl(this.plugin.settings.cartoBasemapApiKey), {
 					attribution: OSM_ATTRIBUTION,
 					maxZoom: 19
 				}).addTo(this.map);
